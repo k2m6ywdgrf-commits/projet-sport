@@ -284,7 +284,7 @@
             cursor: pointer;
         }
 
-        /* Workout Active Interface */
+        /* Workout Active Interface & PROGRESS */
         .workout-meta {
             margin-bottom: 16px;
             display: flex;
@@ -313,9 +313,6 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #1f2235;
         }
 
         .exercise-zone {
@@ -339,8 +336,25 @@
         .exercise-tip {
             font-size: 12px;
             color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 2px;
             font-style: italic;
+        }
+
+        /* Exercise Progress Fill HUD */
+        .progress-bar {
+            height: 6px;
+            background: #1a1d2e;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00ff66;
+            width: 0%;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
         }
 
         .sets-grid {
@@ -349,33 +363,46 @@
             gap: 8px;
         }
 
+        /* Advanced Check UI (Done vs standard) */
         .set-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--bg-item);
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-radius: 10px;
             border: 1px solid #222538;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
         }
 
         .set-row.done {
+            background: rgba(0, 255, 102, 0.04);
             border-color: #00ff66;
-            opacity: 0.6;
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.05);
         }
 
         .set-number {
             font-size: 13px;
             font-weight: 700;
             color: var(--text-muted);
+            transition: all 0.2s;
         }
 
-        .set-row.done .set-number { color: #00ff66; }
+        .set-row.done .set-number { 
+            color: #00ff66; 
+            text-decoration: line-through;
+        }
 
         .set-reps {
             font-size: 14px;
             font-weight: 800;
+            transition: all 0.2s;
+        }
+        
+        .set-row.done .set-reps {
+            color: var(--text-muted);
+            text-decoration: line-through;
+            opacity: 0.5;
         }
 
         .set-checkbox {
@@ -387,6 +414,7 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .set-row.done .set-checkbox {
@@ -694,7 +722,7 @@
 
                 <div class="stat-card full-width">
                     <div class="hud-title">PROCHAIN SEUIL DE NIVEAU</div>
-                    <div class="stat-value" id="stat-next-lvl" style="font-size:15px; color:var(--text-main); margin-top:6px;">100 XP restants</div>
+                    <div class="stat-value" id="stat-next-lvl" style="font-size:13px; color:var(--text-main); margin-top:6px;">100 XP restants</div>
                 </div>
             </div>
         </div>
@@ -730,7 +758,7 @@
 
             <div id="exercises-player-container"></div>
 
-            <button class="btn-launch" style="background: #00ff66; box-shadow: 0 4px 15px rgba(0,255,102,0.2);" onclick="completeWorkout()">
+            <button class="btn-launch" style="background: #00ff66; box-shadow: 0 4px 15px rgba(0,255,102,0.2); margin-top:10px;" onclick="completeWorkout()">
                 FINIR LA SÉANCE & ENREGISTRER
             </button>
         </div>
@@ -763,7 +791,7 @@
     </nav>
 
     <script>
-        // App Core State (SANS LIMITE DE NIVEAU)
+        // Core State
         let state = {
             name: 'ATHLÈTE',
             level: 1,
@@ -824,7 +852,7 @@
                         { name: "Pompes Tempo Isométrique", zone: "yellow", reps: "8", sets: 5, rest: 75, tips: { feet: "3s de descente contrôlée, bloquez 1s en bas.", knees: "Ralentissez sciemment la descente." }}
                     ]},
                     "2": { name: "Massive Triceps & Épaules", exs: [
-                        { name: "Triceps Destruction", zone: "blue", reps: "8", sets: 5, rest: 75, tips: { feet: "Descente ultra lente.", knees: "Isolez l'arrière des bras." }, zone: "blue"},
+                        { name: "Triceps Destruction", zone: "blue", reps: "8", sets: 5, rest: 75, tips: { feet: "Descente ultra lente.", knees: "Isolez l'arrière des bras." }},
                         { name: "Épaules Solides", zone: "white", reps: "8", sets: 5, rest: 75, tips: { feet: "Alignement des articulations impeccable.", knees: "Repoussez fort sur vos paumes." }}
                     ]},
                     "3": { name: "Le Dernier Souffle", exs: [
@@ -865,7 +893,7 @@
             document.getElementById('user-streak').innerText = state.streak;
             document.getElementById('user-xp').innerText = state.xp;
             
-            // Render detailed stats screen
+            // Inject metrics in stats tab
             document.getElementById('stat-done').innerText = state.totalWorkouts;
             document.getElementById('stat-reps').innerText = state.totalReps;
             document.getElementById('stat-pecs').innerText = state.repsPecs;
@@ -883,7 +911,6 @@
             saveState();
         }
 
-        // Export data to json -> Directly matches native iOS iCloud Save context via web download drawer
         function exportStateToJSON() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
             const dlAnchor = document.createElement('a');
@@ -977,13 +1004,20 @@
             renderActiveWorkoutPlayer();
         }
 
+        // DESIGN INTERACTIF : BARRE DE PROGRESSION PAR EXERCICE
         function renderActiveWorkoutPlayer() {
             const container = document.getElementById('exercises-player-container');
             container.innerHTML = '';
+            
             activeWorkout.exs.forEach((ex, exIndex) => {
+                const totalSets = ex.sets;
+                const completedSets = ex.completedStates ? Object.values(ex.completedStates).filter(Boolean).length : 0;
+                const percent = (completedSets / totalSets) * 100;
+
                 const block = document.createElement('div');
                 block.className = 'exercise-block';
                 const tipText = state.posture === 'feet' ? ex.tips.feet : ex.tips.knees;
+                
                 block.innerHTML = `
                     <div class="exercise-header">
                         <div>
@@ -992,14 +1026,18 @@
                         </div>
                         <span class="exercise-zone zone-${ex.zone}">${ex.zone === 'yellow' ? 'pecs' : ex.zone === 'white' ? 'épaules' : 'triceps'}</span>
                     </div>
-                    <div class="sets-grid" id="sets-grid-${exIndex}"></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="fill-${exIndex}" style="width: ${percent}%"></div>
+                    </div>
+                    <div class="sets-grid" id="sets-grid-${exIndex}" style="margin-top:14px;"></div>
                 `;
                 container.appendChild(block);
                 
                 const setsGrid = document.getElementById(`sets-grid-${exIndex}`);
                 for(let s = 0; s < ex.sets; s++) {
+                    const isDone = ex.completedStates && ex.completedStates[s];
                     const setRow = document.createElement('div');
-                    setRow.className = `set-row ${ex.completedStates && ex.completedStates[s] ? 'done' : ''}`;
+                    setRow.className = `set-row ${isDone ? 'done' : ''}`;
                     setRow.id = `set-row-${exIndex}-${s}`;
                     setRow.onclick = () => toggleSetCompletion(exIndex, s, ex.rest, ex.reps);
                     setRow.innerHTML = `
@@ -1034,6 +1072,12 @@
                 state.xp = Math.max(0, state.xp - 5);
                 saveState();
             }
+
+            // Calcul dynamique instantané de l'exercice pour le remplissage de la jauge
+            const totalSets = ex.sets;
+            const completedSets = Object.values(ex.completedStates).filter(Boolean).length;
+            const percent = (completedSets / totalSets) * 100;
+            document.getElementById(`fill-${exIndex}`).style.width = `${percent}%`;
         }
 
         function playBeepSound(isLong = false) {
@@ -1077,13 +1121,32 @@
             document.getElementById('timer-modal').classList.remove('active');
         }
 
+        // SÉCURITÉ COMPLÉTION : VERROUILLAGE INTELLIGENT DU JOUR
         function completeWorkout() {
             if(!activeWorkout) return;
+
+            // Analyse de l'intégralité des exercices
+            let allDone = true;
+            activeWorkout.exs.forEach(ex => {
+                for(let s = 0; s < ex.sets; s++) {
+                    if(!ex.completedStates || !ex.completedStates[s]) {
+                        allDone = false;
+                    }
+                }
+            });
+
+            // Alerte si oubli ou série fantôme non cochée
+            if(!allDone) {
+                if(!confirm("⚠️ ATTENTION : Tu n'as pas validé 100% de tes séries sur cette séance. Es-tu sûr de vouloir forcer la validation et passer au jour suivant ?")) {
+                    return; // Stoppe la fermeture pour permettre de cocher
+                }
+            }
+
+            // Progression confirmée et gravée
             state.completedDays[activeWorkout.id] = true;
             state.totalWorkouts += 1;
             state.totalReps += activeWorkout.totalRepsInSession;
             
-            // Save detailed metrics per muscle group
             state.repsPecs += activeWorkout.muscleTracking.yellow;
             state.repsEpaules += activeWorkout.muscleTracking.white;
             state.repsTriceps += activeWorkout.muscleTracking.blue;
@@ -1096,7 +1159,6 @@
                 state.lastWorkoutDate = todayStr;
             }
 
-            // LEVEL CALCULATION (INFINITE SCALING)
             let newLvl = Math.floor(state.xp / 100) + 1;
             if (newLvl > state.level) {
                 state.level = newLvl;
