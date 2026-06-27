@@ -23,7 +23,21 @@
             --glow-system: rgba(255,0,85,0.25);
             --glow-success: rgba(0,255,102,0.25);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        /* Blocage global du zoom et de la sélection de texte */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            user-select: none; 
+            -webkit-user-select: none; 
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
             background-color: var(--bg-pure);
@@ -89,11 +103,38 @@
         /* FREQUENCY SELECTOR */
         .freq-selector { display: flex; gap: 6px; margin: 15px 0 20px 0; overflow-x: auto; padding-bottom: 4px; }
         .freq-btn {
-            background: var(--bg-item); border: 1px solid #222538; color: var(--text-muted);
+            background: var(--bg-item); border: 1px solid #222538; color: var(--text-main);
             padding: 10px 14px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.2s;
         }
         .freq-btn.active { background: var(--color-triceps); color: #050508; border-color: var(--color-triceps); box-shadow: 0 0 10px var(--glow-triceps); }
         .freq-btn.active.machine-theme { background: var(--color-system); border-color: var(--color-system); box-shadow: 0 0 10px var(--glow-system); color: #ffffff; }
+
+        /* STYLE DES BOUTONS SECONDAIRES */
+        .toggle-btn {
+            background: #1a1d2e; 
+            border: 2px solid #3e4463; 
+            color: #ffffff;
+            padding: 14px 20px; 
+            border-radius: 12px; 
+            font-size: 13px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            cursor: pointer; 
+            display: inline-block;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .toggle-btn:active {
+            transform: scale(0.98);
+            background: #252942;
+        }
+        .toggle-btn.active {
+            border-color: var(--color-triceps);
+            background: rgba(0, 240, 255, 0.1);
+            text-shadow: 0 0 8px var(--glow-triceps);
+        }
 
         .program-card {
             background: var(--bg-card); border: 1px solid #222538; border-radius: 16px;
@@ -161,6 +202,7 @@
         .modal-day-info { margin-bottom: 20px; }
         .modal-workout-name { font-size: 22px; font-weight: 900; margin: 4px 0 8px; }
         .modal-exo-preview { background: var(--bg-item); border-radius: 12px; padding: 12px; margin-bottom: 16px; }
+        .modal-exo-preview div { text-shadow: none !important; }
         .modal-exo-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #1e2133; }
         .modal-exo-row:last-child { border-bottom: none; }
         .modal-exo-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -343,17 +385,38 @@
             <div class="program-tag" style="color:var(--color-triceps)">CYBER COACH // FITNESS</div>
             <h2 class="margin-t" style="font-size: 20px; font-weight:900;">Configure ton programme</h2>
             
-            <div class="hud-title" style="margin-top:15px;">Configuration de la posture</div>
+            <div class="hud-title" style="margin-top:15px;">Objectif Principal</div>
             <div class="posture-container">
-                <div class="posture-box" id="posture-box-knees" onclick="setPosture('knees')">
-                    <div class="posture-emoji">🧘</div>
-                    <div class="posture-label">Sur les genoux</div>
-                    <div class="posture-desc" style="color: var(--color-success)">🟢 Plus accessible</div>
+                <div class="posture-box active" id="obj-box-muscle" onclick="setObjective('muscle')">
+                    <div class="posture-emoji">💪</div>
+                    <div class="posture-label">Prendre du Muscle</div>
+                    <div class="posture-desc" style="color: var(--color-pecs)">Hypertrophie</div>
                 </div>
-                <div class="posture-box" id="posture-box-feet" onclick="setPosture('feet')">
-                    <div class="posture-emoji">👟</div>
-                    <div class="posture-label">Sur les pieds</div>
-                    <div class="posture-desc" style="color: var(--color-system)">🔴 Plus dur</div>
+                <div class="posture-box" id="obj-box-weight" onclick="setObjective('weight')">
+                    <div class="posture-emoji">🏃</div>
+                    <div class="posture-label">Perdre du Poids</div>
+                    <div class="posture-desc" style="color: var(--color-triceps)">HIIT & Brûlage</div>
+                </div>
+                <div class="posture-box" id="obj-box-other" onclick="setObjective('other')">
+                    <div class="posture-emoji">🎯</div>
+                    <div class="posture-label">Autre Idée</div>
+                    <div class="posture-desc" style="color: var(--text-muted)">Santé & Forme</div>
+                </div>
+            </div>
+
+            <div id="posture-config-block" style="display: block;">
+                <div class="hud-title" style="margin-top:15px;">Configuration de la posture</div>
+                <div class="posture-container">
+                    <div class="posture-box" id="posture-box-knees" onclick="setPosture('knees')">
+                        <div class="posture-emoji">🧘</div>
+                        <div class="posture-label">Sur les genoux</div>
+                        <div class="posture-desc" style="color: var(--color-success)">🟢 Plus accessible</div>
+                    </div>
+                    <div class="posture-box" id="posture-box-feet" onclick="setPosture('feet')">
+                        <div class="posture-emoji">👟</div>
+                        <div class="posture-label">Sur les pieds</div>
+                        <div class="posture-desc" style="color: var(--color-system)">🔴 Plus dur</div>
+                    </div>
                 </div>
             </div>
 
@@ -403,8 +466,10 @@
             </div>
 
             <div class="hud-title" style="margin-top:15px;">Durée totale du programme</div>
-            <div style="display:flex; align-items:center; background: var(--bg-item); padding: 10px 14px; border-radius: 12px; border: 1px solid #222538; margin-top: 6px;">
-                <input type="number" id="input-fitness-weeks" value="4" min="1" max="12" style="width: 70px; background: #050508; border: 1px solid #222538; color: white; text-align: center; padding: 6px; border-radius: 6px; font-weight: 700; font-size: 14px; margin-top:0;">
+            <div style="display:flex; align-items:center; background: var(--bg-item); padding: 10px 14px; border-radius: 12px; border: 1px solid #222538; margin-top: 6px; gap: 10px;">
+                <button type="button" class="freq-btn" style="padding: 6px 16px; margin:0; font-weight:900;" onclick="adjustProgramWeeks('fitness', -1)">-</button>
+                <div id="display-fitness-weeks" style="font-size:16px; font-weight:900; color:white; width:40px; text-align:center;">4</div>
+                <button type="button" class="freq-btn" style="padding: 6px 16px; margin:0; font-weight:900;" onclick="adjustProgramWeeks('fitness', 1)">+</button>
                 <span style="font-size:13px; font-weight:800; color:var(--text-muted); margin-left:10px;">SEMAINE(S)</span>
             </div>
 
@@ -419,28 +484,20 @@
             <div class="program-tag" style="color:var(--color-system)">CYBER COACH // MACHINES</div>
             <h2 class="margin-t" style="font-size: 20px; font-weight:900;">Configure ton plan Cardio</h2>
             <p class="program-desc margin-t">Sélectionne les machines dont tu disposes pour générer ton programme.</p>
-            
             <div class="accessory-checkbox-group">
                 <div class="accessory-item owned" onclick="toggleMachine('bike')">
-                    <div class="accessory-info">
-                        <span class="accessory-name">Vélo d'intérieur</span>
-                    </div>
+                    <div class="accessory-info"><span class="accessory-name">Vélo d'intérieur</span></div>
                     <input type="checkbox" id="mac-bike" checked style="accent-color:var(--color-system); pointer-events:none;">
                 </div>
                 <div class="accessory-item owned" onclick="toggleMachine('elliptical')">
-                    <div class="accessory-info">
-                        <span class="accessory-name">Elliptique</span>
-                    </div>
+                    <div class="accessory-info"><span class="accessory-name">Elliptique</span></div>
                     <input type="checkbox" id="mac-elliptical" checked style="accent-color:var(--color-system); pointer-events:none;">
                 </div>
                 <div class="accessory-item owned" onclick="toggleMachine('treadmill')">
-                    <div class="accessory-info">
-                        <span class="accessory-name">Tapis de course</span>
-                    </div>
+                    <div class="accessory-info"><span class="accessory-name">Tapis de course</span></div>
                     <input type="checkbox" id="mac-treadmill" checked style="accent-color:var(--color-system); pointer-events:none;">
                 </div>
             </div>
-
             <div class="hud-title" style="margin-top:15px;">Nombre de jours par semaine</div>
             <div class="freq-selector">
                 <button class="freq-btn machine-freq active" onclick="selectMachineFrequency(2)">2x</button>
@@ -448,16 +505,15 @@
                 <button class="freq-btn machine-freq" onclick="selectMachineFrequency(4)">4x</button>
                 <button class="freq-btn machine-freq" onclick="selectMachineFrequency(5)">5x</button>
             </div>
-
             <div class="hud-title" style="margin-top:15px;">Durée totale du programme</div>
-            <div style="display:flex; align-items:center; background: var(--bg-item); padding: 10px 14px; border-radius: 12px; border: 1px solid #222538; margin-top: 6px;">
-                <input type="number" id="input-machine-weeks" value="4" min="1" max="12" style="width: 70px; background: #050508; border: 1px solid #222538; color: white; text-align: center; padding: 6px; border-radius: 6px; font-weight: 700; font-size: 14px; margin-top:0;">
+            <div style="display:flex; align-items:center; background: var(--bg-item); padding: 10px 14px; border-radius: 12px; border: 1px solid #222538; margin-top: 6px; gap: 10px;">
+                <button type="button" class="freq-btn" style="padding: 6px 16px; margin:0; font-weight:900;" onclick="adjustProgramWeeks('machine', -1)">-</button>
+                <div id="display-machine-weeks" style="font-size:16px; font-weight:900; color:white; width:40px; text-align:center;">4</div>
+                <button type="button" class="freq-btn" style="padding: 6px 16px; margin:0; font-weight:900;" onclick="adjustProgramWeeks('machine', 1)">+</button>
                 <span style="font-size:13px; font-weight:800; color:var(--text-muted); margin-left:10px;">SEMAINE(S)</span>
             </div>
-
             <button class="btn-launch" style="background: linear-gradient(135deg, #ff0055, #00f0ff); margin-top:20px;" onclick="generateMachineProgram()">🚲 GÉNÉRER MON PLAN MACHINES</button>
         </div>
-
         <div id="machines-list"></div>
     </div>
 
@@ -465,8 +521,7 @@
         <div class="gen-container">
             <div class="program-tag" style="color:var(--color-triceps)">ALGORITHME // ALÉATOIRE</div>
             <h2 class="margin-t">Cyber-Générateur</h2>
-            <p class="program-desc margin-t">Pas le temps de suivre le plan ? Laisse l'algorithme générer un bloc de poussée unique selon tes dispo.</p>
-            
+            <p class="program-desc margin-t">Pas le temps de suivre le plan ? Laisse l'algorithme générer un bloc de poussée unique.</p>
             <div class="hud-title" style="margin-top:15px; text-align:left;">Accessoires à utiliser :</div>
             <div class="accessory-checkbox-group" style="text-align:left;">
                 <div class="accessory-item owned" onclick="toggleGenAccessory('board')">
@@ -486,7 +541,6 @@
                     <input type="checkbox" id="gen-acc-bands" checked style="accent-color:var(--color-triceps); pointer-events:none;">
                 </div>
             </div>
-
             <div class="gen-selector">
                 <button class="gen-time-btn active" id="gen-t10" onclick="setGenTime(10)">10 MIN</button>
                 <button class="gen-time-btn" id="gen-t15" onclick="setGenTime(15)">15 MIN</button>
@@ -502,7 +556,6 @@
             <h3 style="font-size:15px; font-weight:800; margin-top:4px;">TEMPS TOTAL GÉNÉRAL</h3>
             <div class="stat-value" id="stat-total-general-time" style="font-size:38px; color: #fff;">0 MIN</div>
         </div>
-
         <div class="coach-setup-card" style="border-color: var(--color-pecs); margin-top:16px;">
             <div class="program-tag" style="color:var(--color-pecs)">MODULE // COMPTEURS FITNESS</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin: 4px 0 12px 0;">
@@ -511,7 +564,6 @@
             </div>
             <div id="fitness-exercises-list"></div>
         </div>
-
         <div class="coach-setup-card" style="border-color: var(--color-system); margin-top:16px;">
             <div class="program-tag" style="color:var(--color-system)">MODULE // COMPTEURS CARDIO</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin: 4px 0 12px 0;">
@@ -520,7 +572,6 @@
             </div>
             <div id="machines-stats-list"></div>
         </div>
-
         <div class="stats-grid-main">
             <div class="stat-card"><div class="hud-title">SÉANCES FITNESS</div><div class="stat-value" id="stat-done">0</div></div>
             <div class="stat-card" style="border-color:var(--color-system)"><div class="hud-title" style="color:var(--color-system)">SÉANCES MACHINES</div><div class="stat-value" id="stat-machines">0</div></div>
@@ -535,16 +586,26 @@
             <span class="hud-title">CONFIGURATION DU PROFIL</span>
             <input type="text" id="input-username" placeholder="Entre ton prénom..." oninput="handleNameChange(this.value)">
         </div>
+        <div class="settings-input-group" style="border-color: var(--color-success)">
+            <span class="hud-title" style="color: var(--color-success)">HABITUDES & INTENSITÉ IA</span>
+            <div style="margin-bottom: 12px;">
+                <label class="hud-title" style="font-size:11px; color: var(--text-main)">Séries par exercice (Base) :</label>
+                <input type="number" id="settings-base-sets" min="1" max="6" step="1" onchange="updateHabitParam('baseSets', this.value)">
+            </div>
+            <div>
+                <label class="hud-title" style="font-size:11px; color: var(--text-main)">Sauts par série (Corde) :</label>
+                <input type="number" id="settings-rope-jumps" min="10" max="1000" step="10" onchange="updateHabitParam('ropeJumps', this.value)">
+            </div>
+        </div>
         <div class="settings-input-group" style="border-color:var(--color-triceps)">
             <span class="hud-title" style="color:var(--color-triceps)">SAUVEGARDE / JSON</span>
-            <p class="program-desc" style="margin:8px 0 16px 0">Exporte ton fichier de données ou importe-le pour restaurer ta progression.</p>
-            <button class="toggle-btn active" style="border-color:var(--color-triceps);color:white;width:100%;margin-bottom:10px" onclick="exportStateToJSON()">📤 EXPORTER LA SAUVEGARDE</button>
+            <button class="toggle-btn active" style="width:100%; margin-bottom:12px;" onclick="exportStateToJSON()">📤 EXPORTER LA SAUVEGARDE</button>
             <div class="file-input-wrapper">
                 <button class="toggle-btn" style="width:100%">📥 IMPORTER UNE SAUVEGARDE</button>
                 <input type="file" accept=".json" onchange="importStateFromJSON(event)">
             </div>
         </div>
-        <button class="toggle-btn margin-t" style="color:var(--color-system);border-color:var(--color-system);width:100%" onclick="resetAllData()">🚫 RÉINITIALISER TOUTES LES DONNÉES</button>
+        <button class="toggle-btn margin-t" style="color:var(--color-system); border-color:var(--color-system); width:100%" onclick="resetAllData()">🚫 RÉINITIALISER TOUTES LES DONNÉES</button>
     </div>
 
     <div id="screen-workout-player" class="screen">
@@ -575,7 +636,6 @@
             <button class="btn-launch" id="btn-completion-back" onclick="goBackToPrograms()">RETOUR</button>
         </div>
     </div>
-
 </div>
 
 <div class="modal-overlay" id="preworkout-modal" onclick="closeModalIfOutside(event)">
@@ -585,9 +645,7 @@
             <div class="program-tag" id="modal-tag">PLAN</div>
             <div class="modal-workout-name" id="modal-name">Nom de la séance</div>
         </div>
-
         <div class="modal-exo-preview" id="modal-exo-list"></div>
-
         <div class="rest-selector" id="modal-rest-block">
             <span class="hud-title">⏱ TEMPS DE REPOS ENTRE LES SÉRIES</span>
             <p class="rest-note" id="rest-note">Recommandé : 60s</p>
@@ -600,7 +658,6 @@
                 <button class="rest-btn" data-sec="90" onclick="selectRest(90)">90s</button>
             </div>
         </div>
-
         <div class="diff-selector-block" id="modal-diff-block">
             <span class="hud-title">⭐ NIVEAU DE DIFFICULTÉ SOUHAITÉ</span>
             <div class="diff-btns-grid">
@@ -611,7 +668,6 @@
                 <button class="diff-btn" data-diff="5" onclick="selectDifficulty(5)">5</button>
             </div>
         </div>
-
         <div class="time-selector-block">
             <span class="hud-title">⏱️ DISPONIBILITÉ DU TEMPS</span>
             <div class="time-input-row">
@@ -624,7 +680,6 @@
                 </div>
             </div>
         </div>
-
         <button class="btn-launch" id="btn-modal-start" style="margin-top:4px" onclick="confirmStartWorkout()">⚡ DÉMARRER LA SÉANCE</button>
     </div>
 </div>
@@ -644,35 +699,22 @@
         totalWorkouts: 0, totalMachinesWorkouts: 0, totalReps: 0, totalJumps: 0,
         repsPecs: 0, repsTriceps: 0, repsEpaules: 0,
         posture: 'feet', completedDays: {}, completedMachineDays: {}, currentGenTime: 10,
-        
-        fitnessTimeTotal: 0,
-        machineTimeTotal: 0,
-        
-        // Refactored clean global counting structures
+        fitnessTimeTotal: 0, machineTimeTotal: 0,
         accessorySessions: { board: 0, ab_wheel: 0, jump_rope: 0, bands: 0 },
         machineDeviceSessions: { bike: 0, elliptical: 0, treadmill: 0 },
-        machineStats: {
-            bike: { km: 0, time: 0 },
-            elliptical: { km: 0, time: 0 },
-            treadmill: { km: 0, time: 0 }
-        },
+        machineStats: { bike: { km: 0, time: 0 }, elliptical: { km: 0, time: 0 }, treadmill: { km: 0, time: 0 } },
         
         coachConfig: {
             frequency: 3,
             weeks: 4,
             accessories: ['board', 'ab_wheel', 'jump_rope', 'bands'],
-            ropeJumps: 50
+            ropeJumps: 50,
+            baseSets: 3,
+            objective: 'muscle' // NOUVEAU PARAMÈTRE
         },
-        machineConfig: {
-            frequency: 2,
-            weeks: 4,
-            types: ['bike', 'elliptical', 'treadmill']
-        },
-        genConfig: {
-            accessories: ['board', 'ab_wheel', 'jump_rope', 'bands']
-        },
-        generatedProgram: null,
-        generatedMachineProgram: null
+        machineConfig: { frequency: 2, weeks: 4, types: ['bike', 'elliptical', 'treadmill'] },
+        genConfig: { accessories: ['board', 'ab_wheel', 'jump_rope', 'bands'] },
+        generatedProgram: null, generatedMachineProgram: null
     };
 
     /* ===================== POOL D'EXERCICES ===================== */
@@ -692,23 +734,16 @@
         treadmill: { name: "Tapis de course", zone: "green", reps: "15 min", sets: 1, tips: { feet: "Inclinaison 3%, alternance course/marche.", knees: "Marche rapide inclinée sécurisée." }}
     };
 
-    /* ===================== RUNTIME ===================== */
-    let activeWorkout = null;
-    let pendingWorkout = null;
-    let selectedRestTime = 60;
-    let selectedDifficulty = 3;
-    let inlineTimerInterval = null;
-    let workoutStartTime = null;
+    let activeWorkout = null; let pendingWorkout = null; let selectedRestTime = 60; let selectedDifficulty = 3; let inlineTimerInterval = null; let workoutStartTime = null;
 
     /* ===================== INIT ===================== */
     window.onload = function() {
-        loadState();
-        renderHUD();
-        syncSetupUI();
+        loadState(); renderHUD(); syncSetupUI();
         if(state.generatedProgram) renderProgramCards();
         if(state.generatedMachineProgram) renderMachineCards();
-        updateUIForPosture();
+        updateUIForPostureBlock();
         document.getElementById('input-username').value = state.name === 'ATHLÈTE' ? '' : state.name;
+        document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
     };
 
     function loadState() {
@@ -716,193 +751,117 @@
         if (saved) { 
             try { 
                 state = { ...state, ...JSON.parse(saved) }; 
-                if (!state.accessorySessions) state.accessorySessions = { board: 0, ab_wheel: 0, jump_rope: 0, bands: 0 };
-                if (!state.machineDeviceSessions) state.machineDeviceSessions = { bike: 0, elliptical: 0, treadmill: 0 };
-                if (!state.genConfig) state.genConfig = { accessories: ['board', 'ab_wheel', 'jump_rope', 'bands'] };
-                if (!state.machineStats) state.machineStats = { bike: { km: 0, time: 0 }, elliptical: { km: 0, time: 0 }, treadmill: { km: 0, time: 0 } };
-                if (!state.fitnessTimeTotal) state.fitnessTimeTotal = 0;
-                if (!state.machineTimeTotal) state.machineTimeTotal = 0;
+                if (!state.coachConfig.objective) state.coachConfig.objective = 'muscle';
             } catch(e) {} 
         }
     }
-    function saveState() {
-        localStorage.setItem('cyberpump_state', JSON.stringify(state));
-        renderHUD();
-    }
+    function saveState() { localStorage.setItem('cyberpump_state', JSON.stringify(state)); renderHUD(); }
 
-    /* ===================== HUD & STATS RENDER ===================== */
-    function renderHUD() {
-        document.getElementById('hud-username').innerText = state.name.toUpperCase();
-        document.getElementById('user-level').innerHTML = `NIVEAU <span>${state.level}</span>`;
-        document.getElementById('user-streak').innerText = state.streak;
-        document.getElementById('user-xp').innerText = state.xp;
-        document.getElementById('stat-done').innerText = state.totalWorkouts;
-        document.getElementById('stat-machines').innerText = state.totalMachinesWorkouts || 0;
-        document.getElementById('stat-reps').innerText = state.totalReps;
-        document.getElementById('stat-jumps').innerText = state.totalJumps || 0;
-        
-        const fTime = state.fitnessTimeTotal || 0;
-        const mTime = state.machineTimeTotal || 0;
-        document.getElementById('stat-total-general-time').innerText = `${fTime + mTime} MIN`;
-        document.getElementById('stat-fitness-total-time').innerText = `${fTime} MIN`;
-        document.getElementById('stat-machine-total-time').innerText = `${mTime} MIN`;
-
-        // Render clean global fitness counter per accessory type (Request 8)
-        const fitContainer = document.getElementById('fitness-exercises-list');
-        fitContainer.innerHTML = '';
-        const accNames = { board: "Planche Push-Up", ab_wheel: "Roue abdominale", jump_rope: "Corde à sauter", bands: "Élastiques" };
-        Object.keys(accNames).forEach(k => {
-            const count = state.accessorySessions ? (state.accessorySessions[k] || 0) : 0;
-            fitContainer.innerHTML += `
-                <div class="stats-list-item">
-                    <span class="stats-list-name">${accNames[k]}</span>
-                    <span class="stats-list-val">${count} séance(s)</span>
-                </div>`;
-        });
-
-        // Render clean machine counter per item type (Request 8)
-        const macContainer = document.getElementById('machines-stats-list');
-        macContainer.innerHTML = '';
-        const macNames = { bike: "Vélo d'intérieur", elliptical: "Elliptique", treadmill: "Tapis de course" };
-        Object.keys(macNames).forEach(k => {
-            const count = state.machineDeviceSessions ? (state.machineDeviceSessions[k] || 0) : 0;
-            const mData = state.machineStats[k] || { km: 0, time: 0 };
-            macContainer.innerHTML += `
-                <div class="stats-list-item">
-                    <span class="stats-list-name">${macNames[k]}</span>
-                    <span class="stats-list-val">${count} séance(s) (${mData.time} min)</span>
-                </div>`;
-        });
-
-        const nextLevelXp = state.level * 100;
-        const remainingXp = nextLevelXp - (state.xp % nextLevelXp);
-        document.getElementById('stat-next-lvl').innerText = `${remainingXp} XP pour le niveau ${state.level + 1}`;
-    }
-
-    /* ===================== GESTION CONFIG FITNESS & POSTURE ===================== */
-    function setPosture(mode) {
-        state.posture = mode;
-        updateUIForPosture();
+    /* ===================== CONFIGURATION DE L'OBJECTIF IA ===================== */
+    function setObjective(mode) {
+        state.coachConfig.objective = mode;
+        document.getElementById('obj-box-muscle').classList.toggle('active', mode === 'muscle');
+        document.getElementById('obj-box-weight').classList.toggle('active', mode === 'weight');
+        document.getElementById('obj-box-other').classList.toggle('active', mode === 'other');
         saveState();
     }
-    function updateUIForPosture() {
+
+    function setPosture(mode) {
+        state.posture = mode;
         document.getElementById('posture-box-knees').classList.toggle('active', state.posture === 'knees');
         document.getElementById('posture-box-feet').classList.toggle('active', state.posture === 'feet');
+        saveState();
+    }
+    
+    function updateUIForPostureBlock() {
+        const hasBoard = state.coachConfig.accessories.includes('board');
+        document.getElementById('posture-config-block').style.display = hasBoard ? 'block' : 'none';
     }
 
     function toggleAccessory(accId) {
-        const checkbox = document.getElementById(`acc-${accId}`);
-        checkbox.checked = !checkbox.checked;
+        const checkbox = document.getElementById(`acc-${accId}`); checkbox.checked = !checkbox.checked;
         checkbox.closest('.accessory-item').classList.toggle('owned', checkbox.checked);
-        if (checkbox.checked) {
-            if (!state.coachConfig.accessories.includes(accId)) state.coachConfig.accessories.push(accId);
-        } else {
-            state.coachConfig.accessories = state.coachConfig.accessories.filter(a => a !== accId);
-        }
+        if (checkbox.checked) { if (!state.coachConfig.accessories.includes(accId)) state.coachConfig.accessories.push(accId); } 
+        else { state.coachConfig.accessories = state.coachConfig.accessories.filter(a => a !== accId); }
         document.getElementById('rope-jumps-box').style.display = state.coachConfig.accessories.includes('jump_rope') ? 'flex' : 'none';
-        saveState();
+        updateUIForPostureBlock(); saveState();
     }
 
     function toggleGenAccessory(accId) {
-        if(!state.genConfig) state.genConfig = { accessories: ['board', 'ab_wheel', 'jump_rope', 'bands'] };
-        const checkbox = document.getElementById(`gen-acc-${accId}`);
-        checkbox.checked = !checkbox.checked;
+        const checkbox = document.getElementById(`gen-acc-${accId}`); checkbox.checked = !checkbox.checked;
         checkbox.closest('.accessory-item').classList.toggle('owned', checkbox.checked);
-        if (checkbox.checked) {
-            if (!state.genConfig.accessories.includes(accId)) state.genConfig.accessories.push(accId);
-        } else {
-            state.genConfig.accessories = state.genConfig.accessories.filter(a => a !== accId);
-        }
+        if (checkbox.checked) { if (!state.genConfig.accessories.includes(accId)) state.genConfig.accessories.push(accId); } 
+        else { state.genConfig.accessories = state.genConfig.accessories.filter(a => a !== accId); }
         saveState();
     }
 
-    function changeRopeJumps(val) {
-        state.coachConfig.ropeJumps = parseInt(val) || 50;
+    function changeRopeJumps(val) { state.coachConfig.ropeJumps = parseInt(val) || 50; saveState(); }
+    function selectFrequency(freq) { state.coachConfig.frequency = freq; document.querySelectorAll('#screen-programs .freq-btn').forEach(btn => { btn.classList.toggle('active', parseInt(btn.innerText) === freq); }); saveState(); }
+
+    function adjustProgramWeeks(type, amount) {
+        if (type === 'fitness') { state.coachConfig.weeks = Math.max(1, Math.min(12, (state.coachConfig.weeks || 4) + amount)); document.getElementById('display-fitness-weeks').innerText = state.coachConfig.weeks; } 
+        else if (type === 'machine') { state.machineConfig.weeks = Math.max(1, Math.min(12, (state.machineConfig.weeks || 4) + amount)); document.getElementById('display-machine-weeks').innerText = state.machineConfig.weeks; }
         saveState();
     }
 
-    function selectFrequency(freq) {
-        state.coachConfig.frequency = freq;
-        document.querySelectorAll('#screen-programs .freq-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.innerText) === freq);
-        });
+    function updateHabitParam(key, val) {
+        let parsed = parseInt(val) || 0;
+        if(key === 'baseSets') state.coachConfig.baseSets = Math.max(1, Math.min(6, parsed));
+        if(key === 'ropeJumps') state.coachConfig.ropeJumps = Math.max(10, Math.min(1000, parsed));
         saveState();
     }
 
-    /* ===================== GESTION CONFIG MACHINES ===================== */
     function toggleMachine(macId) {
-        const checkbox = document.getElementById(`mac-${macId}`);
-        checkbox.checked = !checkbox.checked;
+        const checkbox = document.getElementById(`mac-${macId}`); checkbox.checked = !checkbox.checked;
         checkbox.closest('.accessory-item').classList.toggle('owned', checkbox.checked);
-        if (checkbox.checked) {
-            if (!state.machineConfig.types.includes(macId)) state.machineConfig.types.push(macId);
-        } else {
-            state.machineConfig.types = state.machineConfig.types.filter(m => m !== macId);
-        }
+        if (checkbox.checked) { if (!state.machineConfig.types.includes(macId)) state.machineConfig.types.push(macId); } 
+        else { state.machineConfig.types = state.machineConfig.types.filter(m => m !== macId); }
         saveState();
     }
 
-    function selectMachineFrequency(freq) {
-        state.machineConfig.frequency = freq;
-        document.querySelectorAll('.machine-freq').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.innerText) === freq);
-        });
-        saveState();
-    }
+    function selectMachineFrequency(freq) { state.machineConfig.frequency = freq; document.querySelectorAll('.machine-freq').forEach(btn => { btn.classList.toggle('active', parseInt(btn.innerText) === freq); }); saveState(); }
 
     function syncSetupUI() {
-        document.querySelectorAll('#screen-programs .freq-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.innerText) === state.coachConfig.frequency);
-        });
-        document.querySelectorAll('.machine-freq').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.innerText) === state.machineConfig.frequency);
-        });
+        const obj = state.coachConfig.objective || 'muscle';
+        document.getElementById('obj-box-muscle').classList.toggle('active', obj === 'muscle');
+        document.getElementById('obj-box-weight').classList.toggle('active', obj === 'weight');
+        document.getElementById('obj-box-other').classList.toggle('active', obj === 'other');
+
+        document.querySelectorAll('#screen-programs .freq-btn').forEach(btn => { btn.classList.toggle('active', parseInt(btn.innerText) === state.coachConfig.frequency); });
+        document.querySelectorAll('.machine-freq').forEach(btn => { btn.classList.toggle('active', parseInt(btn.innerText) === state.machineConfig.frequency); });
+        
         ['board', 'ab_wheel', 'jump_rope', 'bands'].forEach(accId => {
-            const cb = document.getElementById(`acc-${accId}`);
-            if(cb) {
-                cb.checked = state.coachConfig.accessories.includes(accId);
-                cb.closest('.accessory-item').classList.toggle('owned', cb.checked);
-            }
-            const genCb = document.getElementById(`gen-acc-${accId}`);
-            if(genCb) {
-                genCb.checked = (state.genConfig && state.genConfig.accessories.includes(accId));
-                genCb.closest('.accessory-item').classList.toggle('owned', genCb.checked);
-            }
+            const cb = document.getElementById(`acc-${accId}`); if(cb) { cb.checked = state.coachConfig.accessories.includes(accId); cb.closest('.accessory-item').classList.toggle('owned', cb.checked); }
+            const genCb = document.getElementById(`gen-acc-${accId}`); if(genCb) { genCb.checked = (state.genConfig && state.genConfig.accessories.includes(accId)); genCb.closest('.accessory-item').classList.toggle('owned', genCb.checked); }
         });
         document.getElementById('input-rope-jumps').value = state.coachConfig.ropeJumps || 50;
-        document.getElementById('rope-jumps-box').style.display = state.coachConfig.accessories.includes('jump_rope') ? 'flex' : 'none';
-        
-        document.getElementById('input-fitness-weeks').value = state.coachConfig.weeks || 4;
-        document.getElementById('input-machine-weeks').value = state.machineConfig.weeks || 4;
+        document.getElementById('display-fitness-weeks').innerText = state.coachConfig.weeks || 4;
+        document.getElementById('display-machine-weeks').innerText = state.machineConfig.weeks || 4;
 
-        ['bike', 'elliptical', 'treadmill'].forEach(macId => {
-            const cb = document.getElementById(`mac-${macId}`);
-            if(cb) {
-                cb.checked = state.machineConfig.types.includes(macId);
-                cb.closest('.accessory-item').classList.toggle('owned', cb.checked);
-            }
-        });
+        ['bike', 'elliptical', 'treadmill'].forEach(macId => { const cb = document.getElementById(`mac-${macId}`); if(cb) { cb.checked = state.machineConfig.types.includes(macId); cb.closest('.accessory-item').classList.toggle('owned', cb.checked); }});
+        document.getElementById('posture-box-knees').classList.toggle('active', state.posture === 'knees');
+        document.getElementById('posture-box-feet').classList.toggle('active', state.posture === 'feet');
+        document.getElementById('rope-jumps-box').style.display = state.coachConfig.accessories.includes('jump_rope') ? 'flex' : 'none';
+        updateUIForPostureBlock();
     }
 
-    /* ===================== GENERATEURS DE PLANS (AVEC SEMAINES & POOL LOGIC CORRIGE) ===================== */
+    /* ===================== GENERATEUR DE PLAN AVEC ADAPTATION IA ===================== */
     function generateCoachProgram() {
         const freq = state.coachConfig.frequency;
         const accessories = state.coachConfig.accessories;
-        const weeks = parseInt(document.getElementById('input-fitness-weeks').value) || 4;
-        state.coachConfig.weeks = weeks;
+        const weeks = state.coachConfig.weeks || 4;
+        const obj = state.coachConfig.objective || 'muscle';
 
         if (accessories.length === 0) { alert("⚠️ Sélectionne au moins un accessoire !"); return; }
         
         let generatedDays = {};
-        
         const templates = [
-            { name: "Poussée Cyber", sub: "Pecs Focus", pattern: ["board_pecs", "board_standard", "jump_rope"] },
-            { name: "Armure Abdominale", sub: "Triceps & Core", pattern: ["board_triceps", "ab_wheel", "bands"] },
-            { name: "Haut du Corps Puissance", sub: "Épaules & Endurance", pattern: ["board_shoulders", "jump_rope", "board_triceps"] },
-            { name: "Mixte Destructeur", sub: "Full Brutal", pattern: ["ab_wheel", "jump_rope", "bands"] }
+            { name: "Poussée Cyber", pattern: ["board_pecs", "board_standard", "jump_rope"] },
+            { name: "Armure Abdominale", pattern: ["board_triceps", "ab_wheel", "bands"] },
+            { name: "Haut du Corps Puissance", pattern: ["board_shoulders", "jump_rope", "board_triceps"] },
+            { name: "Mixte Destructeur", pattern: ["ab_wheel", "jump_rope", "bands"] }
         ];
 
-        // Construction du pool strict d'exercices autorisés (Request 4)
         let allowedKeys = [];
         if (accessories.includes('board')) allowedKeys.push('board_pecs', 'board_standard', 'board_shoulders', 'board_triceps');
         if (accessories.includes('ab_wheel')) allowedKeys.push('ab_wheel');
@@ -910,6 +869,21 @@
         if (accessories.includes('bands')) allowedKeys.push('bands');
 
         let globalDayCounter = 1;
+        
+        // PARAMÈTRES IA SELON L'OBJECTIF
+        let defaultSets = state.coachConfig.baseSets || 3;
+        let recommendedRest = 60;
+        let objLabel = "Forme";
+
+        if (obj === 'muscle') {
+            defaultSets = Math.min(6, defaultSets + 1); // Focus volume lourd
+            recommendedRest = 75; // Plus de récup pour la force
+            objLabel = "Prise de Muscle";
+        } else if (obj === 'weight') {
+            recommendedRest = 35; // Récup hyper courte (Burn)
+            objLabel = "Perte de Poids (HIIT)";
+        }
+
         for (let w = 1; w <= weeks; w++) {
             for (let d = 1; d <= freq; d++) {
                 let t = templates[(globalDayCounter - 1) % templates.length];
@@ -917,369 +891,166 @@
 
                 t.pattern.forEach(k => {
                     if (allowedKeys.includes(k)) {
+                        let exoCopy = { ...exercisesPool[k], sets: defaultSets };
+                        
+                        // Adaptations des répétitions/volumes selon objectif
                         if (k === 'jump_rope') {
-                            filtered.push({ ...exercisesPool.jump_rope, reps: `${state.coachConfig.ropeJumps} Sauts` });
-                        } else {
-                            filtered.push(exercisesPool[k]);
+                            let jumps = state.coachConfig.ropeJumps;
+                            if (obj === 'weight') jumps = Math.round(jumps * 1.4); // +40% de corde en perte de poids
+                            exoCopy.reps = `${jumps} Sauts`;
+                        } else if (obj === 'weight') {
+                            // Augmentation des reps pour l'endurance et la dépense énergétique
+                            if (exoCopy.reps.includes('-')) {
+                                let parts = exoCopy.reps.split('-');
+                                exoCopy.reps = `${parseInt(parts[0]) + 3}-${parseInt(parts[1]) + 5}`;
+                            }
                         }
+                        filtered.push(exoCopy);
                     }
                 });
 
-                // Si aucun exercice de la structure ne correspond aux choix de l'utilisateur, piocher dans ses exclusifs
-                if (filtered.length === 0) {
-                    allowedKeys.forEach(k => {
-                        if (k === 'jump_rope') filtered.push({ ...exercisesPool.jump_rope, reps: `${state.coachConfig.ropeJumps} Sauts` });
-                        else filtered.push(exercisesPool[k]);
-                    });
-                }
-
-                generatedDays[globalDayCounter.toString()] = { 
-                    name: t.name, 
-                    sub: `Sem. ${w} - J.${d}`, 
-                    exs: filtered 
-                };
+                generatedDays[globalDayCounter.toString()] = { name: t.name, sub: `Sem. ${w} - J.${d}`, exs: filtered };
                 globalDayCounter++;
             }
         }
 
         state.generatedProgram = {
-            title: "Plan Fitness Cyber", accentVar: "var(--color-triceps)",
-            tag: `FITNESS // ${weeks} WEEKS (${freq}x/sem)`, desc: `Optimisé spécifiquement pour vos accessoires cochés.`,
-            recommendedRest: 60, days: generatedDays
+            title: `Plan Cyber ${objLabel}`, accentVar: "var(--color-triceps)",
+            tag: `FITNESS // ${weeks} SEMAINES // OBJECTIF : ${objLabel.toUpperCase()}`, 
+            desc: `Calibré pour : ${objLabel}. Repos recommandé de ${recommendedRest}s.`,
+            recommendedRest: recommendedRest, days: generatedDays
         };
-        state.completedDays = {}; 
-        saveState();
-        renderProgramCards();
+        state.completedDays = {}; saveState(); renderProgramCards();
     }
 
     function generateMachineProgram() {
-        const freq = state.machineConfig.frequency;
-        const types = state.machineConfig.types;
-        const weeks = parseInt(document.getElementById('input-machine-weeks').value) || 4;
-        state.machineConfig.weeks = weeks;
-
+        const freq = state.machineConfig.frequency; const types = state.machineConfig.types; const weeks = state.machineConfig.weeks || 4;
         if (types.length === 0) { alert("⚠️ Sélectionne au moins une machine !"); return; }
-        
-        let generatedDays = {};
-        let globalDayCounter = 1;
-
+        let generatedDays = {}; let globalDayCounter = 1;
         for (let w = 1; w <= weeks; w++) {
             for (let d = 1; d <= freq; d++) {
-                let selectedMachine = types[(globalDayCounter - 1) % types.length];
-                let exoData = machineTemplates[selectedMachine];
-                generatedDays[globalDayCounter.toString()] = {
-                    name: `Session ${exoData.name}`, 
-                    sub: `Sem. ${w} - J.${d}`,
-                    exs: [ { ...exoData, sets: 1 } ]
-                };
+                let selectedMachine = types[(globalDayCounter - 1) % types.length]; let exoData = machineTemplates[selectedMachine];
+                generatedDays[globalDayCounter.toString()] = { name: `Session ${exoData.name}`, sub: `Sem. ${w} - J.${d}`, exs: [ { ...exoData, sets: 1 } ] };
                 globalDayCounter++;
             }
         }
-
-        state.generatedMachineProgram = {
-            title: "Plan Cardio Machines", accentVar: "var(--color-system)",
-            tag: `CARDIO // ${weeks} WEEKS (${freq}x/sem)`, desc: `Plan d'endurance calibré sur vos machines configurées.`,
-            recommendedRest: 0, days: generatedDays
-        };
-        state.completedMachineDays = {};
-        saveState();
-        renderMachineCards();
+        state.generatedMachineProgram = { title: "Plan Cardio Machines", accentVar: "var(--color-system)", tag: `CARDIO // ${weeks} SEMAINE(S) (${freq}x/sem)`, desc: `Plan d'endurance calculé sur mesure.`, recommendedRest: 0, days: generatedDays };
+        state.completedMachineDays = {}; saveState(); renderMachineCards();
     }
 
-    /* ===================== RENDU DES PLANS ET CARTES ===================== */
-    function renderProgramCards() {
-        const container = document.getElementById('programs-list'); container.innerHTML = '';
-        if (!state.generatedProgram) return;
-        buildCardHTML(state.generatedProgram, 'fitness', container, state.completedDays);
-        document.getElementById('coach-setup-panel').style.display = 'none';
-    }
-
-    function renderMachineCards() {
-        const container = document.getElementById('machines-list'); container.innerHTML = '';
-        if (!state.generatedMachineProgram) return;
-        buildCardHTML(state.generatedMachineProgram, 'machine', container, state.completedMachineDays);
-        document.getElementById('machines-setup-panel').style.display = 'none';
-    }
+    /* ===================== PLUGINS CARTES ET COMPORTEMENT DE JEU ===================== */
+    function renderProgramCards() { const container = document.getElementById('programs-list'); container.innerHTML = ''; if (!state.generatedProgram) return; buildCardHTML(state.generatedProgram, 'fitness', container, state.completedDays); document.getElementById('coach-setup-panel').style.display = 'none'; }
+    function renderMachineCards() { const container = document.getElementById('machines-list'); container.innerHTML = ''; if (!state.generatedMachineProgram) return; buildCardHTML(state.generatedMachineProgram, 'machine', container, state.completedMachineDays); document.getElementById('machines-setup-panel').style.display = 'none'; }
 
     function buildCardHTML(prog, type, container, trackingObj) {
         let done = 0; const total = Object.keys(prog.days).length;
         Object.keys(prog.days).forEach(d => { if (trackingObj[`${type}-d${d}`]) done++; });
         const pct = total ? Math.round((done / total) * 100) : 0;
-
-        const card = document.createElement('div');
-        card.className = 'program-card';
-        card.style.setProperty('--accent-color', prog.accentVar);
-
+        const card = document.createElement('div'); card.className = 'program-card'; card.style.setProperty('--accent-color', prog.accentVar);
         let daysHTML = '';
         Object.entries(prog.days).forEach(([dayId, dayData]) => {
-            const key = `${type}-d${dayId}`;
-            const isDone = !!trackingObj[key];
-            let classes = 'day-btn'; let badge = '';
+            const key = `${type}-d${dayId}`; const isDone = !!trackingObj[key]; let classes = 'day-btn'; let badge = '';
             if (type === 'machine') classes += ' machine-theme';
-            
-            if (isDone) { classes += ' completed'; badge = `<span class="day-badge badge-done">✓ FAIT</span>`; }
+            if (isDone) { classes += ' completed'; badge = `<span class="day-badge badge-done">✓ FAIT</span>`; } 
             else { badge = `<span class="day-badge badge-next ${type === 'machine' ? 'machine-theme' : ''}">DISPO</span>`; }
-
-            daysHTML += `
-                <div class="${classes}" onclick="openPreWorkoutModal('${dayId}', '${type}')">
-                    ${badge}
-                    <div class="day-title">JOUR ${dayId}</div>
-                    <div class="day-subtitle">${dayData.sub}</div>
-                </div>`;
+            daysHTML += `<div class="${classes}" onclick="openPreWorkoutModal('${dayId}', '${type}')">${badge}<div class="day-title">JOUR ${dayId}</div><div class="day-subtitle">${dayData.sub}</div></div>`;
         });
-
-        card.innerHTML = `
-            <div class="program-tag">${prog.tag}</div>
-            <div class="program-title">${prog.title}</div>
-            <div class="program-desc">${prog.desc}</div>
-            <div class="program-progress">
-                <div class="program-progress-top">
-                    <span class="progress-label">Progression du Cycle</span>
-                    <span class="progress-count">${done}/${total} ENTRAÎNEMENTS</span>
-                </div>
-                <div class="prog-bar"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
-            </div>
-            <div class="days-container" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">${daysHTML}</div>
-            <button class="toggle-btn margin-t" style="width:100%; font-size:11px;" onclick="resetProgram('${type}')">🔄 RE-CONFIGURER LE PLAN</button>
-        `;
+        card.innerHTML = `<div class="program-tag">${prog.tag}</div><div class="program-title">${prog.title}</div><div class="program-desc">${prog.desc}</div><div class="program-progress"><div class="program-progress-top"><span class="progress-label">Progression du Cycle</span><span class="progress-count">${done}/${total} FINIS</span></div><div class="prog-bar"><div class="prog-bar-fill" style="width:${pct}%"></div></div></div><div class="days-container" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">${daysHTML}</div><button class="toggle-btn margin-t" style="width:100%; font-size:11px;" onclick="resetProgram('${type}')">🔄 RE-CONFIGURER LE PLAN</button>`;
         container.appendChild(card);
     }
 
     function resetProgram(type) {
         if(confirm("Voulez-vous modifier vos paramètres et recréer un nouveau plan ?")) {
-            if (type === 'fitness') {
-                state.generatedProgram = null; state.completedDays = {};
-                document.getElementById('programs-list').innerHTML = '';
-                document.getElementById('coach-setup-panel').style.display = 'block';
-            } else {
-                state.generatedMachineProgram = null; state.completedMachineDays = {};
-                document.getElementById('machines-list').innerHTML = '';
-                document.getElementById('machines-setup-panel').style.display = 'block';
-            }
+            if (type === 'fitness') { state.generatedProgram = null; state.completedDays = {}; document.getElementById('programs-list').innerHTML = ''; document.getElementById('coach-setup-panel').style.display = 'block'; } 
+            else { state.generatedMachineProgram = null; state.completedMachineDays = {}; document.getElementById('machines-list').innerHTML = ''; document.getElementById('machines-setup-panel').style.display = 'block'; }
             saveState(); syncSetupUI();
         }
     }
 
-    /* ===================== FENETRE MODALE PRE-WORKOUT & AJUSTEMENTS DYNAMIQUES ===================== */
     function openPreWorkoutModal(dayId, type) {
         pendingWorkout = { dayId, type, baseExs: null, adjustedExs: [] };
-        const prog = (type === 'fitness') ? state.generatedProgram : state.generatedMachineProgram;
-        const day = prog.days[dayId];
-
-        document.getElementById('modal-tag').innerText = prog.tag;
-        document.getElementById('modal-tag').style.color = prog.accentVar;
-        document.getElementById('modal-name').innerText = day.name;
-
+        const prog = (type === 'fitness') ? state.generatedProgram : state.generatedMachineProgram; const day = prog.days[dayId];
+        document.getElementById('modal-tag').innerText = prog.tag; document.getElementById('modal-tag').style.color = prog.accentVar; document.getElementById('modal-name').innerText = day.name;
         let dynamicAdvisedTime = 15;
-        if(type === 'machine') {
-            let extracted = parseInt(day.exs[0].reps) || 20;
-            dynamicAdvisedTime = extracted;
-        } else {
-            dynamicAdvisedTime = 0;
-            day.exs.forEach(ex => { dynamicAdvisedTime += (ex.sets * 3); });
-            if (dynamicAdvisedTime < 10) dynamicAdvisedTime = 15;
-        }
-
-        document.getElementById('modal-advised-val').innerText = dynamicAdvisedTime;
-        document.getElementById('input-available-time').value = dynamicAdvisedTime;
-
-        // Gestion de l'affichage adaptatif (Request 1 : Pas de difficulté pour les machines)
-        if (type === 'machine') {
-            document.getElementById('modal-diff-block').style.display = 'none';
-            document.getElementById('modal-rest-block').style.display = 'none';
-        } else {
-            document.getElementById('modal-diff-block').style.display = 'block';
-            document.getElementById('modal-rest-block').style.display = 'block';
-            document.getElementById('rest-note').innerText = `Recommandé : ${prog.recommendedRest}s`;
-            selectRest(prog.recommendedRest);
-        }
-
-        selectedDifficulty = 3; 
-        updateModalAdjustments();
-        document.getElementById('preworkout-modal').classList.add('active');
+        if(type === 'machine') { dynamicAdvisedTime = parseInt(day.exs[0].reps) || 20; } 
+        else { dynamicAdvisedTime = 0; day.exs.forEach(ex => { dynamicAdvisedTime += (ex.sets * 3); }); if (dynamicAdvisedTime < 10) dynamicAdvisedTime = 15; }
+        document.getElementById('modal-advised-val').innerText = dynamicAdvisedTime; document.getElementById('input-available-time').value = dynamicAdvisedTime;
+        if (type === 'machine') { document.getElementById('modal-diff-block').style.display = 'none'; document.getElementById('modal-rest-block').style.display = 'none'; } 
+        else { document.getElementById('modal-diff-block').style.display = 'block'; document.getElementById('modal-rest-block').style.display = 'block'; document.getElementById('rest-note').innerText = `Recommandé : ${prog.recommendedRest}s`; selectRest(prog.recommendedRest); }
+        selectedDifficulty = 3; updateModalAdjustments(); document.getElementById('preworkout-modal').classList.add('active');
     }
 
     function openGenModal() {
-        pendingWorkout = { type: 'gen', dayId: null, baseExs: null, adjustedExs: [] };
-        const mins = state.currentGenTime;
-        
-        document.getElementById('modal-tag').innerText = `GÉNÉRATEUR // ${mins} MIN`;
-        document.getElementById('modal-tag').style.color = 'var(--color-triceps)';
-        document.getElementById('modal-name').innerText = 'Séance Cyber-Générée';
-        
-        document.getElementById('modal-diff-block').style.display = 'block';
-        document.getElementById('modal-rest-block').style.display = 'block';
-
-        document.getElementById('modal-advised-val').innerText = mins;
-        document.getElementById('input-available-time').value = mins;
-        
-        selectRest(45);
-        selectedDifficulty = 3;
-        updateModalAdjustments();
-        document.getElementById('preworkout-modal').classList.add('active');
+        pendingWorkout = { type: 'gen', dayId: null, baseExs: null, adjustedExs: [] }; const mins = state.currentGenTime;
+        document.getElementById('modal-tag').innerText = `GÉNÉRATEUR // ${mins} MIN`; document.getElementById('modal-tag').style.color = 'var(--color-triceps)'; document.getElementById('modal-name').innerText = 'Séance Cyber-Générée';
+        document.getElementById('modal-diff-block').style.display = 'block'; document.getElementById('modal-rest-block').style.display = 'block';
+        document.getElementById('modal-advised-val').innerText = mins; document.getElementById('input-available-time').value = mins;
+        selectRest(45); selectedDifficulty = 3; updateModalAdjustments(); document.getElementById('preworkout-modal').classList.add('active');
     }
 
-    // Boutons +/- 5min (Request 7)
-    function changeModalTime(amount) {
-        const input = document.getElementById('input-available-time');
-        let currentVal = parseInt(input.value) || 20;
-        currentVal += amount;
-        if(currentVal < 5) currentVal = 5;
-        if(currentVal > 180) currentVal = 180;
-        input.value = currentVal;
-        
-        updateModalAdjustments();
-    }
+    function changeModalTime(amount) { const input = document.getElementById('input-available-time'); let currentVal = parseInt(input.value) || 20; currentVal += amount; if(currentVal < 5) currentVal = 5; if(currentVal > 180) currentVal = 180; input.value = currentVal; updateModalAdjustments(); }
 
-    // Ajustement algorithmique des exercices en fonction du Temps & Difficulté (Request 2)
     function updateModalAdjustments() {
-        if (!pendingWorkout) return;
-        const type = pendingWorkout.type;
-        const availableTime = parseInt(document.getElementById('input-available-time').value) || 20;
-        const advisedTime = parseInt(document.getElementById('modal-advised-val').innerText) || 20;
-        const exList = document.getElementById('modal-exo-list');
-        exList.innerHTML = '';
-
+        if (!pendingWorkout) return; const type = pendingWorkout.type;
+        const availableTime = parseInt(document.getElementById('input-available-time').value) || 20; const advisedTime = parseInt(document.getElementById('modal-advised-val').innerText) || 20;
+        const exList = document.getElementById('modal-exo-list'); exList.innerHTML = '';
         let sourceExs = [];
         if (type === 'gen') {
             if (!pendingWorkout.baseExs || pendingWorkout.baseExs.length === 0) {
-                // Request 6 : Prise en compte dynamique des accessoires cochés dans le générateur
                 const genAcc = (state.genConfig && state.genConfig.accessories) ? state.genConfig.accessories : ['board', 'ab_wheel', 'jump_rope', 'bands'];
-                let poolKeys = [];
-                if (genAcc.includes('board')) poolKeys.push('board_pecs', 'board_standard', 'board_triceps');
-                if (genAcc.includes('ab_wheel')) poolKeys.push('ab_wheel');
-                if (genAcc.includes('jump_rope')) poolKeys.push('jump_rope');
-                if (genAcc.includes('bands')) poolKeys.push('bands');
-                if (poolKeys.length === 0) poolKeys.push('board_standard');
-                
-                // Mélange et sélectionne jusqu'à 3 exercices
-                let shuffled = [...poolKeys].sort(() => 0.5 - Math.random());
-                pendingWorkout.baseExs = shuffled.slice(0, 3).map(k => ({ ...exercisesPool[k] }));
+                let poolKeys = []; if (genAcc.includes('board')) poolKeys.push('board_pecs', 'board_standard', 'board_triceps'); if (genAcc.includes('ab_wheel')) poolKeys.push('ab_wheel'); if (genAcc.includes('jump_rope')) poolKeys.push('jump_rope'); if (genAcc.includes('bands')) poolKeys.push('bands'); if (poolKeys.length === 0) poolKeys.push('board_standard');
+                let shuffled = [...poolKeys].sort(() => 0.5 - Math.random()); pendingWorkout.baseExs = shuffled.slice(0, 3).map(k => ({ ...exercisesPool[k], sets: (state.coachConfig.baseSets || 3) }));
             }
             sourceExs = pendingWorkout.baseExs;
-        } else {
-            const prog = (type === 'fitness') ? state.generatedProgram : state.generatedMachineProgram;
-            sourceExs = prog.days[pendingWorkout.dayId].exs;
-        }
-
+        } else { sourceExs = ((type === 'fitness') ? state.generatedProgram : state.generatedMachineProgram).days[pendingWorkout.dayId].exs; }
         pendingWorkout.adjustedExs = JSON.parse(JSON.stringify(sourceExs));
 
         pendingWorkout.adjustedExs.forEach(ex => {
-            if (type === 'machine') {
-                // Pour le cardio : Ajuste directement la durée globale de l'exercice unique
-                ex.sets = 1;
-                ex.reps = `${availableTime} min`;
-            } else {
-                // Pour le fitness : recalcule les Séries / Reps selon la Difficulté et le Ratio Temps
-                let timeRatio = availableTime / advisedTime;
-                let diffFactor = 0.5 + (selectedDifficulty * 0.18); // Échelle linéaire de 0.68 à 1.4
-                
-                let targetSets = Math.round(3 * timeRatio * (selectedDifficulty / 3));
-                ex.sets = Math.max(1, Math.min(6, targetSets));
-
+            if (type === 'machine') { ex.sets = 1; ex.reps = `${availableTime} min`; } 
+            else {
+                let timeRatio = availableTime / advisedTime; let diffFactor = 0.5 + (selectedDifficulty * 0.18);
+                let userBaseSets = state.coachConfig.baseSets || 3;
+                let targetSets = Math.round(userBaseSets * timeRatio * (selectedDifficulty / 3)); ex.sets = Math.max(1, Math.min(6, targetSets));
                 if (ex.name.includes("Corde")) {
-                    let baseJumps = state.coachConfig.ropeJumps || 50;
-                    ex.reps = `${Math.round(baseJumps * diffFactor)} Sauts`;
+                    let baseJumps = parseInt(ex.reps) || state.coachConfig.ropeJumps || 50; ex.reps = `${Math.round(baseJumps * diffFactor)} Sauts`;
                 } else {
                     let matches = ex.reps.match(/\d+/g);
-                    if (matches && matches.length === 2) {
-                        let newMin = Math.max(4, Math.round(parseInt(matches[0]) * diffFactor));
-                        let newMax = Math.max(6, Math.round(parseInt(matches[1]) * diffFactor));
-                        ex.reps = `${newMin}-${newMax}`;
-                    } else if (matches && matches.length === 1) {
-                        ex.reps = `${Math.max(4, Math.round(parseInt(matches[0]) * diffFactor))}`;
-                    }
+                    if (matches && matches.length === 2) { ex.reps = `${Math.max(4, Math.round(parseInt(matches[0]) * diffFactor))}-${Math.max(6, Math.round(parseInt(matches[1]) * diffFactor))}`; } 
+                    else if (matches && matches.length === 1) { ex.reps = `${Math.max(4, Math.round(parseInt(matches[0]) * diffFactor))}`; }
                 }
             }
-
-            // Affichage dans l'aperçu visuel de la modale
-            let dotColor = '#ffffff';
-            if (ex.zone === 'yellow') dotColor = '#fff500';
-            else if (ex.zone === 'blue') dotColor = '#00f0ff';
-            else if (ex.zone === 'green') dotColor = '#00ff66';
-
-            const row = document.createElement('div');
-            row.className = 'modal-exo-row';
-            row.innerHTML = `<div class="modal-exo-dot" style="background:${dotColor}"></div><div class="modal-exo-name">${ex.name}</div><div class="modal-exo-meta">${ex.sets} × ${ex.reps}</div>`;
+            let dotColor = '#ffffff'; if (ex.zone === 'yellow') dotColor = '#fff500'; else if (ex.zone === 'blue') dotColor = '#00f0ff'; else if (ex.zone === 'green') dotColor = '#00ff66';
+            const row = document.createElement('div'); row.className = 'modal-exo-row'; row.innerHTML = `<div class="modal-exo-dot" style="background:${dotColor}"></div><div class="modal-exo-name">${ex.name}</div><div class="modal-exo-meta">${ex.sets} × ${ex.reps}</div>`;
             exList.appendChild(row);
         });
     }
 
-    function selectRest(sec) {
-        selectedRestTime = sec;
-        document.querySelectorAll('.rest-btn').forEach(b => { b.classList.toggle('active', parseInt(b.dataset.sec) === sec); });
-    }
+    function selectRest(sec) { selectedRestTime = sec; document.querySelectorAll('.rest-btn').forEach(b => { b.classList.toggle('active', parseInt(b.dataset.sec) === sec); }); }
+    function selectDifficulty(lvl) { selectedDifficulty = lvl; document.querySelectorAll('.diff-btn').forEach(b => { b.classList.toggle('active', parseInt(b.dataset.diff) === lvl); }); updateModalAdjustments(); }
+    function closeModalIfOutside(e) { if (e.target === document.getElementById('preworkout-modal')) document.getElementById('preworkout-modal').classList.remove('active'); }
+    function confirmStartWorkout() { document.getElementById('preworkout-modal').classList.remove('active'); beginWorkout(pendingWorkout.dayId, pendingWorkout.type); }
 
-    function selectDifficulty(lvl) {
-        selectedDifficulty = lvl;
-        document.querySelectorAll('.diff-btn').forEach(b => { b.classList.toggle('active', parseInt(b.dataset.diff) === lvl); });
-        updateModalAdjustments();
-    }
-
-    function closeModalIfOutside(e) {
-        if (e.target === document.getElementById('preworkout-modal')) document.getElementById('preworkout-modal').classList.remove('active');
-    }
-
-    function confirmStartWorkout() {
-        document.getElementById('preworkout-modal').classList.remove('active');
-        beginWorkout(pendingWorkout.dayId, pendingWorkout.type);
-    }
-
-    /* ===================== LECTEUR DE SÉANCE ===================== */
     function beginWorkout(dayId, type) {
-        activeWorkout = {
-            id: type === 'gen' ? `gen-${Date.now()}` : `${type}-d${dayId}`, 
-            type: type, 
-            title: document.getElementById('modal-name').innerText,
-            exs: JSON.parse(JSON.stringify(pendingWorkout.adjustedExs)), 
-            totalRepsInSession: 0,
-            muscleTracking: { yellow: 0, white: 0, blue: 0 }
-        };
-        workoutStartTime = Date.now();
-        showWorkoutPlayer();
+        activeWorkout = { id: type === 'gen' ? `gen-${Date.now()}` : `${type}-d${dayId}`, type: type, title: document.getElementById('modal-name').innerText, exs: JSON.parse(JSON.stringify(pendingWorkout.adjustedExs)), totalRepsInSession: 0, muscleTracking: { yellow: 0, white: 0, blue: 0 } };
+        workoutStartTime = Date.now(); showWorkoutPlayer();
     }
 
-    function showWorkoutPlayer() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('screen-workout-player').classList.add('active');
-        document.getElementById('player-workout-title').innerText = activeWorkout.title.toUpperCase();
-        renderActiveWorkoutPlayer();
-    }
+    function showWorkoutPlayer() { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('screen-workout-player').classList.add('active'); document.getElementById('player-workout-title').innerText = activeWorkout.title.toUpperCase(); renderActiveWorkoutPlayer(); }
 
     function renderActiveWorkoutPlayer() {
-        const container = document.getElementById('exercises-player-container'); container.innerHTML = '';
-        let totalSetsAll = 0, doneSetsAll = 0;
-        
-        activeWorkout.exs.forEach(ex => {
-            totalSetsAll += ex.sets;
-            if (ex.completedStates) doneSetsAll += Object.values(ex.completedStates).filter(Boolean).length;
-        });
-
-        document.getElementById('global-fill').style.width = `${totalSetsAll ? (doneSetsAll / totalSetsAll) * 100 : 0}%`;
-        document.getElementById('global-fill-label').innerText = `${doneSetsAll} / ${totalSetsAll}`;
+        const container = document.getElementById('exercises-player-container'); container.innerHTML = ''; let totalSetsAll = 0, doneSetsAll = 0;
+        activeWorkout.exs.forEach(ex => { totalSetsAll += ex.sets; if (ex.completedStates) doneSetsAll += Object.values(ex.completedStates).filter(Boolean).length; });
+        document.getElementById('global-fill').style.width = `${totalSetsAll ? (doneSetsAll / totalSetsAll) * 100 : 0}%`; document.getElementById('global-fill-label').innerText = `${doneSetsAll} / ${totalSetsAll}`;
 
         activeWorkout.exs.forEach((ex, exIndex) => {
             const completedSets = ex.completedStates ? Object.values(ex.completedStates).filter(Boolean).length : 0;
-            const tipText = state.posture === 'feet' ? ex.tips.feet : ex.tips.knees;
-
+            const tipText = (state.posture === 'feet' || !state.coachConfig.accessories.includes('board')) ? ex.tips.feet : ex.tips.knees;
             const block = document.createElement('div'); block.className = 'exercise-block';
-            block.innerHTML = `
-                <div class="exercise-header">
-                    <div>
-                        <div class="exercise-name">${ex.name}${state.posture !== 'feet' && ex.zone !== 'green' ? ' (Genoux)' : ''}</div>
-                        <div class="exercise-tip">${tipText}</div>
-                    </div>
-                    <span class="exercise-zone zone-${ex.zone}">${ex.zone}</span>
-                </div>
-                <div class="progress-bar"><div class="progress-fill" id="fill-${exIndex}" style="width:${(completedSets / ex.sets) * 100}%"></div></div>
-                <div class="sets-grid" id="sets-grid-${exIndex}" style="margin-top:14px"></div>
-            `;
+            block.innerHTML = `<div class="exercise-header"><div><div class="exercise-name">${ex.name}${state.posture !== 'feet' && ex.zone !== 'green' && state.coachConfig.accessories.includes('board') ? ' (Genoux)' : ''}</div><div class="exercise-tip">${tipText}</div></div><span class="exercise-zone zone-${ex.zone}">${ex.zone}</span></div><div class="progress-bar"><div class="progress-fill" id="fill-${exIndex}" style="width:${(completedSets / ex.sets) * 100}%"></div></div><div class="sets-grid" id="sets-grid-${exIndex}" style="margin-top:14px"></div>`;
             container.appendChild(block);
-
             const setsGrid = document.getElementById(`sets-grid-${exIndex}`);
             for (let s = 0; s < ex.sets; s++) {
-                const isDone = ex.completedStates && ex.completedStates[s];
-                const setRow = document.createElement('div'); setRow.className = `set-row${isDone ? ' done' : ''}`;
+                const isDone = ex.completedStates && ex.completedStates[s]; const setRow = document.createElement('div'); setRow.className = `set-row${isDone ? ' done' : ''}`;
                 setRow.onclick = () => toggleSet(exIndex, s, ex.reps, ex.zone, block);
                 setRow.innerHTML = `<span class="set-number">SÉRIE ${s + 1}</span><span class="set-reps">${ex.reps}</span><div class="set-checkbox"></div>`;
                 setsGrid.appendChild(setRow);
@@ -1288,165 +1059,93 @@
     }
 
     function toggleSet(exIndex, setIndex, repsStr, zone, block) {
-        const ex = activeWorkout.exs[exIndex];
-        if (!ex.completedStates) ex.completedStates = {};
-        const cleanReps = parseInt(repsStr) || 0;
-
+        const ex = activeWorkout.exs[exIndex]; if (!ex.completedStates) ex.completedStates = {}; const cleanReps = parseInt(repsStr) || 0;
         if (!ex.completedStates[setIndex]) {
-            ex.completedStates[setIndex] = true;
-            activeWorkout.totalRepsInSession += cleanReps;
-            if (zone !== 'green') activeWorkout.muscleTracking[zone] += cleanReps;
-            state.xp += 5;
-            if (activeWorkout.type !== 'machine' && selectedRestTime > 0) startInlineTimer(selectedRestTime, block);
+            ex.completedStates[setIndex] = true; activeWorkout.totalRepsInSession += cleanReps; if (zone !== 'green') activeWorkout.muscleTracking[zone] += cleanReps;
+            state.xp += 5; if (activeWorkout.type !== 'machine' && selectedRestTime > 0) startInlineTimer(selectedRestTime, block);
         } else {
-            ex.completedStates[setIndex] = false;
-            activeWorkout.totalRepsInSession = Math.max(0, activeWorkout.totalRepsInSession - cleanReps);
-            if (zone !== 'green') activeWorkout.muscleTracking[zone] = Math.max(0, activeWorkout.muscleTracking[zone] - cleanReps);
-            state.xp = Math.max(0, state.xp - 5);
-            stopInlineTimer();
+            ex.completedStates[setIndex] = false; activeWorkout.totalRepsInSession = Math.max(0, activeWorkout.totalRepsInSession - cleanReps); if (zone !== 'green') activeWorkout.muscleTracking[zone] = Math.max(0, activeWorkout.muscleTracking[zone] - cleanReps);
+            state.xp = Math.max(0, state.xp - 5); stopInlineTimer();
         }
         saveState(); renderActiveWorkoutPlayer();
     }
 
-    /* ===================== TIMER INTERNE ===================== */
     function startInlineTimer(seconds, parentBlock) {
-        stopInlineTimer();
-        const timerEl = document.createElement('div'); timerEl.className = 'inline-rest-timer'; timerEl.id = 'inline-timer';
-        timerEl.innerHTML = `<div><div class="rest-timer-label">REPOS</div><div class="rest-countdown" id="rest-count">${seconds}</div></div>
-            <div class="rest-progress-wrap"><div class="rest-timer-label" id="rest-msg">Récupération...</div><div class="rest-progress-bar"><div class="rest-progress-fill" id="rest-fill" style="width:100%"></div></div></div>
-            <button class="rest-skip-btn" onclick="stopInlineTimer()">SKIP ▶</button>`;
-        parentBlock.appendChild(timerEl);
-
-        let timeLeft = seconds;
-        inlineTimerInterval = setInterval(() => {
-            timeLeft--; const countEl = document.getElementById('rest-count'); const fillEl = document.getElementById('rest-fill');
-            if (!countEl) { clearInterval(inlineTimerInterval); return; }
-            countEl.innerText = timeLeft; if (fillEl) fillEl.style.width = `${(timeLeft / seconds) * 100}%`;
-            if (timeLeft <= 0) stopInlineTimer();
-        }, 1000);
+        stopInlineTimer(); const timerEl = document.createElement('div'); timerEl.className = 'inline-rest-timer'; timerEl.id = 'inline-timer';
+        timerEl.innerHTML = `<div><div class="rest-timer-label">REPOS</div><div class="rest-countdown" id="rest-count">${seconds}</div></div><div class="rest-progress-wrap"><div class="rest-timer-label" id="rest-msg">Récupération...</div><div class="rest-progress-bar"><div class="rest-progress-fill" id="rest-fill" style="width:100%"></div></div></div><button class="rest-skip-btn" onclick="stopInlineTimer()">SKIP ▶</button>`;
+        parentBlock.appendChild(timerEl); let timeLeft = seconds;
+        inlineTimerInterval = setInterval(() => { timeLeft--; const countEl = document.getElementById('rest-count'); const fillEl = document.getElementById('rest-fill'); if (!countEl) { clearInterval(inlineTimerInterval); return; } countEl.innerText = timeLeft; if (fillEl) fillEl.style.width = `${(timeLeft / seconds) * 100}%`; if (timeLeft <= 0) stopInlineTimer(); }, 1000);
     }
-
     function stopInlineTimer() { clearInterval(inlineTimerInterval); const el = document.getElementById('inline-timer'); if (el) el.remove(); }
 
-    /* ===================== ENREGISTRER & ENTRER LES STATS ===================== */
     function completeWorkout() {
-        if (!activeWorkout) return;
-        const elapsedMin = Math.round((Date.now() - workoutStartTime) / 60000) || 1;
-
+        if (!activeWorkout) return; const elapsedMin = Math.round((Date.now() - workoutStartTime) / 60000) || 1;
         if (activeWorkout.type === 'fitness' || activeWorkout.type === 'gen') {
-            state.completedDays[activeWorkout.id] = true;
-            state.totalWorkouts += 1;
-            state.totalReps += activeWorkout.totalRepsInSession;
-            state.fitnessTimeTotal += elapsedMin;
-            state.repsPecs += activeWorkout.muscleTracking.yellow;
-            state.repsEpaules += activeWorkout.muscleTracking.white;
-            state.repsTriceps += activeWorkout.muscleTracking.blue;
-            
-            // Tally global pour les compteurs d'accessoires (Request 8)
+            state.completedDays[activeWorkout.id] = true; state.totalWorkouts += 1; state.totalReps += activeWorkout.totalRepsInSession; state.fitnessTimeTotal += elapsedMin;
+            state.repsPecs += activeWorkout.muscleTracking.yellow; state.repsEpaules += activeWorkout.muscleTracking.white; state.repsTriceps += activeWorkout.muscleTracking.blue;
             let uniqueAccessoriesUsed = new Set();
             activeWorkout.exs.forEach(ex => {
                 let totalSetsDone = Object.values(ex.completedStates || {}).filter(Boolean).length;
                 if(totalSetsDone > 0) {
-                    if (ex.name.includes("Planche")) uniqueAccessoriesUsed.add('board');
-                    if (ex.name.includes("Roue")) uniqueAccessoriesUsed.add('ab_wheel');
-                    if (ex.name.includes("Corde")) {
-                        uniqueAccessoriesUsed.add('jump_rope');
-                        state.totalJumps += (totalSetsDone * (parseInt(ex.reps) || state.coachConfig.ropeJumps));
-                    }
+                    if (ex.name.includes("Planche")) uniqueAccessoriesUsed.add('board'); if (ex.name.includes("Roue")) uniqueAccessoriesUsed.add('ab_wheel');
+                    if (ex.name.includes("Corde")) { uniqueAccessoriesUsed.add('jump_rope'); state.totalJumps += (totalSetsDone * (parseInt(ex.reps) || state.coachConfig.ropeJumps)); }
                     if (ex.name.includes("Élastiques")) uniqueAccessoriesUsed.add('bands');
                 }
             });
-            uniqueAccessoriesUsed.forEach(acc => {
-                if(!state.accessorySessions) state.accessorySessions = { board: 0, ab_wheel: 0, jump_rope: 0, bands: 0 };
-                state.accessorySessions[acc] = (state.accessorySessions[acc] || 0) + 1;
-            });
-
+            uniqueAccessoriesUsed.forEach(acc => { state.accessorySessions[acc] = (state.accessorySessions[acc] || 0) + 1; });
+            if (state.totalWorkouts % 3 === 0) { state.coachConfig.ropeJumps = (state.coachConfig.ropeJumps || 50) + 10; }
+            if (state.totalWorkouts % 8 === 0 && (!state.coachConfig.baseSets || state.coachConfig.baseSets < 5)) { state.coachConfig.baseSets = (state.coachConfig.baseSets || 3) + 1; }
         } else if (activeWorkout.type === 'machine') {
-            state.completedMachineDays[activeWorkout.id] = true;
-            state.totalMachinesWorkouts = (state.totalMachinesWorkouts || 0) + 1;
-            state.machineTimeTotal += elapsedMin;
-
+            state.completedMachineDays[activeWorkout.id] = true; state.totalMachinesWorkouts = (state.totalMachinesWorkouts || 0) + 1; state.machineTimeTotal += elapsedMin;
             activeWorkout.exs.forEach(ex => {
-                let mKey = '';
-                if (ex.name.includes("Vélo")) mKey = 'bike';
-                else if (ex.name.includes("Elliptique")) mKey = 'elliptical';
-                else if (ex.name.includes("Tapis")) mKey = 'treadmill';
-                
-                if (mKey) {
-                    if(!state.machineDeviceSessions) state.machineDeviceSessions = { bike: 0, elliptical: 0, treadmill: 0 };
-                    state.machineDeviceSessions[mKey] = (state.machineDeviceSessions[mKey] || 0) + 1;
-                    state.machineStats[mKey].time += elapsedMin;
-                    let factor = mKey === 'bike' ? 0.45 : (mKey === 'elliptical' ? 0.32 : 0.18);
-                    state.machineStats[mKey].km += parseFloat((elapsedMin * factor).toFixed(2));
-                }
+                let mKey = ''; if (ex.name.includes("Vélo")) mKey = 'bike'; else if (ex.name.includes("Elliptique")) mKey = 'elliptical'; else if (ex.name.includes("Tapis")) mKey = 'treadmill';
+                if (mKey) { state.machineDeviceSessions[mKey] = (state.machineDeviceSessions[mKey] || 0) + 1; state.machineStats[mKey].time += elapsedMin; let factor = mKey === 'bike' ? 0.45 : (mKey === 'elliptical' ? 0.32 : 0.18); state.machineStats[mKey].km += parseFloat((elapsedMin * factor).toFixed(2)); }
             });
         }
-
-        // Attribution XP : Les machines rapportent une base forfaitaire fixe sans multiplicateur de difficulté
-        let diffMultiplier = (activeWorkout.type === 'machine') ? 3 : selectedDifficulty;
-        state.xp += (40 * diffMultiplier);
-
-        const todayStr = new Date().toDateString();
-        if (state.lastWorkoutDate !== todayStr) { state.streak += 1; state.lastWorkoutDate = todayStr; }
-        state.level = Math.floor(state.xp / 100) + 1;
-
-        saveState(); stopInlineTimer();
-        
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('screen-completion').classList.add('active');
+        let diffMultiplier = (activeWorkout.type === 'machine') ? 3 : selectedDifficulty; state.xp += (40 * diffMultiplier);
+        const todayStr = new Date().toDateString(); if (state.lastWorkoutDate !== todayStr) { state.streak += 1; state.lastWorkoutDate = todayStr; }
+        state.level = Math.floor(state.xp / 100) + 1; saveState(); stopInlineTimer();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('screen-completion').classList.add('active');
         document.getElementById('comp-reps').innerText = activeWorkout.type === 'machine' ? elapsedMin : activeWorkout.totalRepsInSession;
         document.getElementById('comp-label-type').innerText = activeWorkout.type === 'machine' ? 'MINUTES' : 'REPS';
-        document.getElementById('btn-completion-back').setAttribute('onclick', `goBackToTab('${activeWorkout.type}')`);
-        
-        activeWorkout = null; renderProgramCards(); renderMachineCards();
+        document.getElementById('btn-completion-back').setAttribute('onclick', `goBackToTab('${activeWorkout.type}')`); activeWorkout = null; renderProgramCards(); renderMachineCards();
     }
 
     function goBackToTab(type) { switchTab(type === 'machine' ? 'machines' : 'programs'); }
-    
-    // Correction du bouton Retour/Annuler (Request 5)
-    function exitWorkout() { 
-        const destinationTab = (activeWorkout && activeWorkout.type === 'machine') ? 'machines' : 'programs';
-        activeWorkout = null; 
-        stopInlineTimer(); 
-        switchTab(destinationTab); 
+    function exitWorkout() { const destinationTab = (activeWorkout && activeWorkout.type === 'machine') ? 'machines' : 'programs'; activeWorkout = null; stopInlineTimer(); switchTab(destinationTab); }
+
+    /* ===================== NAV, SAVE ET RENDU RENDU DES STATS ===================== */
+    function renderHUD() {
+        document.getElementById('hud-username').innerText = state.name.toUpperCase(); document.getElementById('user-level').innerHTML = `NIVEAU <span>${state.level}</span>`;
+        document.getElementById('user-streak').innerText = state.streak; document.getElementById('user-xp').innerText = state.xp;
+        document.getElementById('stat-done').innerText = state.totalWorkouts; document.getElementById('stat-machines').innerText = state.totalMachinesWorkouts || 0;
+        document.getElementById('stat-reps').innerText = state.totalReps; document.getElementById('stat-jumps').innerText = state.totalJumps || 0;
+        const fTime = state.fitnessTimeTotal || 0; const mTime = state.machineTimeTotal || 0;
+        document.getElementById('stat-total-general-time').innerText = `${fTime + mTime} MIN`; document.getElementById('stat-fitness-total-time').innerText = `${fTime} MIN`; document.getElementById('stat-machine-total-time').innerText = `${mTime} MIN`;
+        const fitContainer = document.getElementById('fitness-exercises-list'); fitContainer.innerHTML = '';
+        const accNames = { board: "Planche Push-Up", ab_wheel: "Roue abdominale", jump_rope: "Corde à sauter", bands: "Élastiques" };
+        Object.keys(accNames).forEach(k => { const count = state.accessorySessions ? (state.accessorySessions[k] || 0) : 0; fitContainer.innerHTML += `<div class="stats-list-item"><span class="stats-list-name">${accNames[k]}</span><span class="stats-list-val">${count} séance(s)</span></div>`; });
+        const macContainer = document.getElementById('machines-stats-list'); macContainer.innerHTML = '';
+        const macNames = { bike: "Vélo d'intérieur", elliptical: "Elliptique", treadmill: "Tapis de course" };
+        Object.keys(macNames).forEach(k => { const count = state.machineDeviceSessions ? (state.machineDeviceSessions[k] || 0) : 0; const mData = state.machineStats[k] || { km: 0, time: 0 }; macContainer.innerHTML += `<div class="stats-list-item"><span class="stats-list-name">${macNames[k]}</span><span class="stats-list-val">${count} séance(s) (${mData.time} min)</span></div>`; });
+        const nextLevelXp = state.level * 100; const remainingXp = nextLevelXp - (state.xp % nextLevelXp); document.getElementById('stat-next-lvl').innerText = `${remainingXp} XP pour le niveau ${state.level + 1}`;
     }
 
-    /* ===================== NAVIGATION ONGLET ===================== */
     function switchTab(tabId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(`screen-${tabId}`).classList.add('active');
-        
-        const navBtn = document.getElementById(`nav-${tabId}`);
-        navBtn.classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(`screen-${tabId}`).classList.add('active'); const navBtn = document.getElementById(`nav-${tabId}`); navBtn.classList.add('active');
         if (tabId === 'machines') navBtn.classList.add('machine-tab');
-
-        if (tabId === 'programs') {
-            if (state.generatedProgram) renderProgramCards();
-            else document.getElementById('coach-setup-panel').style.display = 'block';
-        }
-        if (tabId === 'machines') {
-            if (state.generatedMachineProgram) renderMachineCards();
-            else document.getElementById('machines-setup-panel').style.display = 'block';
-        }
-        if (tabId === 'stats') {
-            renderHUD();
-        }
+        if (tabId === 'programs') { if (state.generatedProgram) renderProgramCards(); else document.getElementById('coach-setup-panel').style.display = 'block'; }
+        if (tabId === 'machines') { if (state.generatedMachineProgram) renderMachineCards(); else document.getElementById('machines-setup-panel').style.display = 'block'; }
+        if (tabId === 'settings') { document.getElementById('settings-base-sets').value = state.coachConfig.baseSets || 3; document.getElementById('settings-rope-jumps').value = state.coachConfig.ropeJumps || 50; }
+        if (tabId === 'stats') { renderHUD(); }
     }
 
     function handleNameChange(val) { state.name = val.trim() !== "" ? val : "ATHLÈTE"; saveState(); }
     function setGenTime(mins) { state.currentGenTime = mins; document.querySelectorAll('.gen-time-btn').forEach(b => b.classList.remove('active')); document.getElementById(`gen-t${mins}`).classList.add('active'); }
-
-    /* ===================== IMPORTS / EXPORTS ===================== */
-    function exportStateToJSON() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-        const a = document.createElement('a'); a.setAttribute("href", dataStr); a.setAttribute("download", `cyberpump_save.json`); a.click();
-    }
-    function importStateFromJSON(event) {
-        const file = event.target.files[0]; if (!file) return;
-        const reader = new FileReader(); reader.onload = function(e) { try { state = JSON.parse(e.target.result); saveState(); location.reload(); } catch(err) { alert("Erreur de fichier."); } }; reader.readAsText(file);
-    }
-    function resetAllData() { if (confirm("🚫 Réinitialiser les données ?")) { localStorage.removeItem('cyberpump_state'); location.reload(); } }
+    function exportStateToJSON() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state)); const a = document.createElement('a'); a.setAttribute("href", dataStr); a.setAttribute("download", `cyberpump_save.json`); a.click(); }
+    function importStateFromJSON(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { state = JSON.parse(e.target.result); saveState(); location.reload(); } catch(err) { alert("Erreur de fichier."); } }; reader.readAsText(file); }
+    function resetAllData() { if (confirm("🚫 Réinitialiser définitivement toutes les données ?")) { localStorage.removeItem('cyberpump_state'); location.reload(); } }
 </script>
 </body>
 </html>
