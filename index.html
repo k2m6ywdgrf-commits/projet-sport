@@ -540,10 +540,23 @@ function setDuration(ex){
   if(ex.n&&ex.n.includes('Inchworm'))return reps*5;
   return Math.max(20,reps*2.5);
 }
-// Raw seconds for one exercise block (sets + rest between sets)
+// Raw seconds for one exercise block (sets + rest between sets) — straight-sets model
 function exBlockSec(ex,rest){const sd=setDuration(ex);return(ex.sets||2)*sd+Math.max(0,(ex.sets||2)-1)*Math.min(rest,90);}
-// Total session seconds (including overhead), before learning factor
-function rawSessionSec(exs,rest){return 60+(exs.length-1)*25+exs.reduce((s,e)=>s+exBlockSec(e,rest),0);}
+// Total session seconds (including overhead), before learning factor.
+// Detects circuit format (all regular exercises have same sets count) and uses
+// circuit formula: rounds × (sum of ex durations + transitions) + (rounds-1) × rest.
+function rawSessionSec(exs,rest){
+  if(!exs||!exs.length)return 0;
+  const macExs=exs.filter(e=>e.r?.includes('min'));
+  const regExs=exs.filter(e=>!e.r?.includes('min'));
+  if(regExs.length>=2&&regExs.every(e=>e.sets===regExs[0].sets)){
+    const rounds=regExs[0].sets||1;
+    const oneCircuit=regExs.reduce((s,e)=>s+setDuration(e),0)+(regExs.length>1?(regExs.length-1)*8:0);
+    const macTime=macExs.reduce((s,e)=>s+setDuration(e),0);
+    return 60+rounds*oneCircuit+(rounds-1)*Math.min(rest,90)+macTime;
+  }
+  return 60+(exs.length-1)*25+exs.reduce((s,e)=>s+exBlockSec(e,rest),0);
+}
 // Learning correction factor (actual/planned ratio averaged over recent sessions)
 function getTimeFactor(){const h=S.timeHistory||[];if(h.length<2)return 1.18;const r=h.slice(-8);return Math.max(0.7,Math.min(2.2,r.reduce((s,v)=>s+v,0)/r.length));}
 function recordTimeRatio(planned,actual){if(!planned||!actual)return;if(!S.timeHistory)S.timeHistory=[];S.timeHistory.push(Math.max(0.5,Math.min(3,actual/planned)));if(S.timeHistory.length>15)S.timeHistory.shift();}
