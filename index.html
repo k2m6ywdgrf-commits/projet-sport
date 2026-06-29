@@ -550,47 +550,42 @@ function recordTimeRatio(planned,actual){if(!planned||!actual)return;if(!S.timeH
 // Estimated minutes for a list of exercises
 function estimateMinutes(exs,rest){return Math.round(rawSessionSec(exs,rest)*getTimeFactor()/60);}
 
-/* Core algorithm: adjust exercises and sets to hit targetMin as closely as possible */
+/* Core algorithm: build a circuit of 4-6 exercises done for N rounds to hit targetMin */
 function fitToTime(srcExs,targetMin,rest,diffVal){
   if(!srcExs||!srcExs.length)return[];
-  const targetSec=targetMin*60/getTimeFactor();// raw target before factor
+  const targetSec=targetMin*60/getTimeFactor();
   const df=0.5+diffVal*0.18;
-  const bs=Math.max(1,Math.min(6,Math.round((S.ucfg.sets||3)*(diffVal/3))));
-  // Clone and apply difficulty scaling
-  let pool=srcExs.map(ex=>{
+  // Scale reps by difficulty, keep sets=1 temporarily
+  const scale=(ex)=>{
     const e=JSON.parse(JSON.stringify(ex));
-    if(e.r?.includes('min')){e.sets=1;}
-    else{
-      e.sets=bs;
-      if(e.r&&e.n&&e.n.includes('Sauts')){e.r=Math.round((parseInt(e.r)||50)*df)+' Sauts';}
+    e.sets=1;
+    if(!e.r?.includes('min')){
+      if(e.r&&e.n&&e.n.includes('Sauts'))e.r=Math.round((parseInt(e.r)||50)*df)+' Sauts';
       else if(e.r&&!e.timed&&e.r.includes('-')){const pts=e.r.split('-');e.r=Math.max(4,Math.round(parseInt(pts[0])*df))+'-'+Math.max(6,Math.round(parseInt(pts[1])*df));}
     }
     e._sd=setDuration(e);
     return e;
-  });
-  function calcTotal(exList){return 60+(exList.length-1)*25+exList.reduce((s,e)=>s+e.sets*e._sd+Math.max(0,e.sets-1)*Math.min(rest,90),0);}
-  // Start: use all exercises
-  let chosen=[...pool];
-  // Iterate to fit
-  for(let i=0;i<40;i++){
-    const cur=calcTotal(chosen);
-    const pct=(cur-targetSec)/targetSec;
-    if(Math.abs(pct)<=0.04)break;// within 4% — done
-    if(pct>0.04){
-      // Too long: reduce sets of most-time-consuming exercise
-      const reduceable=chosen.filter(e=>e.sets>1&&!e.r?.includes('min'));
-      if(reduceable.length){reduceable.sort((a,b)=>exBlockSec(b,rest)-exBlockSec(a,rest));reduceable[0].sets--;}
-      else if(chosen.length>1){chosen.pop();}// remove last exercise
-      else break;
-    }else{
-      // Too short: add set to least-time-consuming exercise (if won't overshoot)
-      const addable=chosen.filter(e=>e.sets<6&&!e.r?.includes('min'));
-      if(addable.length){addable.sort((a,b)=>exBlockSec(a,rest)-exBlockSec(b,rest));const candidate=addable[0];candidate.sets++;const after=calcTotal(chosen);if(after>targetSec*1.06)candidate.sets--;// revert if overshoot
-      }else if(chosen.length<pool.length){chosen.push(pool[chosen.length]);}
-      else break;
+  };
+  const allScaled=srcExs.map(scale);
+  const macExs=allScaled.filter(e=>e.r?.includes('min'));
+  const regExs=allScaled.filter(e=>!e.r?.includes('min'));
+  // One circuit pass time: sum of exercise durations + 8s transition between each
+  const oneCircuitSec=(exList)=>exList.reduce((s,e)=>s+e._sd,0)+(exList.length>1?(exList.length-1)*8:0);
+  // Total session: overhead + rounds*circuit + (rounds-1)*rest_between_rounds + machine time
+  const macTimeSec=macExs.reduce((s,e)=>s+e._sd,0);
+  const totalSec=(exList,rounds)=>60+rounds*oneCircuitSec(exList)+(rounds-1)*Math.min(rest,90)+macTimeSec;
+  // Find best (exerciseCount, rounds) combo
+  let best=null,bestDiff=Infinity;
+  const maxEx=Math.min(6,regExs.length),minEx=Math.min(4,regExs.length);
+  for(let n=maxEx;n>=minEx;n--){
+    const exList=regExs.slice(0,n);
+    for(let r=5;r>=2;r--){
+      const d=Math.abs(totalSec(exList,r)-targetSec);
+      if(d<bestDiff){bestDiff=d;best={exList,rounds:r};}
     }
   }
-  return chosen;
+  if(!best){const fallback=regExs.slice(0,Math.max(4,Math.min(6,regExs.length)));return fallback.map(e=>({...e,sets:3})).concat(macExs.map(e=>({...e,sets:1})));}
+  return best.exList.map(e=>({...e,sets:best.rounds})).concat(macExs.map(e=>({...e,sets:1})));
 }
 
 // Interleave push (y/w) and core/cardio (g/b) for variety
@@ -660,7 +655,7 @@ function genUnified(){
       const arch=arcSeq[(ctr-1)%arcSeq.length];const st=stypes[arch]||stypes.full;
       const used=new Set();
       // Pick a generous pool of exercises, then fitToTime will trim to match sessionDur
-      const keys=pickKeys(pool,st.g,12,used);
+      const keys=pickKeys(pool,st.g,6,used);
       // Build raw exercise objects with rj/ov scaling
       const rawExs=keys.filter(k=>EX[k]).map(k=>{
         const ex={...EX[k]};ex.sets=dl?2:sets;
@@ -746,9 +741,59 @@ function wuSkipAll(){clearInterval(wuInt);document.getElementById('wu-ov').style
 function beginWO(dayId,tp,plannedTime){AW={id:tp==='u'?'u-d'+dayId:'gen-'+Date.now(),tp,title:document.getElementById('pw-name').innerText,exs:JSON.parse(JSON.stringify(PW.aExs)),reps:0,jumps:0,muscle:{y:0,w:0,b:0},plannedTime:plannedTime||30};woStart=Date.now();reqWL();showPlayer();startLiveT();}
 function startLiveT(){clearInterval(liveInt);liveInt=setInterval(()=>{const e=Math.floor((Date.now()-woStart)/1000),m=String(Math.floor(e/60)).padStart(2,'0'),s=String(e%60).padStart(2,'0'),el=document.getElementById('live-t');if(el)el.innerText=`${m}:${s}`;},1000);}
 function showPlayer(){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('sc-player').classList.add('active');document.getElementById('wp-title').innerText=AW.title.toUpperCase();renderPlayer();}
-function renderPlayer(){const c=document.getElementById('ex-container');c.innerHTML='';let tot=0,done=0;AW.exs.forEach(ex=>{tot+=ex.sets;if(ex.cs)done+=Object.values(ex.cs).filter(Boolean).length;});document.getElementById('gfill').style.width=tot?`${done/tot*100}%`:'0%';document.getElementById('glbl').innerText=`${done} / ${tot}`;AW.exs.forEach((ex,ei)=>{const cs=ex.cs?Object.values(ex.cs).filter(Boolean).length:0;const isMat=ex.n&&['Planche','Mountain','Crunch','Burpee','Superman','Pont','Russian','Hollow','Inchworm','Elevation'].some(k=>ex.n.includes(k));const useFeet=S.posture==='feet'||!S.ucfg.acc.includes('board')||isMat;const tip=useFeet?ex.tf:ex.tk;const bl=document.createElement('div');bl.className='ex-block';const zCls={y:'zy',w:'zw',b:'zb',g:'zg'}[ex.z]||'zg';const exN=ex.n+(!useFeet&&ex.z!=='g'?' (Genoux)':'');bl.innerHTML=`<div class="ex-hdr"><div style="flex:1;min-width:0"><div class="ex-name">${exN}</div><div class="ex-tip">${tip||''}</div></div><span class="zone ${zCls}">${ex.z}</span></div><div class="pbar"><div class="pbar-fill" style="width:${ex.sets?cs/ex.sets*100:0}%"></div></div><div class="sets" id="sg-${ei}" style="margin-top:11px"></div>`;c.appendChild(bl);const sg=document.getElementById('sg-'+ei);for(let s=0;s<ex.sets;s++){const iD=ex.cs&&ex.cs[s];const row=document.createElement('div');row.className='srow'+(iD?' done':'');let tx=0,ty=0,sw=false;row.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;sw=false;},{passive:true});row.addEventListener('touchmove',e=>{const dx=e.touches[0].clientX-tx,dy=e.touches[0].clientY-ty;if(Math.abs(dx)>15&&Math.abs(dx)>Math.abs(dy)){sw=true;row.classList.toggle('sw',dx>0&&!iD);row.classList.toggle('swu',dx<0&&iD);}},{passive:true});row.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;row.classList.remove('sw','swu');if(sw&&Math.abs(dx)>50){if(dx>0&&!ex.cs?.[s])togSet(ei,s,ex.r,ex.z,bl);else if(dx<0&&ex.cs?.[s])togSet(ei,s,ex.r,ex.z,bl);}else if(!sw)togSet(ei,s,ex.r,ex.z,bl);});row.addEventListener('click',()=>{if(!sw)togSet(ei,s,ex.r,ex.z,bl);});row.innerHTML=`<span class="snum">SERIE ${s+1}</span><span class="sreps">${ex.r}</span><div class="schk"></div>`;sg.appendChild(row);}});}
-function togSet(ei,si,reps,z,bl){const ex=AW.exs[ei];if(!ex.cs)ex.cs={};const n=parseInt(reps)||0,isJ=reps&&reps.toLowerCase().includes('saut');if(!ex.cs[si]){ex.cs[si]=true;AW.reps+=n;if(isJ)AW.jumps=(AW.jumps||0)+n;if(z!=='g')AW.muscle[z]+=n;S.xp+=5;if(navigator.vibrate)navigator.vibrate(40);beep(660,60);if(restSec>0)startRest(restSec,bl);}else{ex.cs[si]=false;AW.reps=Math.max(0,AW.reps-n);if(isJ)AW.jumps=Math.max(0,(AW.jumps||0)-n);if(z!=='g')AW.muscle[z]=Math.max(0,AW.muscle[z]-n);S.xp=Math.max(0,S.xp-5);stopRest();}save();renderPlayer();}
-function startRest(sec,bl){stopRest();const el=document.createElement('div');el.className='rest-t';el.id='rt';el.innerHTML=`<div><div class="rl">REPOS</div><div class="rcd" id="rc">${sec}</div></div><div class="rpw"><div class="rl">Recuperation...</div><div class="rpb"><div class="rpbf" id="rf" style="width:100%"></div></div></div><button class="rskip" onclick="stopRest()">SKIP</button>`;bl.appendChild(el);let t=sec;restInt=setInterval(()=>{t--;const rc=document.getElementById('rc'),rf=document.getElementById('rf');if(!rc){clearInterval(restInt);return;}rc.innerText=t;if(rf)rf.style.width=`${t/sec*100}%`;if(t<=0){if(navigator.vibrate)navigator.vibrate([50,50,50]);beep(440,120);stopRest();}},1000);}
+function renderPlayer(){
+  const c=document.getElementById('ex-container');c.innerHTML='';
+  if(!AW||!AW.exs||!AW.exs.length)return;
+  const rounds=Math.max(...AW.exs.map(e=>e.sets||1));
+  let tot=0,done=0;
+  AW.exs.forEach(ex=>{tot+=ex.sets;if(ex.cs)done+=Object.values(ex.cs).filter(Boolean).length;});
+  document.getElementById('gfill').style.width=tot?`${done/tot*100}%`:'0%';
+  document.getElementById('glbl').innerText=`${done} / ${tot}`;
+  // Group by circuit round
+  for(let r=0;r<rounds;r++){
+    const exsInRound=AW.exs.filter(e=>r<(e.sets||1));
+    const rdone=exsInRound.every(ex=>ex.cs&&ex.cs[r]);
+    const rcnt=exsInRound.filter(ex=>ex.cs&&ex.cs[r]).length;
+    const isMachine=exsInRound.length===1&&exsInRound[0].r?.includes('min');
+    const col=rdone?'var(--cg)':'var(--cb)';
+    const bl=document.createElement('div');bl.className='ex-block';bl.id='rnd-'+r;
+    bl.innerHTML=`<div class="ex-hdr" style="margin-bottom:8px"><div style="flex:1"><span class="zone ${rdone?'zg':'zb'}">${isMachine?'CARDIO':('CIRCUIT '+(r+1)+' / '+rounds)}</span><div class="pbar" style="margin-top:6px"><div class="pbar-fill" style="width:${exsInRound.length?rcnt/exsInRound.length*100:0}%;background:${col}"></div></div></div></div><div class="sets" id="rsg-${r}" style="margin-top:8px"></div>`;
+    c.appendChild(bl);
+    const sg=document.getElementById('rsg-'+r);
+    exsInRound.forEach(ex=>{
+      const ei=AW.exs.indexOf(ex);
+      const iD=ex.cs&&ex.cs[r];
+      const isMat=ex.n&&['Planche','Mountain','Crunch','Burpee','Superman','Pont','Russian','Hollow','Inchworm','Elevation'].some(k=>ex.n.includes(k));
+      const useFeet=S.posture==='feet'||!S.ucfg.acc.includes('board')||isMat;
+      const exN=ex.n+(!useFeet&&ex.z!=='g'?' (Genoux)':'');
+      const tip=useFeet?ex.tf:ex.tk;
+      let dot='#fff';if(ex.z==='y')dot='#fff500';else if(ex.z==='b')dot='#00f0ff';else if(ex.z==='g')dot='#00ff66';
+      const row=document.createElement('div');row.className='srow'+(iD?' done':'');
+      let tx=0,ty=0,sw=false;
+      row.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;sw=false;},{passive:true});
+      row.addEventListener('touchmove',e=>{const dx=e.touches[0].clientX-tx,dy=e.touches[0].clientY-ty;if(Math.abs(dx)>15&&Math.abs(dx)>Math.abs(dy)){sw=true;row.classList.toggle('sw',dx>0&&!iD);row.classList.toggle('swu',dx<0&&iD);}},{passive:true});
+      row.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;row.classList.remove('sw','swu');if(sw&&Math.abs(dx)>50){if(dx>0&&!ex.cs?.[r])togSet(ei,r,ex.r,ex.z,bl);else if(dx<0&&ex.cs?.[r])togSet(ei,r,ex.r,ex.z,bl);}else if(!sw)togSet(ei,r,ex.r,ex.z,bl);});
+      row.addEventListener('click',()=>{if(!sw)togSet(ei,r,ex.r,ex.z,bl);});
+      row.innerHTML=`<span class="snum" style="display:flex;align-items:flex-start;gap:7px;flex:1;min-width:0"><span style="width:7px;height:7px;border-radius:50%;background:${dot};flex-shrink:0;margin-top:4px;display:inline-block"></span><span style="display:flex;flex-direction:column;min-width:0;overflow:hidden"><span style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${exN}</span>${tip?`<span style="font-size:9px;color:var(--tmut);margin-top:1px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${tip}</span>`:''}</span></span><span class="sreps" style="white-space:nowrap;flex-shrink:0;margin:0 8px">${ex.r}</span><div class="schk"></div>`;
+      sg.appendChild(row);
+    });
+  }
+}
+function togSet(ei,si,reps,z,bl){
+  const ex=AW.exs[ei];if(!ex.cs)ex.cs={};
+  const n=parseInt(reps)||0,isJ=reps&&reps.toLowerCase().includes('saut');
+  if(!ex.cs[si]){
+    ex.cs[si]=true;AW.reps+=n;if(isJ)AW.jumps=(AW.jumps||0)+n;if(z!=='g')AW.muscle[z]+=n;S.xp+=5;
+    if(navigator.vibrate)navigator.vibrate(40);beep(660,60);
+    // Rest timer only when the whole circuit round is complete
+    const roundComplete=AW.exs.filter(e=>si<(e.sets||1)).every(e=>e.cs&&e.cs[si]);
+    if(restSec>0&&roundComplete)startRest(restSec,bl);
+  }else{
+    ex.cs[si]=false;AW.reps=Math.max(0,AW.reps-n);if(isJ)AW.jumps=Math.max(0,(AW.jumps||0)-n);if(z!=='g')AW.muscle[z]=Math.max(0,AW.muscle[z]-n);S.xp=Math.max(0,S.xp-5);stopRest();
+  }
+  save();renderPlayer();
+}
+function startRest(sec,bl){stopRest();const el=document.createElement('div');el.className='rest-t';el.id='rt';el.innerHTML=`<div><div class="rl">REPOS CIRCUIT</div><div class="rcd" id="rc">${sec}</div></div><div class="rpw"><div class="rl">Circuit suivant...</div><div class="rpb"><div class="rpbf" id="rf" style="width:100%"></div></div></div><button class="rskip" onclick="stopRest()">SKIP</button>`;bl.appendChild(el);let t=sec;restInt=setInterval(()=>{t--;const rc=document.getElementById('rc'),rf=document.getElementById('rf');if(!rc){clearInterval(restInt);return;}rc.innerText=t;if(rf)rf.style.width=`${t/sec*100}%`;if(t<=0){if(navigator.vibrate)navigator.vibrate([50,50,50]);beep(440,120);stopRest();}},1000);}
 function stopRest(){clearInterval(restInt);const el=document.getElementById('rt');if(el)el.remove();}
 function reqExit(){document.getElementById('exit-ov').classList.add('open');}
 function closeExit(){document.getElementById('exit-ov').classList.remove('open');}
