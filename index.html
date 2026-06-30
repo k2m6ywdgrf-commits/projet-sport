@@ -153,6 +153,11 @@ body.light{background:var(--bg);}
 .gbt.at.active{border-color:var(--co)!important;color:var(--co)!important;background:rgba(255,138,61,.1)!important;}
 .gen-divider{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--tmut);margin:12px 0 6px;padding:6px 0;border-top:1px solid var(--bd);}
 .gen-preview{background:var(--bgi);border-radius:14px;padding:12px;margin:10px 0;}
+#amrap-cfg{position:relative;}
+.amrap-bubbles{position:absolute;inset:0;overflow:hidden;border-radius:18px;pointer-events:none;z-index:0;}
+.amrap-bubbles span{position:absolute;bottom:-40px;left:var(--bx);width:var(--bs);height:var(--bs);border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--bc1),var(--bc2));opacity:0;filter:blur(.3px);animation:amBubFloat var(--bd) ease-in var(--bdl) infinite;}
+@keyframes amBubFloat{0%{transform:translateY(0) scale(.6);opacity:0;}12%{opacity:.55;}85%{opacity:.35;}100%{transform:translateY(-460px) scale(1);opacity:0;}}
+.amrap-content{position:relative;z-index:1;}
 .wp-meta{margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
 .back-btn{background:var(--bgi);border:1px solid var(--bd);color:var(--tm);font-size:11px;font-weight:800;cursor:pointer;padding:9px 14px;border-radius:12px;text-transform:uppercase;letter-spacing:.5px;}
 .live-t{font-size:14px;font-weight:900;color:var(--cb);letter-spacing:.5px;}
@@ -355,7 +360,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
           <span style="font-size:11px;font-weight:800;color:var(--tmut);margin-left:4px">SEMAINE(S)</span>
         </div>
       </div>
-      <button class="btn-launch" onclick="genUnified()">&#x26A1; GENERER MON PROGRAMME</button>
+      <button class="btn-launch" style="margin-top:16px" onclick="genUnified()">&#x26A1; GENERER MON PROGRAMME</button>
     </div>
     <div id="unified-prog"></div>
   </div>
@@ -390,6 +395,8 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
         </div>
       </div>
       <div id="amrap-cfg" style="display:none">
+        <div class="amrap-bubbles" id="amrap-bubbles" aria-hidden="true"></div>
+        <div class="amrap-content">
         <h2 style="font-size:17px;font-weight:900;margin-bottom:4px">Mode AMRAP</h2>
         <p style="font-size:12px;color:var(--tmut);margin-bottom:10px">As Many Rounds As Possible dans le temps imparti.</p>
         <div class="gen-divider">&#x1F6E0; Accessoires</div>
@@ -407,6 +414,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
         <div class="gen-row"><button class="gbt at active" id="at-5" onclick="setAT(5)">5 MIN</button><button class="gbt at" id="at-10" onclick="setAT(10)">10 MIN</button><button class="gbt at" id="at-15" onclick="setAT(15)">15 MIN</button><button class="gbt at" id="at-20" onclick="setAT(20)">20 MIN</button><button class="gbt at" id="at-25" onclick="setAT(25)">25 MIN</button><button class="gbt at" id="at-30" onclick="setAT(30)">30 MIN</button></div>
         <button class="btn-launch mt" style="background:linear-gradient(135deg,#ff8a3d,#ff3d6d);box-shadow:0 8px 26px rgba(255,90,61,.25)" onclick="launchAmrap()">&#x1F525; LANCER L'AMRAP</button>
         <button class="toggle-btn active mt" style="width:100%;font-size:11px;color:var(--co);border-color:var(--co)" onclick="regenAmrap()">&#x1F504; AUTRE CIRCUIT</button>
+        </div>
       </div>
     </div>
   </div>
@@ -573,6 +581,8 @@ function getTimeFactor(){const h=S.timeHistory||[];if(h.length<2)return 1.18;con
 function recordTimeRatio(planned,actual){if(!planned||!actual)return;if(!S.timeHistory)S.timeHistory=[];S.timeHistory.push(Math.max(0.5,Math.min(3,actual/planned)));if(S.timeHistory.length>15)S.timeHistory.shift();}
 // Estimated minutes for a list of exercises
 function estimateMinutes(exs,rest){return Math.round(rawSessionSec(exs,rest)*getTimeFactor()/60);}
+// Total jump-rope reps for an exercise entry (per-set qty x number of sets), or null if not jump rope
+function jumpTotal(ex){const m=/^(\d+)\s*Sauts/.exec(ex?.r||'');return m?(ex.sets||1)*parseInt(m[1]):null;}
 
 /* Core algorithm: build a circuit of 4-8 exercises done for N rounds to hit targetMin.
    minRounds is a floor (e.g. from "Series de base"): never propose fewer rounds than this. */
@@ -756,8 +766,9 @@ function updPW(){
   PW.aExs.forEach(ex=>{
     let dot='#fff';if(ex.z==='y')dot='#fbbf24';else if(ex.z==='b')dot='#5ee7ff';else if(ex.z==='g')dot='#34d399';
     const exSec=exBlockSec(ex,restSec);const exMin=exSec>=60?Math.round(exSec/60*10)/10+'min':Math.round(exSec)+'s';
+    const jt=jumpTotal(ex);
     const r=document.createElement('div');r.className='exo-row';
-    r.innerHTML=`<div class="exo-dot" style="background:${dot}"></div><div class="exo-name">${ex.n}</div><div class="exo-meta">${ex.sets}x${ex.r} <span style="color:var(--tmut);font-size:9px">~${exMin}</span></div>`;
+    r.innerHTML=`<div class="exo-dot" style="background:${dot}"></div><div class="exo-name">${ex.n}</div><div class="exo-meta">${ex.sets}x${ex.r} <span style="color:var(--tmut);font-size:9px">~${exMin}</span>${jt?`<div style="font-size:9px;color:var(--tmut);margin-top:2px">Total : ${jt} sauts</div>`:''}</div>`;
     list.appendChild(r);
   });
 }
@@ -884,14 +895,15 @@ function genPreviewUpdate(){
   const prev=document.getElementById('gen-preview-list'),wrap=document.getElementById('gen-preview');if(!prev||!wrap)return;
   wrap.style.display='block';
   const est=estimateMinutes(genPWExs,restSec||45);
-  prev.innerHTML=`<div style="font-size:10px;font-weight:800;color:var(--cb);margin-bottom:8px">Duree estimee : ~${est} min</div>`+genPWExs.map(ex=>{let dot='🟢';if(ex.z==='y')dot='🟡';if(ex.z==='b')dot='🔵';if(ex.z==='w')dot='⚪';return`<div style="font-size:12px;font-weight:700;padding:4px 0;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between"><span>${dot} ${ex.n}</span><span style="color:var(--tmut)">${ex.sets}x${ex.r}</span></div>`;}).join('');
+  prev.innerHTML=`<div style="font-size:10px;font-weight:800;color:var(--cb);margin-bottom:8px">Duree estimee : ~${est} min</div>`+genPWExs.map(ex=>{let dot='🟢';if(ex.z==='y')dot='🟡';if(ex.z==='b')dot='🔵';if(ex.z==='w')dot='⚪';const jt=jumpTotal(ex);return`<div style="font-size:12px;font-weight:700;padding:4px 0;border-bottom:1px solid var(--bd)"><div style="display:flex;justify-content:space-between"><span>${dot} ${ex.n}</span><span style="color:var(--tmut)">${ex.sets}x${ex.r}</span></div>${jt?`<div style="font-size:9px;font-weight:600;color:var(--tmut);text-align:right;margin-top:2px">Total : ${jt} sauts</div>`:''}</div>`;}).join('');
 }
 function regenSession(){genPWExs=null;genPreviewUpdate();}
 function setGT(t){S.genTime=t;[10,20,30,40,50,60].forEach(x=>{const el=document.getElementById('gt-'+x);if(el)el.classList.toggle('active',x===t);});genPreviewUpdate();}
 function openGenModal(){if(!genPWExs)genPreviewUpdate();PW={tp:'gen',dayId:null,_src:buildGenExsList(),aExs:[]};document.getElementById('pw-tag').innerText='GENERATEUR // '+S.genTime+' MIN';document.getElementById('pw-tag').style.color='var(--cb)';document.getElementById('pw-name').innerText='Seance Cyber-Generee';document.getElementById('pw-adv').innerText=S.genTime;document.getElementById('pw-time').value=S.genTime;selRest(45);selDiff(S.diff||3);document.getElementById('pw-modal').classList.add('open');}
 
 /* ════════ AMRAP ════════ */
-function setMode(m){S.genMode=m;document.getElementById('mb-norm').classList.toggle('active',m==='norm');document.getElementById('mb-amrap').classList.toggle('active',m==='amrap');document.getElementById('norm-cfg').style.display=m==='norm'?'block':'none';document.getElementById('amrap-cfg').style.display=m==='amrap'?'block':'none';if(m==='amrap')updAmrapPreview();save();}
+function setMode(m){S.genMode=m;document.getElementById('mb-norm').classList.toggle('active',m==='norm');document.getElementById('mb-amrap').classList.toggle('active',m==='amrap');document.getElementById('norm-cfg').style.display=m==='norm'?'block':'none';document.getElementById('amrap-cfg').style.display=m==='amrap'?'block':'none';if(m==='amrap'){updAmrapPreview();spawnAmrapBubbles();}save();}
+function spawnAmrapBubbles(){const c=document.getElementById('amrap-bubbles');if(!c||c.childElementCount)return;const cols=[['#ffb347','#ff8a3d'],['#ff8a3d','#ff5d3d'],['#ff6a4d','#fb7185'],['#fb7185','#ff3d6d']];let h='';for(let i=0;i<10;i++){const[c1,c2]=cols[i%cols.length],s=14+Math.random()*22;h+=`<span style="--bx:${Math.random()*100}%;--bs:${s}px;--bd:${7+Math.random()*6}s;--bdl:${(-Math.random()*12).toFixed(2)}s;--bc1:${c1};--bc2:${c2}"></span>`;}c.innerHTML=h;}
 function setAT(t){S.amrapTime=t;document.querySelectorAll('.at').forEach(b=>b.classList.toggle('active',b.id==='at-'+t));}
 function setADiff(d){S.amrapDiff=d;document.querySelectorAll('#amrap-diff-row .dbt').forEach((b,i)=>b.classList.toggle('active',i===d-1));updAmrapPreview();}
 function regenAmrap(){amrapSeed=(amrapSeed+1)%99;updAmrapPreview();}
