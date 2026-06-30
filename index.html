@@ -572,8 +572,9 @@ function recordTimeRatio(planned,actual){if(!planned||!actual)return;if(!S.timeH
 // Estimated minutes for a list of exercises
 function estimateMinutes(exs,rest){return Math.round(rawSessionSec(exs,rest)*getTimeFactor()/60);}
 
-/* Core algorithm: build a circuit of 4-6 exercises done for N rounds to hit targetMin */
-function fitToTime(srcExs,targetMin,rest,diffVal){
+/* Core algorithm: build a circuit of 4-8 exercises done for N rounds to hit targetMin.
+   minRounds is a floor (e.g. from "Series de base"): never propose fewer rounds than this. */
+function fitToTime(srcExs,targetMin,rest,diffVal,minRounds){
   if(!srcExs||!srcExs.length)return[];
   const targetSec=targetMin*60/getTimeFactor();
   const df=0.5+diffVal*0.18;
@@ -598,15 +599,20 @@ function fitToTime(srcExs,targetMin,rest,diffVal){
   const totalSec=(exList,rounds)=>60+rounds*oneCircuitSec(exList)+(rounds-1)*Math.min(rest,90)+macTimeSec;
   // Find best (exerciseCount, rounds) combo
   let best=null,bestDiff=Infinity;
-  const maxEx=Math.min(6,regExs.length),minEx=Math.min(4,regExs.length);
+  const maxEx=Math.min(8,regExs.length),minEx=Math.min(4,regExs.length);
+  const roundsFloor=Math.max(2,Math.min(8,minRounds||2));
+  // Long sessions need more rounds than a flat cap allows; size the ceiling to the
+  // target duration (capped at 15 rounds so the circuit doesn't get monotonous).
+  const maxCircuitSec=oneCircuitSec(regExs.slice(0,maxEx))||1;
+  const roundsCeil=Math.max(8,Math.min(15,Math.ceil((targetSec-60-macTimeSec)/(maxCircuitSec+Math.min(rest,90)))+1));
   for(let n=maxEx;n>=minEx;n--){
     const exList=regExs.slice(0,n);
-    for(let r=5;r>=2;r--){
+    for(let r=roundsCeil;r>=roundsFloor;r--){
       const d=Math.abs(totalSec(exList,r)-targetSec);
       if(d<bestDiff){bestDiff=d;best={exList,rounds:r};}
     }
   }
-  if(!best){const fallback=regExs.slice(0,Math.max(4,Math.min(6,regExs.length)));return fallback.map(e=>({...e,sets:3})).concat(macExs.map(e=>({...e,sets:1})));}
+  if(!best){const fallback=regExs.slice(0,Math.max(4,Math.min(8,regExs.length)));return fallback.map(e=>({...e,sets:Math.max(3,roundsFloor)})).concat(macExs.map(e=>({...e,sets:1})));}
   return best.exList.map(e=>({...e,sets:best.rounds})).concat(macExs.map(e=>({...e,sets:1})));
 }
 
@@ -677,18 +683,19 @@ function genUnified(){
       const arch=arcSeq[(ctr-1)%arcSeq.length];const st=stypes[arch]||stypes.full;
       const used=new Set();
       // Pick a generous pool of exercises, then fitToTime will trim to match sessionDur
-      const keys=pickKeys(pool,st.g,6,used);
-      // Build raw exercise objects with rj/ov scaling
+      const keys=pickKeys(pool,st.g,8,used);
+      // Build raw exercise objects with rj/ov/objective scaling
       const rawExs=keys.filter(k=>EX[k]).map(k=>{
         const ex={...EX[k]};ex.sets=dl?2:sets;
-        if(k==='jump_rope'){let j=(rj||50)+(dl?0:ov*10);if(dl)j=Math.round(j*0.7);if(obj==='weight')j=Math.round(j*1.4);ex.r=j+' Sauts';}
-        else if(!dl&&ov>0&&ex.r&&ex.r.includes('-')){const pts=ex.r.split('-');ex.r=`${parseInt(pts[0])+ov}-${parseInt(pts[1])+ov}`;}
+        if(k==='jump_rope'){let j=(rj||50)+(dl?0:ov*10);if(dl)j=Math.round(j*0.7);else j=Math.round(j*df);ex.r=j+' Sauts';}
+        else if(!dl&&ex.r&&ex.r.includes('-')){const pts=ex.r.split('-');const lo=Math.round(parseInt(pts[0])*df)+ov,hi=Math.round(parseInt(pts[1])*df)+ov;ex.r=`${Math.max(3,lo)}-${Math.max(lo+1,hi)}`;}
         ex.dl=dl;return ex;
       });
       // Interleave push/core then fitToTime to match sessionDur
       const interleaved=interleaveExs(rawExs);
       const targMin=dl?Math.round(sessionDur*0.7):sessionDur;
-      const fitted=fitToTime(interleaved,targMin,defRest,3);// use diff=3 for plan generation
+      // diff=3 (neutral) for plan generation; deload ignores the "Series de base" floor on purpose
+      const fitted=fitToTime(interleaved,targMin,defRest,3,dl?2:(sets||3));
       days[ctr.toString()]={n:`${st.icon} ${st.label}${dl?' (Deload)':''}`,sub:`S${w}J${d}${dl?' R':''}`,icon:st.icon,label:st.label,exs:fitted,dl,w,defRest,planDur:targMin};
       ctr++;
     }
@@ -727,7 +734,9 @@ function updPW(){
   if(!PW||!PW._src)return;
   const avail=parseInt(document.getElementById('pw-time').value)||30;
   // Use fitToTime to get the exercises that match avail time
-  PW.aExs=fitToTime(PW._src,avail,restSec,diff);
+  // Deload sessions ignore the "Series de base" floor on purpose (lighter week)
+  const isDeload=PW._src.some(e=>e.dl);
+  PW.aExs=fitToTime(PW._src,avail,restSec,diff,isDeload?2:(S.ucfg.sets||3));
   const list=document.getElementById('pw-exos');list.innerHTML='';
   // Calculate actual estimated time for what we selected
   const estSec=rawSessionSec(PW.aExs,restSec)*getTimeFactor();
@@ -860,7 +869,7 @@ const shuffled=[...allKeys].sort(()=>0.5-Math.random());const exs=shuffled.map(k
 function genPreviewUpdate(){
   // Build a big pool then fitToTime for the target
   const pool=buildGenExsList();
-  genPWExs=fitToTime(pool,S.genTime,restSec||45,diff||3);
+  genPWExs=fitToTime(pool,S.genTime,restSec||45,diff||3,S.ucfg.sets||3);
   const prev=document.getElementById('gen-preview-list'),wrap=document.getElementById('gen-preview');if(!prev||!wrap)return;
   wrap.style.display='block';
   const est=estimateMinutes(genPWExs,restSec||45);
