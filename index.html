@@ -274,6 +274,26 @@ input[type="checkbox"]:checked::after{content:"\2713";position:absolute;inset:0;
 input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 #amrap-cfg input[type="checkbox"]:checked{background:var(--co);border-color:var(--co);}
 #amrap-cfg input[type="checkbox"]:checked::after{color:#1a0703;}
+.cloud-chip{background:var(--bgi);border:1px solid var(--bd);border-radius:20px;width:34px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tmut);transition:color .35s,border-color .35s,box-shadow .35s;padding:0;flex-shrink:0;}
+.cloud-chip svg{display:block;}
+.cloud-chip.on{border-color:currentColor;box-shadow:0 0 10px -2px currentColor;}
+.cloud-ov{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(4,5,12,.85);z-index:4600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.cloud-ov.open{display:flex;}
+.cloud-box{background:var(--bg2);border:1px solid var(--bd);border-radius:24px;padding:22px;margin:20px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:fadeIn .2s ease-out;}
+.cloud-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.cloud-title{font-size:13px;font-weight:900;letter-spacing:2px;color:var(--cb);text-transform:uppercase;}
+.cloud-x{background:none;border:none;color:var(--tmut);font-size:20px;cursor:pointer;line-height:1;padding:2px 8px;}
+.cloud-card{background:var(--bgc);border:1px solid var(--bd);border-radius:18px;padding:16px;margin-bottom:18px;}
+.cloud-status{display:flex;align-items:center;gap:11px;margin-bottom:8px;}
+.cloud-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;background:var(--tmut);}
+.cloud-stxt{font-size:19px;font-weight:900;}
+.cloud-line{font-size:13px;color:var(--tmut);margin-top:4px;}
+.cloud-email{color:var(--cb);font-weight:700;word-break:break-all;}
+.cloud-line b{color:var(--tm);font-weight:800;}
+.cloud-legend-t{font-size:10px;font-weight:900;letter-spacing:1.5px;color:var(--tmut);text-transform:uppercase;margin-bottom:11px;}
+.cloud-leg{display:flex;align-items:center;gap:11px;font-size:13px;color:var(--tm);margin-bottom:9px;}
+.cloud-leg:last-child{margin-bottom:0;}
+.cloud-leg b{font-weight:800;}
 </style>
 </head>
 <body>
@@ -307,10 +327,26 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 <div class="exit-ov" id="exit-ov">
   <div class="exit-box"><h3>&#x1F6AB; Quitter la seance ?</h3><p>Ta progression sera perdue.</p><div class="exit-btns"><button class="econt" onclick="closeExit()">CONTINUER</button><button class="eaband" onclick="doExit()">ABANDONNER</button></div></div>
 </div>
+<div class="cloud-ov" id="cloud-ov" onclick="if(event.target===this)closeCloudModal()">
+  <div class="cloud-box">
+    <div class="cloud-head"><span class="cloud-title">&#x2601;&#xFE0F; Etat du cloud</span><button class="cloud-x" onclick="closeCloudModal()">&times;</button></div>
+    <div class="cloud-card">
+      <div class="cloud-status"><span class="cloud-dot" id="cm-dot"></span><span class="cloud-stxt" id="cm-status">Hors ligne</span></div>
+      <div class="cloud-line" id="cm-conn-wrap" style="display:none">Connecte : <span class="cloud-email" id="cm-email"></span></div>
+      <div class="cloud-line" id="cm-mod-wrap" style="display:none">Derniere modif : <b id="cm-by"></b> <span id="cm-at"></span></div>
+      <div class="cloud-line" id="cm-hint">Va dans <b>Reglages</b> pour activer la sauvegarde cloud.</div>
+    </div>
+    <div class="cloud-legend-t">Signification de l'icone</div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--tmut)"></span><span><b>Gris</b> &mdash; cloud disponible, non connecte</span></div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cg)"></span><span><b>Vert</b> &mdash; synchronise</span></div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cy)"></span><span><b>Jaune</b> &mdash; enregistrement en cours</span></div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cr)"></span><span><b>Rouge</b> &mdash; erreur de synchronisation</span></div>
+  </div>
+</div>
 <div class="app">
   <header class="hud">
     <div class="hud-left"><span class="hud-name" id="h-name">ATHLETE</span><div class="hud-lvl">NIV. <span id="h-lnum">1</span></div><div class="hud-lname" id="h-lname">CYBER RECRUIT</div><div class="xp-bar"><div class="xp-fill" id="h-xpbar" style="width:0%"></div></div></div>
-    <div class="hud-right"><div class="badge"><span id="h-fire">&#x1F525;</span><span id="h-streak">0</span></div><div class="badge">&#x26A1;<span id="h-xp">0</span> XP</div></div>
+    <div class="hud-right"><button class="cloud-chip" id="cloud-chip" onclick="openCloudModal()" aria-label="Etat du cloud"><svg viewBox="0 0 24 24" width="17" height="17"><path d="M6.5 19a5 5 0 0 1-.62-9.96 6.5 6.5 0 0 1 12.49-1.54A4.5 4.5 0 0 1 18 19H6.5z" fill="currentColor"/></svg></button><div class="badge"><span id="h-fire">&#x1F525;</span><span id="h-streak">0</span></div><div class="badge">&#x26A1;<span id="h-xp">0</span> XP</div></div>
   </header>
   <div class="fatigue" id="fatigue-b" style="display:none"><span style="font-size:20px">&#x1F634;</span><div class="fatigue-txt">Tu t'entraines depuis plusieurs jours ! Pense a recuperer.</div><button class="fatigue-x" onclick="this.parentElement.style.display='none'">&#xD7;</button></div>
   <div id="sc-plans" class="screen active">
@@ -986,7 +1022,35 @@ window.__applyCloudData=(d)=>{if(AW){pendingCloud=d;return;}S=normalizeState(d);
 window.__onAuthChange=(user,status)=>updateSyncUI(user,status);
 // UI de synchro (écran Réglages).
 function cloudToggle(){if(!window.Cloud){alert('Synchro indisponible.');return;}if(window.Cloud.isSignedIn&&window.Cloud.isSignedIn())window.Cloud.signOut();else window.Cloud.signIn();}
-function updateSyncUI(user,status){const st=document.getElementById('sync-status'),btn=document.getElementById('sync-btn'),us=document.getElementById('sync-user');if(!st||!btn)return;if(user){btn.innerText='SE DECONNECTER';us.style.display='block';us.innerText=user.email||user.displayName||'';const map={synced:['Synchronise','var(--cg)'],saving:['Enregistrement...','var(--cy)'],error:['Erreur de synchro','var(--cr)'],offline:['Connecte (hors ligne)','var(--tmut)']};const v=map[status]||map.synced;st.innerText=v[0];st.style.color=v[1];}else{btn.innerText='SE CONNECTER AVEC GOOGLE';us.style.display='none';us.innerText='';st.innerText=status==='error'?'Erreur':'Hors ligne';st.style.color='var(--tmut)';}}
+let cloudUI={user:null,status:'offline'},cloudMeta={by:null,at:null};
+const CLOUD_COL={offline:'var(--tmut)',synced:'var(--cg)',saving:'var(--cy)',error:'var(--cr)'};
+const CLOUD_TXT={offline:'Hors ligne',synced:'Synchronise',saving:'Enregistrement...',error:'Erreur de synchro'};
+function fmtCloudDate(t){const d=new Date(t),p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;}
+function updateSyncUI(user,status){
+  cloudUI={user,status:user?(status||'synced'):(status==='error'?'error':'offline')};
+  const col=CLOUD_COL[cloudUI.status]||'var(--tmut)';
+  const chip=document.getElementById('cloud-chip');if(chip){chip.style.color=col;chip.classList.toggle('on',!!user);}
+  const st=document.getElementById('sync-status'),btn=document.getElementById('sync-btn'),us=document.getElementById('sync-user');
+  if(btn)btn.innerText=user?'SE DECONNECTER':'SE CONNECTER AVEC GOOGLE';
+  if(us){if(user){us.style.display='block';us.innerText=user.email||user.displayName||'';}else{us.style.display='none';us.innerText='';}}
+  if(st){st.innerText=user?(CLOUD_TXT[cloudUI.status]||'Synchronise'):(status==='error'?'Erreur':'Hors ligne');st.style.color=col;}
+  renderCloudModal();
+}
+function renderCloudModal(){
+  const s=cloudUI.status,dot=document.getElementById('cm-dot');if(!dot)return;
+  dot.style.background=CLOUD_COL[s]||'var(--tmut)';
+  document.getElementById('cm-status').innerText=cloudUI.user?(CLOUD_TXT[s]||'Synchronise'):(s==='error'?'Erreur':'Hors ligne');
+  const conn=document.getElementById('cm-conn-wrap'),mod=document.getElementById('cm-mod-wrap'),hint=document.getElementById('cm-hint');
+  if(cloudUI.user){
+    conn.style.display='block';document.getElementById('cm-email').innerText=cloudUI.user.email||cloudUI.user.displayName||'';
+    hint.style.display='none';
+    if(cloudMeta.at){mod.style.display='block';document.getElementById('cm-by').innerText=cloudMeta.by||S.name||'—';document.getElementById('cm-at').innerText='· '+fmtCloudDate(cloudMeta.at);}
+    else mod.style.display='none';
+  }else{conn.style.display='none';mod.style.display='none';hint.style.display='block';}
+}
+function openCloudModal(){renderCloudModal();document.getElementById('cloud-ov').classList.add('open');}
+function closeCloudModal(){document.getElementById('cloud-ov').classList.remove('open');}
+window.__onSyncMeta=(by,at)=>{cloudMeta={by,at};renderCloudModal();};
 </script>
 
 <!-- ════════ MODULE FIREBASE (sauvegarde cloud + synchro multi-appareils) ════════
@@ -1042,7 +1106,7 @@ if (firebaseConfig.apiKey === "REMPLACER") {
   function pushNow(data){
     if (!uid) return;
     notify(auth.currentUser, 'saving');
-    setDoc(ref(), { payloadJSON: JSON.stringify(data), updatedAt: serverTimestamp() })
+    setDoc(ref(), { payloadJSON: JSON.stringify(data), by: (data && data.name) || 'ATHLETE', updatedAt: serverTimestamp() })
       .then(()  => notify(auth.currentUser, 'synced'))
       .catch(() => notify(auth.currentUser, 'error'));
   }
@@ -1057,8 +1121,10 @@ if (firebaseConfig.apiKey === "REMPLACER") {
         if (first) { first = false; pushNow(window.__getLocalData ? window.__getLocalData() : {}); }
         return;
       }
+      const _d = snap.data();
+      try { if (_d.updatedAt && window.__onSyncMeta) window.__onSyncMeta(_d.by || '', _d.updatedAt.toDate ? _d.updatedAt.toDate().getTime() : Date.now()); } catch(_){}
       let cloud = null;
-      try { cloud = JSON.parse(snap.data().payloadJSON); } catch(_){}
+      try { cloud = JSON.parse(_d.payloadJSON); } catch(_){}
       if (!cloud) { notify(user, 'synced'); return; }
       if (first) {                                            // 1re connexion : fusion sûre
         first = false;
