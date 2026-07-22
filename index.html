@@ -473,7 +473,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
     <div class="setup-card mt"><div class="ptag">&#x1F4CB; HISTORIQUE</div><div style="margin-top:10px" id="hist-list"></div></div>
   </div>
   <div id="sc-settings" class="screen">
-    <div class="set-grp"><span class="hud-name">PROFIL</span><input type="text" id="inp-name" placeholder="Entre ton prenom..." oninput="chName(this.value)"></div>
+    <div class="set-grp"><span class="hud-name">PROFIL</span><input type="text" id="inp-name" maxlength="20" placeholder="Ton pseudo (requis pour le cloud)..." oninput="chName(this.value)"></div>
     <div class="set-grp" style="border-color:var(--cb)"><span class="hud-name" style="color:var(--cb)">APPARENCE</span><div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Mode Jour</span><div class="tsw" id="tsw" onclick="togTheme()"></div></div></div>
     <div class="set-grp" style="border-color:var(--cg)"><span class="hud-name" style="color:var(--cg)">INTENSITE IA</span>
       <div style="margin-bottom:10px"><label class="hud-name" style="font-size:10px;color:var(--tm)">Series de base / exercice :</label><input type="number" id="s-sets" min="1" max="6" step="1" onchange="S.ucfg.sets=Math.max(1,Math.min(6,parseInt(this.value)||3));save()"></div>
@@ -487,6 +487,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
     <div class="set-grp" style="border-color:var(--cp)"><span class="hud-name" style="color:var(--cp)">&#x2601;&#xFE0F; SYNCHRO CLOUD</span>
       <div class="save-info" style="margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--tmut)">Etat :</span><span style="font-size:11px;font-weight:800;color:var(--tmut)" id="sync-status">Hors ligne</span></div>
       <div id="sync-user" style="font-size:10px;color:var(--tmut);margin-bottom:8px;display:none;word-break:break-all"></div>
+      <p id="sync-gate" style="display:none;font-size:10px;font-weight:700;color:var(--cy);background:rgba(251,191,36,.08);border:1px solid var(--cy);border-radius:10px;padding:9px 11px;margin-bottom:8px;line-height:1.5">&#x26A0;&#xFE0F; Choisis d'abord un <b>pseudo</b> dans <b>Profil</b> (ci-dessus) pour pouvoir t'identifier dans le cloud.</p>
       <button class="toggle-btn active mt" style="width:100%" id="sync-btn" onclick="cloudToggle()">SE CONNECTER AVEC GOOGLE</button>
       <p style="font-size:9px;color:var(--tmut);margin-top:8px;line-height:1.5">Sauvegarde tes donnees dans le cloud et synchronise-les entre tes appareils (Google).</p>
     </div>
@@ -689,7 +690,7 @@ let aExs=[],aCurrentEx=0,aR=0,aTL=0,aMainInt=null,aSubInt=null,aTransInt=null;
 let achTipTimer=null,genPWExs=null,amrapSeed=0;
 const TQ=[];let tShowing=false;
 
-window.onload=()=>{load();applyTheme();renderHUD();syncUI();initCh();checkFatigue();renderCh();if(S.uprog)renderProg();document.getElementById('inp-name').value=S.name==='ATHLETE'?'':S.name;document.addEventListener('gesturestart',e=>e.preventDefault());checkSaveReminder();updSaveDisplay();genPreviewUpdate();};
+window.onload=()=>{load();applyTheme();renderHUD();syncUI();initCh();checkFatigue();renderCh();if(S.uprog)renderProg();document.getElementById('inp-name').value=S.name==='ATHLETE'?'':S.name;document.addEventListener('gesturestart',e=>e.preventDefault());checkSaveReminder();updSaveDisplay();genPreviewUpdate();updateSyncGate();};
 
 function migrateState(p){if(!p.ucfg)p.ucfg={freq:p.cfg?.freq||3,wks:p.cfg?.wks||4,obj:p.cfg?.obj||'muscle',sessionDur:30,sets:p.cfg?.sets||3,rj:p.cfg?.rj||50,acc:(p.cfg?.acc||['board','ab_wheel','jump_rope','bands']).concat(['mat']),machines:p.mcfg?.types||[]};if(!p.uDays)p.uDays={...p.cDays||{},...p.cMDays||{}};if(!p.gcfg)p.gcfg={acc:['mat','board','ab_wheel','jump_rope','bands']};if(!p.gcfg.amrapAcc)p.gcfg.amrapAcc=[...(p.gcfg.acc||['mat','board','ab_wheel','jump_rope','bands'])];if(!p.wstats)p.wstats={wk:'',sess:0,reps:0,jumps:0,long:0,amrap:0};if(!p.wxp)p.wxp={};if(!p.badges)p.badges={};if(!p.hist)p.hist=[];if(!p.amrapH)p.amrapH=[];if(!Array.isArray(p.varModes))p.varModes=[];if(!p.amrapSessions)p.amrapSessions=(p.amrapH||[]).length;if(!p.chDone)p.chDone=0;if(!p.timeHistory)p.timeHistory=[];return p;}
 function normalizeState(p){return {...DEF,...migrateState(p||{})};}
@@ -981,9 +982,9 @@ function renderMuscleChart(){const el=document.getElementById('mu-chart');if(!el
 function renderHist(){const c=document.getElementById('hist-list');if(!c)return;const h=S.hist||[];if(!h.length){c.innerHTML='<div style="font-size:12px;color:var(--tmut);text-align:center;padding:10px">Aucune seance enregistree</div>';return;}const tpCls={f:'hbf',amrap:'hba',gen:'hbg'};const tpLbl={f:'Fitness',amrap:'AMRAP',gen:'Generateur'};c.innerHTML=h.map(s=>{const d=new Date(s.date),ds=`${d.getDate()}/${d.getMonth()+1} ${d.getHours()}h${String(d.getMinutes()).padStart(2,'0')}`,tc=tpCls[s.tp]||'hbf',tl=tpLbl[s.tp]||'Fitness',sc=s.tp==='amrap'?`${s.reps} rounds`:`${s.reps} reps - ${s.time}min`;return`<div class="hist"><div class="hl"><div class="ht">${s.title}</div><div class="hd">${ds}</div></div><div style="text-align:right"><div class="hbt ${tc}">${tl}</div><div class="hs">${sc} +${s.xp}XP</div></div></div>`;}).join('');}
 
 /* ════════ NAV ════════ */
-function switchTab(id){if(pendingCloud&&!AW){const _d=pendingCloud;pendingCloud=null;if(window.__applyCloudData)window.__applyCloudData(_d);}document.getElementById('ach-tooltip').classList.remove('show');document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));window.scrollTo({top:0,behavior:'instant'});requestAnimationFrame(()=>document.getElementById('sc-'+id).classList.add('active'));const nb=document.getElementById('ni-'+id);if(nb)nb.classList.add('active');if(id==='plans'){if(S.uprog)renderProg();else document.getElementById('unified-setup').style.display='block';}if(id==='stats'){renderHUD();renderRecap();renderXPChart();renderMuscleChart();renderAch();renderHist();}if(id==='generator'){genPreviewUpdate();if(S.genMode==='amrap'){setMode('amrap');updAmrapPreview();}}if(id==='settings'){document.getElementById('s-sets').value=S.ucfg.sets||3;document.getElementById('s-rj').value=S.ucfg.rj||50;updSaveDisplay();}}
+function switchTab(id){if(pendingCloud&&!AW){const _d=pendingCloud;pendingCloud=null;if(window.__applyCloudData)window.__applyCloudData(_d);}document.getElementById('ach-tooltip').classList.remove('show');document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));window.scrollTo({top:0,behavior:'instant'});requestAnimationFrame(()=>document.getElementById('sc-'+id).classList.add('active'));const nb=document.getElementById('ni-'+id);if(nb)nb.classList.add('active');if(id==='plans'){if(S.uprog)renderProg();else document.getElementById('unified-setup').style.display='block';}if(id==='stats'){renderHUD();renderRecap();renderXPChart();renderMuscleChart();renderAch();renderHist();}if(id==='generator'){genPreviewUpdate();if(S.genMode==='amrap'){setMode('amrap');updAmrapPreview();}}if(id==='settings'){document.getElementById('s-sets').value=S.ucfg.sets||3;document.getElementById('s-rj').value=S.ucfg.rj||50;updSaveDisplay();updateSyncGate();}}
 
-function chName(v){S.name=v.trim()||'ATHLETE';save();}
+function chName(v){S.name=v.trim()||'ATHLETE';save();updateSyncGate();}
 function exportJSON(){S.lastExport=new Date().toISOString();save();const a=document.createElement('a');a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(S));a.download='cyberpump_save.json';a.click();updSaveDisplay();}
 function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{S=JSON.parse(ev.target.result);if(!Array.isArray(S.varModes))S.varModes=[];if(!S.timeHistory)S.timeHistory=[];save();location.reload();}catch(err){alert("Erreur de fichier.");}};r.readAsText(f);}
 async function resetAll(){if(confirm('Reinitialiser definitivement toutes les donnees ?')){try{if(window.Cloud&&window.Cloud.deleteRemote)await window.Cloud.deleteRemote();}catch(e){}localStorage.removeItem('cp2');location.reload();}}
@@ -1022,7 +1023,21 @@ window.__mergeData=(cloud)=>mergeData(cloud);
 window.__applyCloudData=(d)=>{if(AW){pendingCloud=d;return;}S=normalizeState(d);localStorage.setItem('cp2',JSON.stringify(S));rerenderAll();};
 window.__onAuthChange=(user,status)=>updateSyncUI(user,status);
 // UI de synchro (écran Réglages).
-function cloudToggle(){if(!window.Cloud){alert('Synchro indisponible.');return;}if(window.Cloud.isSignedIn&&window.Cloud.isSignedIn())window.Cloud.signOut();else window.Cloud.signIn();}
+function hasPseudo(){const n=(S.name||'').trim();return n.length>=2&&n.toUpperCase()!=='ATHLETE';}
+function flashToast(icon,eyebrow,title,desc){const c=document.getElementById('toasts');if(!c)return;const el=document.createElement('div');el.className='toast';el.innerHTML=`<div class="ti">${icon}</div><div><div class="te">${eyebrow}</div><div class="tn">${title}</div><div class="td">${desc}</div></div>`;c.appendChild(el);requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),500);},3200);}
+function updateSyncGate(){const btn=document.getElementById('sync-btn'),gate=document.getElementById('sync-gate');const signedIn=!!(cloudUI&&cloudUI.user);const ok=signedIn||hasPseudo();if(btn){btn.disabled=!ok;btn.style.opacity=ok?'':'.45';btn.style.cursor=ok?'':'not-allowed';}if(gate)gate.style.display=(!signedIn&&!hasPseudo())?'block':'none';}
+function cloudToggle(){
+  if(!window.Cloud){alert('Synchro indisponible.');return;}
+  if(window.Cloud.isSignedIn&&window.Cloud.isSignedIn()){window.Cloud.signOut();return;}
+  if(!hasPseudo()){                                     // pseudo obligatoire pour s'identifier dans Firebase
+    const inp=document.getElementById('inp-name');
+    if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
+    flashToast('&#x26A0;&#xFE0F;','PSEUDO REQUIS','Choisis un pseudo',"Renseigne ton pseudo (Profil) pour t'identifier dans le cloud.");
+    updateSyncGate();
+    return;
+  }
+  window.Cloud.signIn();
+}
 let cloudUI={user:null,status:'offline'},cloudMeta={by:null,at:null};
 const CLOUD_COL={offline:'var(--tmut)',synced:'var(--cg)',saving:'var(--cy)',error:'var(--cr)'};
 const CLOUD_TXT={offline:'Hors ligne',synced:'Synchronise',saving:'Enregistrement...',error:'Erreur de synchro'};
@@ -1036,6 +1051,7 @@ function updateSyncUI(user,status){
   if(us){if(user){us.style.display='block';us.innerText=user.email||user.displayName||'';}else{us.style.display='none';us.innerText='';}}
   if(st){st.innerText=user?(CLOUD_TXT[cloudUI.status]||'Synchronise'):(status==='error'?'Erreur':'Hors ligne');st.style.color=col;}
   renderCloudModal();
+  updateSyncGate();
 }
 function renderCloudModal(){
   const s=cloudUI.status,dot=document.getElementById('cm-dot');if(!dot)return;
