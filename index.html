@@ -274,6 +274,26 @@ input[type="checkbox"]:checked::after{content:"\2713";position:absolute;inset:0;
 input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 #amrap-cfg input[type="checkbox"]:checked{background:var(--co);border-color:var(--co);}
 #amrap-cfg input[type="checkbox"]:checked::after{color:#1a0703;}
+.cloud-chip{background:var(--bgi);border:1px solid var(--bd);border-radius:20px;width:34px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tmut);transition:color .35s,border-color .35s,box-shadow .35s;padding:0;flex-shrink:0;}
+.cloud-chip svg{display:block;}
+.cloud-chip.on{border-color:currentColor;box-shadow:0 0 10px -2px currentColor;}
+.cloud-ov{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(4,5,12,.85);z-index:4600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.cloud-ov.open{display:flex;}
+.cloud-box{background:var(--bg2);border:1px solid var(--bd);border-radius:24px;padding:22px;margin:20px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:fadeIn .2s ease-out;}
+.cloud-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.cloud-title{font-size:13px;font-weight:900;letter-spacing:2px;color:var(--cb);text-transform:uppercase;}
+.cloud-x{background:none;border:none;color:var(--tmut);font-size:20px;cursor:pointer;line-height:1;padding:2px 8px;}
+.cloud-card{background:var(--bgc);border:1px solid var(--bd);border-radius:18px;padding:16px;margin-bottom:18px;}
+.cloud-status{display:flex;align-items:center;gap:11px;margin-bottom:8px;}
+.cloud-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;background:var(--tmut);}
+.cloud-stxt{font-size:19px;font-weight:900;}
+.cloud-line{font-size:13px;color:var(--tmut);margin-top:4px;}
+.cloud-email{color:var(--cb);font-weight:700;word-break:break-all;}
+.cloud-line b{color:var(--tm);font-weight:800;}
+.cloud-legend-t{font-size:10px;font-weight:900;letter-spacing:1.5px;color:var(--tmut);text-transform:uppercase;margin-bottom:11px;}
+.cloud-leg{display:flex;align-items:center;gap:11px;font-size:13px;color:var(--tm);margin-bottom:9px;}
+.cloud-leg:last-child{margin-bottom:0;}
+.cloud-leg b{font-weight:800;}
 </style>
 </head>
 <body>
@@ -307,10 +327,26 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 <div class="exit-ov" id="exit-ov">
   <div class="exit-box"><h3>&#x1F6AB; Quitter la seance ?</h3><p>Ta progression sera perdue.</p><div class="exit-btns"><button class="econt" onclick="closeExit()">CONTINUER</button><button class="eaband" onclick="doExit()">ABANDONNER</button></div></div>
 </div>
+<div class="cloud-ov" id="cloud-ov" onclick="if(event.target===this)closeCloudModal()">
+  <div class="cloud-box">
+    <div class="cloud-head"><span class="cloud-title">&#x2601;&#xFE0F; Etat du cloud</span><button class="cloud-x" onclick="closeCloudModal()">&times;</button></div>
+    <div class="cloud-card">
+      <div class="cloud-status"><span class="cloud-dot" id="cm-dot"></span><span class="cloud-stxt" id="cm-status">Hors ligne</span></div>
+      <div class="cloud-line" id="cm-conn-wrap" style="display:none">Connecte : <span class="cloud-email" id="cm-email"></span></div>
+      <div class="cloud-line" id="cm-mod-wrap" style="display:none">Derniere modif : <b id="cm-by"></b> <span id="cm-at"></span></div>
+      <div class="cloud-line" id="cm-hint">Va dans <b>Reglages</b> pour activer la sauvegarde cloud.</div>
+    </div>
+    <div class="cloud-legend-t">Signification de l'icone</div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--tmut)"></span><span><b>Gris</b> &mdash; cloud disponible, non connecte</span></div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cg)"></span><span><b>Vert</b> &mdash; synchronise</span></div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cy)"></span><span><b>Jaune</b> &mdash; enregistrement en cours</span></div>
+    <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cr)"></span><span><b>Rouge</b> &mdash; erreur de synchronisation</span></div>
+  </div>
+</div>
 <div class="app">
   <header class="hud">
     <div class="hud-left"><span class="hud-name" id="h-name">ATHLETE</span><div class="hud-lvl">NIV. <span id="h-lnum">1</span></div><div class="hud-lname" id="h-lname">CYBER RECRUIT</div><div class="xp-bar"><div class="xp-fill" id="h-xpbar" style="width:0%"></div></div></div>
-    <div class="hud-right"><div class="badge"><span id="h-fire">&#x1F525;</span><span id="h-streak">0</span></div><div class="badge">&#x26A1;<span id="h-xp">0</span> XP</div></div>
+    <div class="hud-right"><button class="cloud-chip" id="cloud-chip" onclick="openCloudModal()" aria-label="Etat du cloud"><svg viewBox="0 0 24 24" width="17" height="17"><path d="M6.5 19a5 5 0 0 1-.62-9.96 6.5 6.5 0 0 1 12.49-1.54A4.5 4.5 0 0 1 18 19H6.5z" fill="currentColor"/></svg></button><div class="badge"><span id="h-fire">&#x1F525;</span><span id="h-streak">0</span></div><div class="badge">&#x26A1;<span id="h-xp">0</span> XP</div></div>
   </header>
   <div class="fatigue" id="fatigue-b" style="display:none"><span style="font-size:20px">&#x1F634;</span><div class="fatigue-txt">Tu t'entraines depuis plusieurs jours ! Pense a recuperer.</div><button class="fatigue-x" onclick="this.parentElement.style.display='none'">&#xD7;</button></div>
   <div id="sc-plans" class="screen active">
@@ -446,6 +482,12 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
       <div class="save-info"><span style="font-size:10px;font-weight:700;color:var(--tmut)">Derniere sauvegarde :</span><span style="font-size:11px;font-weight:800;color:var(--cy)" id="last-save-display">Jamais</span></div>
       <button class="toggle-btn active mt" style="width:100%;margin-bottom:10px" onclick="exportJSON()">EXPORTER MES DONNEES</button>
       <div class="fw"><button class="toggle-btn mt" style="width:100%">IMPORTER</button><input type="file" accept=".json" onchange="importJSON(event)"></div>
+    </div>
+    <div class="set-grp" style="border-color:var(--cp)"><span class="hud-name" style="color:var(--cp)">&#x2601;&#xFE0F; SYNCHRO CLOUD</span>
+      <div class="save-info" style="margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--tmut)">Etat :</span><span style="font-size:11px;font-weight:800;color:var(--tmut)" id="sync-status">Hors ligne</span></div>
+      <div id="sync-user" style="font-size:10px;color:var(--tmut);margin-bottom:8px;display:none;word-break:break-all"></div>
+      <button class="toggle-btn active mt" style="width:100%" id="sync-btn" onclick="cloudToggle()">SE CONNECTER AVEC GOOGLE</button>
+      <p style="font-size:9px;color:var(--tmut);margin-top:8px;line-height:1.5">Sauvegarde tes donnees dans le cloud et synchronise-les entre tes appareils (Google).</p>
     </div>
     <button class="toggle-btn mt" style="color:var(--cr);border-color:var(--cr);width:100%" onclick="resetAll()">REINITIALISER TOUT</button>
   </div>
@@ -639,6 +681,7 @@ function buildCooldown(exs){const g=sessionGroups(exs);const steps=[];if(CD_POOL
 
 /* ════════ STATE ════════ */
 let S={name:'ATHLETE',level:1,xp:0,streak:0,lastWO:null,totalWO:0,totalReps:0,totalJumps:0,rPecs:0,rTri:0,rSh:0,rAbs:0,rCardio:0,rFullBody:0,posture:'feet',uDays:{},genMode:'norm',fitTime:0,matSessions:0,chDone:0,varModes:[],amrapSessions:0,ucfg:{freq:3,wks:4,obj:'muscle',sessionDur:30,sets:3,rj:50,acc:['mat','board','ab_wheel','jump_rope','bands'],machines:[]},genTime:10,amrapTime:5,amrapDiff:3,diff:3,gcfg:{acc:['mat','board','ab_wheel','jump_rope','bands'],amrapAcc:['mat','board','ab_wheel','jump_rope','bands']},uprog:null,badges:{},hist:[],wch:null,wstats:{wk:'',sess:0,reps:0,jumps:0,long:0,amrap:0},wxp:{},theme:'dark',amrapH:[],lastExport:null,timeHistory:[]};
+const DEF=JSON.parse(JSON.stringify(S));
 let AW=null,PW=null,restSec=60,diff=3,restInt=null,woStart=null,liveInt=null,wl=null;
 let wuStep=0,wuInt=null,wuTL=0,wuCB=null,wuSteps=[],wuLabel='ECHAUFFEMENT';
 let aExs=[],aCurrentEx=0,aR=0,aTL=0,aMainInt=null,aSubInt=null,aTransInt=null;
@@ -647,8 +690,10 @@ const TQ=[];let tShowing=false;
 
 window.onload=()=>{load();applyTheme();renderHUD();syncUI();initCh();checkFatigue();renderCh();if(S.uprog)renderProg();document.getElementById('inp-name').value=S.name==='ATHLETE'?'':S.name;document.addEventListener('gesturestart',e=>e.preventDefault());checkSaveReminder();updSaveDisplay();genPreviewUpdate();};
 
-function load(){const raw=localStorage.getItem('cp2');if(!raw)return;try{const p=JSON.parse(raw);if(!p.ucfg)p.ucfg={freq:p.cfg?.freq||3,wks:p.cfg?.wks||4,obj:p.cfg?.obj||'muscle',sessionDur:30,sets:p.cfg?.sets||3,rj:p.cfg?.rj||50,acc:(p.cfg?.acc||['board','ab_wheel','jump_rope','bands']).concat(['mat']),machines:p.mcfg?.types||[]};if(!p.uDays)p.uDays={...p.cDays||{},...p.cMDays||{}};if(!p.gcfg)p.gcfg={acc:['mat','board','ab_wheel','jump_rope','bands']};if(!p.gcfg.amrapAcc)p.gcfg.amrapAcc=[...(p.gcfg.acc||['mat','board','ab_wheel','jump_rope','bands'])];if(!p.wstats)p.wstats={wk:'',sess:0,reps:0,jumps:0,long:0,amrap:0};if(!p.wxp)p.wxp={};if(!p.badges)p.badges={};if(!p.hist)p.hist=[];if(!p.amrapH)p.amrapH=[];if(!Array.isArray(p.varModes))p.varModes=[];if(!p.amrapSessions)p.amrapSessions=(p.amrapH||[]).length;if(!p.chDone)p.chDone=0;if(!p.timeHistory)p.timeHistory=[];S={...S,...p};}catch(e){}}
-function save(){localStorage.setItem('cp2',JSON.stringify(S));renderHUD();}
+function migrateState(p){if(!p.ucfg)p.ucfg={freq:p.cfg?.freq||3,wks:p.cfg?.wks||4,obj:p.cfg?.obj||'muscle',sessionDur:30,sets:p.cfg?.sets||3,rj:p.cfg?.rj||50,acc:(p.cfg?.acc||['board','ab_wheel','jump_rope','bands']).concat(['mat']),machines:p.mcfg?.types||[]};if(!p.uDays)p.uDays={...p.cDays||{},...p.cMDays||{}};if(!p.gcfg)p.gcfg={acc:['mat','board','ab_wheel','jump_rope','bands']};if(!p.gcfg.amrapAcc)p.gcfg.amrapAcc=[...(p.gcfg.acc||['mat','board','ab_wheel','jump_rope','bands'])];if(!p.wstats)p.wstats={wk:'',sess:0,reps:0,jumps:0,long:0,amrap:0};if(!p.wxp)p.wxp={};if(!p.badges)p.badges={};if(!p.hist)p.hist=[];if(!p.amrapH)p.amrapH=[];if(!Array.isArray(p.varModes))p.varModes=[];if(!p.amrapSessions)p.amrapSessions=(p.amrapH||[]).length;if(!p.chDone)p.chDone=0;if(!p.timeHistory)p.timeHistory=[];return p;}
+function normalizeState(p){return {...DEF,...migrateState(p||{})};}
+function load(){const raw=localStorage.getItem('cp2');if(!raw)return;try{S=normalizeState(JSON.parse(raw));}catch(e){}}
+function save(){localStorage.setItem('cp2',JSON.stringify(S));if(window.Cloud&&window.Cloud.push)window.Cloud.push(S);renderHUD();}
 async function reqWL(){if(!('wakeLock'in navigator))return;try{wl=await navigator.wakeLock.request('screen');}catch(e){}}
 function relWL(){if(wl){wl.release();wl=null;}}
 function togTheme(){S.theme=S.theme==='dark'?'light':'dark';applyTheme();save();}
@@ -935,12 +980,174 @@ function renderMuscleChart(){const el=document.getElementById('mu-chart');if(!el
 function renderHist(){const c=document.getElementById('hist-list');if(!c)return;const h=S.hist||[];if(!h.length){c.innerHTML='<div style="font-size:12px;color:var(--tmut);text-align:center;padding:10px">Aucune seance enregistree</div>';return;}const tpCls={f:'hbf',amrap:'hba',gen:'hbg'};const tpLbl={f:'Fitness',amrap:'AMRAP',gen:'Generateur'};c.innerHTML=h.map(s=>{const d=new Date(s.date),ds=`${d.getDate()}/${d.getMonth()+1} ${d.getHours()}h${String(d.getMinutes()).padStart(2,'0')}`,tc=tpCls[s.tp]||'hbf',tl=tpLbl[s.tp]||'Fitness',sc=s.tp==='amrap'?`${s.reps} rounds`:`${s.reps} reps - ${s.time}min`;return`<div class="hist"><div class="hl"><div class="ht">${s.title}</div><div class="hd">${ds}</div></div><div style="text-align:right"><div class="hbt ${tc}">${tl}</div><div class="hs">${sc} +${s.xp}XP</div></div></div>`;}).join('');}
 
 /* ════════ NAV ════════ */
-function switchTab(id){document.getElementById('ach-tooltip').classList.remove('show');document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));window.scrollTo({top:0,behavior:'instant'});requestAnimationFrame(()=>document.getElementById('sc-'+id).classList.add('active'));const nb=document.getElementById('ni-'+id);if(nb)nb.classList.add('active');if(id==='plans'){if(S.uprog)renderProg();else document.getElementById('unified-setup').style.display='block';}if(id==='stats'){renderHUD();renderRecap();renderXPChart();renderMuscleChart();renderAch();renderHist();}if(id==='generator'){genPreviewUpdate();if(S.genMode==='amrap'){setMode('amrap');updAmrapPreview();}}if(id==='settings'){document.getElementById('s-sets').value=S.ucfg.sets||3;document.getElementById('s-rj').value=S.ucfg.rj||50;updSaveDisplay();}}
+function switchTab(id){if(pendingCloud&&!AW){const _d=pendingCloud;pendingCloud=null;if(window.__applyCloudData)window.__applyCloudData(_d);}document.getElementById('ach-tooltip').classList.remove('show');document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));window.scrollTo({top:0,behavior:'instant'});requestAnimationFrame(()=>document.getElementById('sc-'+id).classList.add('active'));const nb=document.getElementById('ni-'+id);if(nb)nb.classList.add('active');if(id==='plans'){if(S.uprog)renderProg();else document.getElementById('unified-setup').style.display='block';}if(id==='stats'){renderHUD();renderRecap();renderXPChart();renderMuscleChart();renderAch();renderHist();}if(id==='generator'){genPreviewUpdate();if(S.genMode==='amrap'){setMode('amrap');updAmrapPreview();}}if(id==='settings'){document.getElementById('s-sets').value=S.ucfg.sets||3;document.getElementById('s-rj').value=S.ucfg.rj||50;updSaveDisplay();}}
 
 function chName(v){S.name=v.trim()||'ATHLETE';save();}
 function exportJSON(){S.lastExport=new Date().toISOString();save();const a=document.createElement('a');a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(S));a.download='cyberpump_save.json';a.click();updSaveDisplay();}
 function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{S=JSON.parse(ev.target.result);if(!Array.isArray(S.varModes))S.varModes=[];if(!S.timeHistory)S.timeHistory=[];save();location.reload();}catch(err){alert("Erreur de fichier.");}};r.readAsText(f);}
-function resetAll(){if(confirm('Reinitialiser definitivement toutes les donnees ?')){localStorage.removeItem('cp2');location.reload();}}
+async function resetAll(){if(confirm('Reinitialiser definitivement toutes les donnees ?')){try{if(window.Cloud&&window.Cloud.deleteRemote)await window.Cloud.deleteRemote();}catch(e){}localStorage.removeItem('cp2');location.reload();}}
+
+/* ════════ PONT CLOUD (Firebase) ════════
+   L'app démarre toujours depuis localStorage ; la synchro cloud se greffe
+   par-dessus via ces fonctions window.__* et l'objet window.Cloud (module ESM). */
+let pendingCloud=null;
+// Ré-affiche toute l'UI depuis S (utilisé quand une donnée arrive d'un autre appareil).
+function rerenderAll(){applyTheme();renderHUD();syncUI();initCh();checkFatigue();renderCh();if(S.uprog)renderProg();else{const s=document.getElementById('unified-setup');if(s)s.style.display='block';}const ni=document.getElementById('inp-name');if(ni)ni.value=S.name==='ATHLETE'?'':S.name;updSaveDisplay();genPreviewUpdate();const ss=document.getElementById('s-sets');if(ss)ss.value=S.ucfg.sets||3;const rj=document.getElementById('s-rj');if(rj)rj.value=S.ucfg.rj||50;}
+// Fusion NON destructive local + cloud, à la 1re connexion (aucune perte).
+function mergeHist(a,b){const arr=[...(a||[]),...(b||[])];const seen=new Set(),out=[];for(const it of arr){const k=(it&&it.date!=null)?String(it.date):JSON.stringify(it);if(seen.has(k))continue;seen.add(k);out.push(it);}out.sort((x,y)=>new Date(y.date||0)-new Date(x.date||0));return out;}
+function mergeData(cloud){
+  if(!cloud||typeof cloud!=='object')return normalizeState(S);
+  const l=normalizeState(S), c=normalizeState(cloud), m={...l,...c};
+  // Compteurs cumulatifs : on garde le plus haut (ils ne font que croître).
+  ['level','xp','streak','totalWO','totalReps','totalJumps','fitTime','matSessions','chDone','amrapSessions','rPecs','rTri','rSh','rAbs','rCardio','rFullBody'].forEach(k=>{m[k]=Math.max(Number(l[k])||0,Number(c[k])||0);});
+  m.badges={...(l.badges||{}),...(c.badges||{})};                       // union des succès
+  const wkeys={...(l.wxp||{}),...(c.wxp||{})};m.wxp={};Object.keys(wkeys).forEach(k=>m.wxp[k]=Math.max((l.wxp||{})[k]||0,(c.wxp||{})[k]||0));
+  m.hist=mergeHist(l.hist,c.hist).slice(0,30);                          // historiques : union dédupliquée
+  m.amrapH=mergeHist(l.amrapH,c.amrapH);
+  m.timeHistory=((l.timeHistory||[]).length>=(c.timeHistory||[]).length?l.timeHistory:c.timeHistory)||[];
+  m.varModes=[...new Set([...(l.varModes||[]),...(c.varModes||[])])];
+  // Programme actif + réglages : on garde le côté le plus avancé (plus de séances).
+  const base=(Number(l.totalWO)||0)>=(Number(c.totalWO)||0)?l:c;
+  m.uprog=base.uprog;m.uDays=base.uDays;m.ucfg=base.ucfg;m.gcfg=base.gcfg;m.posture=base.posture;
+  m.name=(l.name&&l.name!=='ATHLETE')?l.name:(c.name||l.name);
+  m.theme=l.theme||c.theme;
+  m.lastWO=[l.lastWO,c.lastWO].filter(Boolean).sort().slice(-1)[0]||null;
+  m.lastExport=[l.lastExport,c.lastExport].filter(Boolean).sort().slice(-1)[0]||null;
+  return m;
+}
+// Fonctions exposées au module Firebase.
+window.__getLocalData=()=>S;
+window.__mergeData=(cloud)=>mergeData(cloud);
+window.__applyCloudData=(d)=>{if(AW){pendingCloud=d;return;}S=normalizeState(d);localStorage.setItem('cp2',JSON.stringify(S));rerenderAll();};
+window.__onAuthChange=(user,status)=>updateSyncUI(user,status);
+// UI de synchro (écran Réglages).
+function cloudToggle(){if(!window.Cloud){alert('Synchro indisponible.');return;}if(window.Cloud.isSignedIn&&window.Cloud.isSignedIn())window.Cloud.signOut();else window.Cloud.signIn();}
+let cloudUI={user:null,status:'offline'},cloudMeta={by:null,at:null};
+const CLOUD_COL={offline:'var(--tmut)',synced:'var(--cg)',saving:'var(--cy)',error:'var(--cr)'};
+const CLOUD_TXT={offline:'Hors ligne',synced:'Synchronise',saving:'Enregistrement...',error:'Erreur de synchro'};
+function fmtCloudDate(t){const d=new Date(t),p=n=>String(n).padStart(2,'0');return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;}
+function updateSyncUI(user,status){
+  cloudUI={user,status:user?(status||'synced'):(status==='error'?'error':'offline')};
+  const col=CLOUD_COL[cloudUI.status]||'var(--tmut)';
+  const chip=document.getElementById('cloud-chip');if(chip){chip.style.color=col;chip.classList.toggle('on',!!user);}
+  const st=document.getElementById('sync-status'),btn=document.getElementById('sync-btn'),us=document.getElementById('sync-user');
+  if(btn)btn.innerText=user?'SE DECONNECTER':'SE CONNECTER AVEC GOOGLE';
+  if(us){if(user){us.style.display='block';us.innerText=user.email||user.displayName||'';}else{us.style.display='none';us.innerText='';}}
+  if(st){st.innerText=user?(CLOUD_TXT[cloudUI.status]||'Synchronise'):(status==='error'?'Erreur':'Hors ligne');st.style.color=col;}
+  renderCloudModal();
+}
+function renderCloudModal(){
+  const s=cloudUI.status,dot=document.getElementById('cm-dot');if(!dot)return;
+  dot.style.background=CLOUD_COL[s]||'var(--tmut)';
+  document.getElementById('cm-status').innerText=cloudUI.user?(CLOUD_TXT[s]||'Synchronise'):(s==='error'?'Erreur':'Hors ligne');
+  const conn=document.getElementById('cm-conn-wrap'),mod=document.getElementById('cm-mod-wrap'),hint=document.getElementById('cm-hint');
+  if(cloudUI.user){
+    conn.style.display='block';document.getElementById('cm-email').innerText=cloudUI.user.email||cloudUI.user.displayName||'';
+    hint.style.display='none';
+    if(cloudMeta.at){mod.style.display='block';document.getElementById('cm-by').innerText=cloudMeta.by||S.name||'—';document.getElementById('cm-at').innerText='· '+fmtCloudDate(cloudMeta.at);}
+    else mod.style.display='none';
+  }else{conn.style.display='none';mod.style.display='none';hint.style.display='block';}
+}
+function openCloudModal(){renderCloudModal();document.getElementById('cloud-ov').classList.add('open');}
+function closeCloudModal(){document.getElementById('cloud-ov').classList.remove('open');}
+window.__onSyncMeta=(by,at)=>{cloudMeta={by,at};renderCloudModal();};
+</script>
+
+<!-- ════════ MODULE FIREBASE (sauvegarde cloud + synchro multi-appareils) ════════
+     À REMPLIR : colle ta config Firebase ci-dessous (objet firebaseConfig).
+     Tant que l'apiKey vaut "REMPLACER", la synchro est désactivée et l'app
+     reste 100% fonctionnelle en local. La config n'est pas un secret : c'est un
+     identifiant public. La sécurité repose sur les règles Firestore + l'auth. -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, onSnapshot, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAkSPWQd-QgpjAYVdfoZ0ot4Q1rYN6Q0nQ",
+  authDomain: "appli-sport-4c094.firebaseapp.com",
+  projectId: "appli-sport-4c094",
+  storageBucket: "appli-sport-4c094.firebasestorage.app",
+  messagingSenderId: "173689511100",
+  appId: "1:173689511100:web:21e43450dc92686fe384b9"
+};
+
+if (firebaseConfig.apiKey === "REMPLACER") {
+  console.warn("[Cloud] firebaseConfig non renseignee — synchro cloud desactivee (app 100% fonctionnelle en local).");
+  window.Cloud = {
+    signIn(){ alert("⚠️ Synchro cloud non configuree.\nColle ta config Firebase dans index.html (objet firebaseConfig)."); },
+    signOut(){}, push(){}, deleteRemote(){ return Promise.resolve(); }, isSignedIn(){ return false; }
+  };
+} else {
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  // Cache persistant = données conservées hors-ligne.
+  const db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+  const provider = new GoogleAuthProvider();
+
+  const notify = (u, s) => { try { window.__onAuthChange && window.__onAuthChange(u, s); } catch(e){} };
+  const ref = () => doc(db, 'users', uid);
+
+  let uid = null, unsub = null, first = true, pushTimer = null;
+
+  getRedirectResult(auth).catch(()=>{});
+
+  async function doSignIn(){
+    try { await signInWithPopup(auth, provider); }
+    catch(e){
+      const code = (e && (e.code || e.message)) || '';
+      if (/popup|blocked|cancelled|operation-not-supported/i.test(code)) {
+        try { await signInWithRedirect(auth, provider); }   // repli mobile si popup bloqué
+        catch(_){ notify(auth.currentUser, 'error'); }
+      } else { notify(auth.currentUser, 'error'); }
+    }
+  }
+
+  function pushNow(data){
+    if (!uid) return;
+    notify(auth.currentUser, 'saving');
+    setDoc(ref(), { payloadJSON: JSON.stringify(data), by: (data && data.name) || 'ATHLETE', updatedAt: serverTimestamp() })
+      .then(()  => notify(auth.currentUser, 'synced'))
+      .catch(() => notify(auth.currentUser, 'error'));
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (unsub) { unsub(); unsub = null; }
+    if (!user) { uid = null; first = true; notify(null, 'offline'); return; }
+    uid = user.uid; first = true; notify(user, 'saving');
+    unsub = onSnapshot(ref(), (snap) => {
+      if (snap.metadata.hasPendingWrites) return;             // ignore l'écho de nos écritures
+      if (!snap.exists()) {                                   // cloud vide → migration montante
+        if (first) { first = false; pushNow(window.__getLocalData ? window.__getLocalData() : {}); }
+        return;
+      }
+      const _d = snap.data();
+      try { if (_d.updatedAt && window.__onSyncMeta) window.__onSyncMeta(_d.by || '', _d.updatedAt.toDate ? _d.updatedAt.toDate().getTime() : Date.now()); } catch(_){}
+      let cloud = null;
+      try { cloud = JSON.parse(_d.payloadJSON); } catch(_){}
+      if (!cloud) { notify(user, 'synced'); return; }
+      if (first) {                                            // 1re connexion : fusion sûre
+        first = false;
+        const merged = window.__mergeData ? window.__mergeData(cloud) : cloud;
+        window.__applyCloudData && window.__applyCloudData(merged);
+        if (JSON.stringify(merged) !== JSON.stringify(cloud)) pushNow(merged);
+        else notify(user, 'synced');
+        return;
+      }
+      window.__applyCloudData && window.__applyCloudData(cloud);   // maj d'un autre appareil
+      notify(user, 'synced');
+    }, () => notify(auth.currentUser, 'error'));
+  });
+
+  // API exposée à l'app. push = setDoc débouncé.
+  window.Cloud = {
+    signIn: doSignIn,
+    signOut: () => signOut(auth),
+    push: (data) => { if (!uid) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => pushNow(data || (window.__getLocalData && window.__getLocalData())), 1200); },
+    deleteRemote: () => { if (!uid) return Promise.resolve(); return deleteDoc(ref()).catch(()=>{}); },
+    isSignedIn: () => !!uid
+  };
+}
 </script>
 </body>
 </html>
