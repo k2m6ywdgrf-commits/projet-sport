@@ -1059,17 +1059,17 @@ window.__onSyncMeta=(by,at)=>{cloudMeta={by,at};renderCloudModal();};
      reste 100% fonctionnelle en local. La config n'est pas un secret : c'est un
      identifiant public. La sécurité repose sur les règles Firestore + l'auth. -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, onSnapshot, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, onSnapshot, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "REMPLACER",
-  authDomain: "REMPLACER",
-  projectId: "REMPLACER",
-  storageBucket: "REMPLACER",
-  messagingSenderId: "REMPLACER",
-  appId: "REMPLACER"
+  apiKey: "AIzaSyAkSPWQd-QgpjAYVdfoZ0ot4Q1rYN6Q0nQ",
+  authDomain: "appli-sport-4c094.firebaseapp.com",
+  projectId: "appli-sport-4c094",
+  storageBucket: "appli-sport-4c094.firebasestorage.app",
+  messagingSenderId: "173689511100",
+  appId: "1:173689511100:web:21e43450dc92686fe384b9"
 };
 
 if (firebaseConfig.apiKey === "REMPLACER") {
