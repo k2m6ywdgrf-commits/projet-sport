@@ -10,8 +10,8 @@
 <link rel="apple-touch-icon" href="icon.png">
 <title>CYBER_PUMP v3</title>
 <style>
-:root{--bg:#070a16;--bg2:#0c1230;--bgc:#10142a;--bgi:#161b38;--tm:#f3f5fc;--tmut:#7d84ab;--cy:#fbbf24;--cw:#fff;--cb:#5ee7ff;--cp:#a78bfa;--cr:#fb7185;--cg:#34d399;--co:#ff8a3d;--bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.14);--gy:rgba(251,191,36,.22);--gb:rgba(94,231,255,.22);--gr:rgba(251,113,133,.22);--gg:rgba(52,211,153,.22);--go:rgba(255,138,61,.22);}
-body.light{--bg:#eef0f8;--bg2:#fff;--bgc:#fff;--bgi:#eef0fa;--tm:#0d0e20;--tmut:#5c619a;--cy:#b8920a;--cw:#2a2a55;--cb:#0077aa;--cp:#7c3aed;--cr:#e11d48;--cg:#047857;--co:#ea580c;--bd:#dde1f0;--bd2:#c8cee6;}
+:root{--bg:#070a16;--bg2:#0c1230;--bgc:#10142a;--bgi:#161b38;--tm:#f3f5fc;--tmut:#7d84ab;--cy:#fbbf24;--cw:#fff;--cb:#5ee7ff;--cp:#a78bfa;--cr:#fb7185;--cg:#34d399;--co:#ff8a3d;--bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.14);--gy:rgba(251,191,36,.22);--gb:rgba(94,231,255,.22);--gr:rgba(251,113,133,.22);--gg:rgba(52,211,153,.22);--go:rgba(255,138,61,.22);--figline:#eaf9ff;--figshadow:#04101a;}
+body.light{--bg:#eef0f8;--bg2:#fff;--bgc:#fff;--bgi:#eef0fa;--tm:#0d0e20;--tmut:#5c619a;--cy:#b8920a;--cw:#2a2a55;--cb:#0077aa;--cp:#7c3aed;--cr:#e11d48;--cg:#047857;--co:#ea580c;--bd:#dde1f0;--bd2:#c8cee6;--figline:#0e2c3d;--figshadow:#1b2440;}
 *{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;background:radial-gradient(ellipse 120% 60% at 50% -10%,#161e44 0%,var(--bg2) 38%,var(--bg) 100%) var(--bg);background-attachment:fixed;color:var(--tm);overflow-x:hidden;padding-bottom:100px;padding-top:env(safe-area-inset-top);transition:background .3s,color .3s;}
 body.light{background:var(--bg);}
@@ -1216,47 +1216,46 @@ const POSE={
          {h:[150,52],p:[[150,64,150,116],[150,116,184,150],[150,116,116,128,110,152],[150,76,184,96],[150,76,116,96]]}]
 };
 function polyPts(a){let s='';for(let i=0;i<a.length;i+=2)s+=(i?' ':'')+a[i]+','+a[i+1];return s;}
-// Degrades et ombre : donnent le volume "3D" aux bonhommes.
-function figDefs(){return`<defs>
-<linearGradient id="fgl" gradientUnits="userSpaceOnUse" x1="-40" y1="20" x2="120" y2="180">
-<stop offset="0" stop-color="#d2f8ff"/><stop offset=".35" stop-color="#7ce0fa"/><stop offset=".7" stop-color="#37a8d4"/><stop offset="1" stop-color="#14607f"/></linearGradient>
-<radialGradient id="fgj" cx=".32" cy=".28" r=".9">
-<stop offset="0" stop-color="#eafdff"/><stop offset=".5" stop-color="#7fe0fa"/><stop offset="1" stop-color="#2a86ad"/></radialGradient>
-<radialGradient id="fgh" cx=".33" cy=".26" r=".92">
-<stop offset="0" stop-color="#f4feff"/><stop offset=".42" stop-color="#8ce6fc"/><stop offset="1" stop-color="#1d6d90"/></radialGradient>
-<filter id="fgs" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5"/></filter>
-</defs>`;}
-// Une pose se dessine en couches, du fond vers l'avant : ombre au sol ->
-// membres du cote oppose (decales, assombris) -> contour -> volume -> lumiere.
-// p.p[0] est toujours le tronc : il est plus epais et n'est jamais dedouble.
-const W_TORSO=28,W_LIMB=19,C_FAR='#1a5c7c',C_EDGE='#06202d';
-function pose3D(p,dx){
+/* Rendu "cel shading" facon dessin anime : aplats de couleur + contour clair
+   d'epaisseur constante. Le contour est dessine MEMBRE PAR MEMBRE, dans l'ordre
+   de profondeur : chaque membre decoupe le precedent, ce qui fait apparaitre la
+   ligne de separation quand un bras passe devant le tronc. Aucun degrade,
+   aucun flou, aucun calque translucide (c'est ce qui doublait le trait). */
+const W_TORSO=25,W_LIMB=13,C_LINE='var(--figline)',C_BODY='#45bfe4',C_SHADE='#22809f';
+let _cid=0;
+function poseCel(p,dx){
   if(!p)return'';
   const torso=p.p&&p.p[0],limbs=(p.p||[]).slice(1);
   const neck=(p.h&&torso)?[p.h[0],p.h[1],torso[0],torso[1]]:null;
-  const segs=neck?[neck,...(p.p||[])]:[...(p.p||[])];
-  const wOf=a=>a===torso?W_TORSO:W_LIMB;
-  const ln=(a,st,w,x)=>`<polyline points="${polyPts(a)}" fill="none" stroke="${st}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${x||''}/>`;
-  const head=(r,f)=>p.h?`<circle cx="${p.h[0]}" cy="${p.h[1]}" r="${r}" fill="${f}"/>`:'';
-  // Renflement aux articulations : meme degrade que le membre, donc invisible
-  // en tant que tel, il arrondit juste les coudes, genoux, mains et pieds.
-  const joints=segs.map(a=>{let o='';const r=(a===torso?W_TORSO:W_LIMB)/2+1.5;
-    for(let i=0;i<a.length;i+=2)o+=`<circle cx="${a[i]}" cy="${a[i+1]}" r="${r.toFixed(1)}" fill="url(#fgl)"/>`;return o;}).join('');
-  const xs=segs.flatMap(a=>a.filter((_,i)=>i%2===0));
-  const cx=(Math.min(...xs)+Math.max(...xs))/2,rx=(Math.max(...xs)-Math.min(...xs))/2+12;
+  const all=[...(torso?[torso]:[]),...limbs,...(neck?[neck]:[])];
+  const wOf=a=>a===torso?W_TORSO:(a===neck?W_LIMB-1:W_LIMB);
+  const cid='cel'+(_cid++);
+  const ln=(a,st,w)=>`<polyline points="${polyPts(a)}" fill="none" stroke="${st}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const ci=(x,y,r,f)=>`<circle cx="${x}" cy="${y}" r="${(+r).toFixed(1)}" fill="${f}"/>`;
+  const OUT=6.5,hr=13.5;
+  const xs=all.flatMap(a=>a.filter((_,i)=>i%2===0)),ys=all.flatMap(a=>a.filter((_,i)=>i%2===1));
+  const cx=(Math.min(...xs)+Math.max(...xs))/2,rx=(Math.max(...xs)-Math.min(...xs))/2+15;
+  const y0=Math.min(...ys)-hr,y1=Math.max(...ys);
+  const sy=(y0+(y1-y0)*0.46).toFixed(1);   // plan de lumiere : en haut a gauche
   let o=`<g transform="translate(${dx},0)">`;
-  o+=`<ellipse cx="${(cx+5).toFixed(1)}" cy="166" rx="${rx.toFixed(1)}" ry="7" fill="#000" opacity=".42" filter="url(#fgs)"/>`;
-  o+=`<g transform="translate(11,5)">${limbs.map(a=>ln(a,C_EDGE,W_LIMB+5)).join('')}${limbs.map(a=>ln(a,C_FAR,W_LIMB)).join('')}</g>`;
-  o+=segs.map(a=>ln(a,C_EDGE,wOf(a)+5)).join('')+head(16,C_EDGE);
-  o+=segs.map(a=>ln(a,'url(#fgl)',wOf(a))).join('')+joints;
-  o+=head(13.5,'url(#fgh)');
-  // Materiel (elastique, corde, roue) : couleur propre, devant le corps.
+  o+=`<ellipse cx="${(cx+3).toFixed(1)}" cy="164" rx="${rx.toFixed(1)}" ry="6" fill="var(--figshadow)" opacity=".4"/>`;
+  o+=`<clipPath id="${cid}"><rect x="${(cx-320).toFixed(1)}" y="${sy}" width="640" height="360" transform="rotate(-15 ${cx.toFixed(1)} ${sy})"/></clipPath>`;
+  // Un membre = contour, aplat, ombre. Empiles dans l'ordre : tronc, membres, cou.
+  all.forEach(a=>{
+    const w=wOf(a),tip=(a!==torso&&a!==neck)?[a[a.length-2],a[a.length-1]]:null;
+    o+=ln(a,C_LINE,w+OUT)+(tip?ci(tip[0],tip[1],w/2+2+OUT/2,C_LINE):'');
+    o+=ln(a,C_BODY,w)+(tip?ci(tip[0],tip[1],w/2+2,C_BODY):'');
+    o+=`<g clip-path="url(#${cid})">${ln(a,C_SHADE,w)}${tip?ci(tip[0],tip[1],w/2+2,C_SHADE):''}</g>`;
+  });
+  if(p.h){
+    o+=ci(p.h[0],p.h[1],hr+OUT/2,C_LINE)+ci(p.h[0],p.h[1],hr,C_BODY);
+    o+=`<g clip-path="url(#${cid})">${ci(p.h[0],p.h[1],hr,C_SHADE)}</g>`;
+  }
+  // Materiel (elastique, corde, roue) : meme traitement, devant le corps.
   const ac=p.ac||'#ff8a3d';
-  (p.acc||[]).forEach(a=>{o+=ln(a,C_EDGE,11)+ln(a,ac,7);});
+  (p.acc||[]).forEach(a=>{o+=ln(a,C_LINE,13)+ln(a,ac,7);});
   if(p.circ){const[wx,wy,wr]=p.circ;
-    o+=`<circle cx="${wx}" cy="${wy}" r="${wr+2.5}" fill="${C_EDGE}"/><circle cx="${wx}" cy="${wy}" r="${wr}" fill="none" stroke="${ac}" stroke-width="7"/><circle cx="${wx}" cy="${wy}" r="4" fill="${ac}"/>`;}
-  o+=segs.map(a=>ln(a,'rgba(255,255,255,.24)',wOf(a)*0.26,' transform="translate(-2,-5.5)"')).join('');
-  if(p.h)o+=`<circle cx="${p.h[0]-4.5}" cy="${p.h[1]-5}" r="4" fill="rgba(255,255,255,.55)"/>`;
+    o+=ci(wx,wy,wr+7,C_LINE)+ci(wx,wy,wr+3.5,'var(--bgi)')+`<circle cx="${wx}" cy="${wy}" r="${wr}" fill="none" stroke="${ac}" stroke-width="7"/>`+ci(wx,wy,4,ac);}
   return o+`</g>`;
 }
 // Gainages : deux images identiques etiquetees "depart / arrivee" n'apprennent
@@ -1272,7 +1271,7 @@ function animSVG(key){
     const dx=i*W;
     body+=`<line class="floor" x1="${dx+24}" y1="162" x2="${dx+276}" y2="162"/>`;
     if(key==='wallsit')body+=`<line class="floor" x1="${dx+212}" y1="30" x2="${dx+212}" y2="162"/>`;
-    body+=pose3D(fr[i],dx);
+    body+=poseCel(fr[i],dx);
     // Ligne d'alignement : le corps doit former une seule droite tete-talons.
     const t=fr[i].p&&fr[i].p[0];
     if(hold&&t&&t.length>=4&&key!=='wallsit'){
@@ -1284,7 +1283,7 @@ function animSVG(key){
     body+=`<text class="figlbl" x="${dx+W/2}" y="190" text-anchor="middle">${lbl[i]||('ETAPE '+(i+1))}</text>`;
     if(i<n-1)body+=`<path class="figarrow" d="M${dx+W-14},96 l28,0 m-10,-10 l10,10 l-10,10"/>`;
   }
-  return`<svg viewBox="0 0 ${n*W} ${H}" role="img">${figDefs()}${body}</svg>`;
+  return`<svg viewBox="0 0 ${n*W} ${H}" role="img">${body}</svg>`;
 }
 
 /* ════════ PLANCHE PUSH-UP : SCHEMA + SURBRILLANCE ════════
