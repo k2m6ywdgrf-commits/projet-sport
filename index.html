@@ -1740,7 +1740,17 @@ async function clearPhoto(k){
    au modele 3D, puis au schema vectoriel.
    Exemple : mat_squat:{s:'squat_depart.webp', e:'squat_arrivee.webp'} */
 const PHOTO_BASE='photos/';
-const PHOTO={};
+const PHOTO={
+  // Lot 1 — le socle
+  board_standard:{s:'board_standard_s.webp',e:'board_standard_e.webp'},
+  mat_squat:     {s:'mat_squat_s.webp',     e:'mat_squat_e.webp'},
+  mat_plank:     {s:'mat_plank_s.webp'},                          // gainage tenu : une seule image
+  mat_crunch:    {s:'mat_crunch_s.webp',    e:'mat_crunch_e.webp'},
+  mat_glute:     {s:'mat_glute_s.webp',     e:'mat_glute_e.webp'},
+  mat_mountain:  {s:'mat_mountain_s.webp',  e:'mat_mountain_e.webp'},
+  jump_rope:     {s:'jump_rope_s.webp',     e:'jump_rope_e.webp'},
+  bands:         {s:'bands_s.webp',         e:'bands_e.webp'},
+};
 const MODEL_BASE='models/';
 const MODEL3D={};
 /* Visualiseur : copie locale d'abord (l'app doit marcher hors ligne), CDN en
