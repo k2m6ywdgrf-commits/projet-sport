@@ -310,6 +310,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .floor{stroke:var(--bd2);stroke-width:3;stroke-linecap:round;}
 .figlbl{font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;fill:var(--tmut);}
 .figarrow{stroke:var(--cb);stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.85;}
+.mvarrow{stroke:var(--cb);stroke-width:3.5;fill:var(--cb);stroke-linecap:round;stroke-linejoin:round;}
 .gline{stroke:var(--cg);stroke-width:3;stroke-dasharray:9 7;fill:none;opacity:.75;stroke-linecap:round;}
 .glbl{font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;fill:var(--cg);}
 .demo-sec{margin-bottom:11px;}
@@ -1169,7 +1170,7 @@ const FLOOR=158;
    aN/aF = [epaule, coude] du bras proche / eloigne ; lN/lF = [hanche, genou,
    cheville] ; hd = inclinaison de la tete ; lift = hauteur de saut. */
 function buildPose(o){
-  const front=o.v==='front',so=front?16:5,ho=front?10:4;
+  const front=o.v==='front',so=front?16:7,ho=front?10:6;
   const hip=[150,100],sp=o.sp,pp=sp+90;
   const sh=PT(hip,sp,RIG.torso);
   const hd=o.hd!==undefined?o.hd:sp;
@@ -1182,8 +1183,12 @@ function buildPose(o){
     acc:o.acc,ac:o.ac,front};
   // Le personnage est repose au sol puis recentre : les poses ne gerent que les angles.
   const pts=[P.head,P.neck,P.sh,P.hip,...P.armF,...P.armN,...P.legF,...P.legN];
-  const ys=pts.map(q=>q[1]),xs=pts.map(q=>q[0]);
-  const dy=FLOOR-Math.max(...ys)-(o.lift||0)-2;
+  const xs=pts.map(q=>q[0]);
+  // Appuis au sol : mains, pieds, bassin, epaules... mais JAMAIS la tete. Sinon
+  // une pose ou la tete descend (pompes epaules) souleve tout le corps.
+  const ysC=pts.slice(1).map(q=>q[1]);
+  const contact=Math.max(Math.max(...ysC),P.head[1]+RIG.headRy-5);
+  const dy=FLOOR-contact-(o.lift||0)-2;
   const dx=150-(Math.min(...xs)+Math.max(...xs))/2;
   [P.head,P.neck,P.sh,P.hip].forEach(q=>{q[0]+=dx;q[1]+=dy;});
   [P.armF,P.armN,P.legF,P.legN].forEach(c=>c.forEach(q=>{q[0]+=dx;q[1]+=dy;}));
@@ -1283,25 +1288,103 @@ function poseCel(pose,dx){
   if(P.acc==='rope'||P.acc==='ropeUp'){
     const up=P.acc==='ropeUp',my=up?P.head[1]-34:FLOOR+6;
     const d=`M${_f(h1[0])},${_f(h1[1])} Q${_f(cx)},${_f(my)} ${_f(h2[0])},${_f(h2[1])}`;o+=line(d,C_RIM,12)+line(d,ac,7);}
+  const mach=(d,w)=>`<path d="${d}" fill="none" stroke="${C_RIM}" stroke-width="${w+4}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${ac}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if(P.acc==='bike'){
+    const f1=P.legN[3],f2=P.legF[3],cr=[(f1[0]+f2[0])/2,(f1[1]+f2[1])/2],sd=[P.hip[0]+6,P.hip[1]+9],hb=[(h1[0]+h2[0])/2,(h1[1]+h2[1])/2];
+    o+=mach(`M${_f(sd[0])},${_f(sd[1])} L${_f(cr[0])},${_f(cr[1])} L${_f(hb[0])},${_f(hb[1])} M${_f(sd[0])},${_f(sd[1])} L${_f(hb[0])},${_f(hb[1])}`
+      +` M${_f(cr[0])},${_f(cr[1])} L${_f(cr[0]+4)},${FLOOR+4} M${_f(cr[0]-26)},${FLOOR+4} L${_f(cr[0]+34)},${FLOOR+4}`,5);
+    o+=`<circle cx="${_f(cr[0])}" cy="${_f(cr[1])}" r="20" fill="none" stroke="${C_RIM}" stroke-width="9"/><circle cx="${_f(cr[0])}" cy="${_f(cr[1])}" r="20" fill="none" stroke="${ac}" stroke-width="5"/>`;
+    o+=`<ellipse cx="${_f(sd[0])}" cy="${_f(sd[1])}" rx="15" ry="5" fill="${ac}" stroke="${C_RIM}" stroke-width="2.5"/>`;
+    o+=`<circle cx="${_f(hb[0])}" cy="${_f(hb[1])}" r="7" fill="${ac}" stroke="${C_RIM}" stroke-width="2.5"/>`;
+  }
+  if(P.acc==='tread'){
+    const y=FLOOR+4;
+    o+=mach(`M60,${y} L240,${y} M232,${y} L232,${_f(P.sh[1]-6)} L206,${_f(P.sh[1]-6)}`,6);
+  }
+  if(P.acc==='ellip'){
+    const f1=P.legN[3],f2=P.legF[3];
+    o+=mach(`M${_f(h1[0])},${_f(h1[1])} L${_f(f2[0])},${_f(f2[1]-4)} M${_f(h2[0])},${_f(h2[1])} L${_f(f1[0])},${_f(f1[1]-4)}`,5);
+    o+=mach(`M${_f(f1[0]-22)},${_f(FLOOR+4)} L${_f(f1[0]+26)},${_f(FLOOR+4)}`,5);
+  }
   if(P.acc==='wheel'){const w=[(h1[0]+h2[0])/2,(h1[1]+h2[1])/2+4];
     o+=`<circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="19" fill="${C_RIM}"/><circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="16" fill="var(--bgi)"/><circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="13" fill="none" stroke="${ac}" stroke-width="7"/><circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="4.5" fill="${ac}"/>`;}
   return o+`</g>`;
 }
 
+// Amplitude du geste : sert a n'afficher le fantome que s'il apporte vraiment
+// de l'information (sinon il se superpose a la pose et la brouille).
+function poseTravel(a,b){
+  const A=buildPose(a),B=buildPose(b);
+  const j=P=>[P.head,P.sh,P.hip,P.armN[2],P.legN[3],P.legN[1]];
+  const ja=j(A),jb=j(B);let m=0;
+  for(let i=0;i<ja.length;i++)m=Math.max(m,Math.hypot(jb[i][0]-ja[i][0],jb[i][1]-ja[i][1]));
+  return m;
+}
+// Silhouette de la position precedente, en fil de fer : on voit d'ou l'on part.
+function ghostSVG(pose,dx){
+  const P=buildPose(pose);
+  const mk=(pts,ws,bones)=>{const f=flesh(pts,ws,bones);return chain(f.P,f.W).d;};
+  const waist=[P.sh[0]+(P.hip[0]-P.sh[0])*.56,P.sh[1]+(P.hip[1]-P.sh[1])*.56];
+  const d=[mk(P.armF,W_ARM,B_ARM),mk(P.legF,W_LEG,B_LEG),chain([P.sh,waist,P.hip],[W_SH,W_WAIST,W_HIP]).d,
+           mk(P.armN,W_ARM,B_ARM),mk(P.legN,W_LEG,B_LEG)].join('');
+  return`<g transform="translate(${dx},0)" fill="none" stroke="var(--figRim)" stroke-width="2" opacity=".32" stroke-linejoin="round">`
+    +`<path d="${d}"/><ellipse cx="${_f(P.head[0])}" cy="${_f(P.head[1])}" rx="${RIG.headRx}" ry="${RIG.headRy}"/></g>`;
+}
+// Fleche de direction. On suit en priorite l'articulation qui PORTE le geste
+// (bassin, epaules), et seulement a defaut une extremite. La fleche est ensuite
+// repoussee a l'exterieur du corps pour ne jamais le traverser.
+function moveArrow(a,b,dx){
+  const A=buildPose(a),B=buildPose(b);
+  const j=P=>({hip:P.hip,sh:P.sh,head:P.head,hand:P.armN[2],foot:P.legN[3],knee:P.legN[1]});
+  const pa=j(A),pb=j(B);
+  const d=k=>Math.hypot(pb[k][0]-pa[k][0],pb[k][1]-pa[k][1]);
+  let best=null;
+  for(const k of['hip','sh'])if(d(k)>=11){best=(d('hip')>=d('sh')?'hip':'sh');break;}
+  if(!best){let bd=13;for(const k of['foot','hand','head','knee'])if(d(k)>bd){bd=d(k);best=k;}}
+  if(!best)return'';
+  const p0=pa[best],p1=pb[best],L=d(best);
+  // Decalage PERPENDICULAIRE au deplacement, du cote oppose au corps : la
+  // fleche longe le geste au lieu de le couper en diagonale.
+  const all=[];[A,B].forEach(P=>all.push(P.head,P.sh,P.hip,...P.armN,...P.legN,...P.armF,...P.legF));
+  const cx=all.reduce((s,q)=>s+q[0],0)/all.length,cy=all.reduce((s,q)=>s+q[1],0)/all.length;
+  const mx=(p0[0]+p1[0])/2,my=(p0[1]+p1[1])/2;
+  const vx=(p1[0]-p0[0])/L,vy=(p1[1]-p0[1])/L;
+  let ox=-vy,oy=vx;
+  if((mx-cx)*ox+(my-cy)*oy<0){ox=-ox;oy=-oy;}
+  // On projette toute la silhouette sur cet axe : la fleche se place au-dela.
+  let ext=0;all.forEach(q=>{ext=Math.max(ext,(q[0]-mx)*ox+(q[1]-my)*oy);});
+  const OFF=ext+26;
+  const s0=[p0[0]+ox*OFF,p0[1]+oy*OFF],s1=[p1[0]+ox*OFF,p1[1]+oy*OFF];
+  // On ramene la fleche dans le cadre : elle debordait sous le sol ou sur l'etiquette.
+  const bx=[16,284],by=[16,150];
+  const sx=Math.min(0,bx[1]-Math.max(s0[0],s1[0]))+Math.max(0,bx[0]-Math.min(s0[0],s1[0]));
+  const sy=Math.min(0,by[1]-Math.max(s0[1],s1[1]))+Math.max(0,by[0]-Math.min(s0[1],s1[1]));
+  s0[0]+=sx;s1[0]+=sx;s0[1]+=sy;s1[1]+=sy;
+  const ux=(s1[0]-s0[0])/L,uy=(s1[1]-s0[1])/L;
+  const hl=13,ha=Math.atan2(uy,ux);
+  const tail=[s0[0]+ux*4,s0[1]+uy*4],tip=[s1[0]-ux*2,s1[1]-uy*2];
+  const base=[tip[0]-hl*Math.cos(ha),tip[1]-hl*Math.sin(ha)];
+  const w1=[base[0]-8*Math.cos(ha-Math.PI/2),base[1]-8*Math.sin(ha-Math.PI/2)];
+  const w2=[base[0]+8*Math.cos(ha-Math.PI/2),base[1]+8*Math.sin(ha-Math.PI/2)];
+  return`<g transform="translate(${dx},0)" class="mvarrow">`
+    +`<path d="M${_f(tail[0])},${_f(tail[1])} L${_f(base[0])},${_f(base[1])}" fill="none"/>`
+    +`<path d="M${_f(tip[0])},${_f(tip[1])} L${_f(w1[0])},${_f(w1[1])} L${_f(w2[0])},${_f(w2[1])} Z" stroke="none"/></g>`;
+}
+
 /* Poses : uniquement des angles. Vue de profil, le personnage regarde a gauche. */
 const POSE={
   pu:[{sp:194,aN:[90,90],aF:[93,87],lN:[8,8,68],lF:[10,10,70]},
-      {sp:194,aN:[46,148],aF:[49,145],lN:[8,8,68],lF:[10,10,70]}],
+      {sp:194,aN:[32,160],aF:[35,157],lN:[8,8,68],lF:[10,10,70]}],
   puk:[{sp:194,aN:[90,90],aF:[93,87],lN:[22,-18,-45],lF:[24,-16,-43]},
-       {sp:194,aN:[46,148],aF:[49,145],lN:[22,-18,-45],lF:[24,-16,-43]}],
+       {sp:194,aN:[32,160],aF:[35,157],lN:[22,-18,-45],lF:[24,-16,-43]}],
   pike:[{sp:152,aN:[90,90],aF:[93,87],lN:[60,60,72],lF:[62,62,74]},
-        {sp:152,aN:[50,144],aF:[53,141],lN:[60,60,72],lF:[62,62,74]}],
+        {sp:152,aN:[36,158],aF:[39,155],lN:[60,60,72],lF:[62,62,74]}],
   plank:[{sp:194,aN:[104,177],aF:[107,175],lN:[8,8,68],lF:[10,10,70]}],
   splank:[{sp:200,aN:[104,177],aF:[-70,-70],lN:[10,10,68],lF:[13,13,70]}],
   crunch:[{sp:181,aN:[226,158],aF:[229,161],lN:[308,62,-22],lF:[311,65,-20]},
-          {sp:200,aN:[230,162],aF:[233,165],lN:[308,62,-22],lF:[311,65,-20]}],
-  bicycle:[{sp:190,aN:[244,140],aF:[214,168],lN:[300,68,-22],lF:[8,8,-42]},
-           {sp:190,aN:[214,168],aF:[244,140],lN:[8,8,-42],lF:[300,68,-22]}],
+          {sp:210,aN:[236,166],aF:[239,169],lN:[308,62,-22],lF:[311,65,-20]}],
+  bicycle:[{sp:188,aN:[236,150],aF:[232,146],lN:[296,62,-26],lF:[6,6,-44]},
+           {sp:188,aN:[232,146],aF:[236,150],lN:[292,58,-28],lF:[10,10,-40],hd:196}],
   legraise:[{sp:180,aN:[14,14],aF:[17,17],lN:[2,2,-58],lF:[4,4,-56]},
             {sp:180,aN:[14,14],aF:[17,17],lN:[-78,-78,-10],lF:[-76,-76,-8]}],
   hollow:[{sp:202,aN:[238,238],aF:[241,241],lN:[-26,-26,-18],lF:[-24,-24,-16]}],
@@ -1331,16 +1414,16 @@ const POSE={
          {sp:-92,aN:[100,96],aF:[103,93],lN:[168,80,176],lF:[22,112,58]}],
   wallsit:[{sp:-90,aN:[178,178],aF:[181,181],lN:[182,80,176],lF:[185,83,178]}],
   calf:[{sp:-90,aN:[101,106],aF:[83,79],lN:[88,90,4],lF:[92,90,172]},
-        {sp:-90,aN:[101,106],aF:[83,79],lN:[88,88,-28],lF:[90,88,-26]}],
+        {sp:-90,aN:[101,106],aF:[83,79],lN:[88,88,-48],lF:[90,88,-46]}],
   jumpsquat:[{sp:-114,aN:[176,176],aF:[179,179],lN:[184,74,176],lF:[187,77,178]},
              {v:'front',sp:-90,aN:[-62,-56],aF:[242,236],lN:[80,85,24],lF:[100,95,156],lift:26},
              {sp:-106,aN:[168,168],aF:[171,171],lN:[178,72,176],lF:[181,75,178]}],
-  bike:[{sp:-104,aN:[172,172],aF:[175,175],lN:[132,66,140],lF:[38,108,32]},
-        {sp:-104,aN:[172,172],aF:[175,175],lN:[38,108,32],lF:[132,66,140]}],
-  ellip:[{sp:-92,aN:[158,148],aF:[22,32],lN:[158,84,174],lF:[26,104,36]},
-         {sp:-92,aN:[22,32],aF:[158,148],lN:[26,104,36],lF:[158,84,174]}],
-  tread:[{sp:-96,aN:[-28,58],aF:[152,118],lN:[148,68,168],lF:[34,112,42]},
-         {sp:-96,aN:[152,118],aF:[-28,58],lN:[34,112,42],lF:[148,68,168]}]
+  bike:[{sp:-108,aN:[186,182],aF:[189,185],lN:[150,64,150],lF:[24,104,20],lift:34,acc:'bike',ac:'#5ee7ff'},
+        {sp:-108,aN:[186,182],aF:[189,185],lN:[24,104,20],lF:[150,64,150],lift:34,acc:'bike',ac:'#5ee7ff'}],
+  ellip:[{sp:-93,aN:[166,164],aF:[14,18],lN:[132,90,174],lF:[46,96,26],acc:'ellip',ac:'#a78bfa'},
+         {sp:-93,aN:[14,18],aF:[166,164],lN:[46,96,26],lF:[132,90,174],acc:'ellip',ac:'#a78bfa'}],
+  tread:[{sp:-97,aN:[-34,52],aF:[146,112],lN:[126,84,170],lF:[50,94,40],acc:'tread',ac:'#34d399'},
+         {sp:-97,aN:[146,112],aF:[-34,52],lN:[50,94,40],lF:[126,84,170],acc:'tread',ac:'#34d399'}]
 };
 function polyPts(a){let s='';for(let i=0;i<a.length;i+=2)s+=(i?' ':'')+a[i]+','+a[i+1];return s;}
 
@@ -1358,7 +1441,9 @@ function animSVG(key){
     body+=`<line class="floor" x1="${dx+22}" y1="161" x2="${dx+278}" y2="161"/>`;
     if(key==='wallsit'){const W2=buildPose(fr[i]),wx=Math.max(W2.sh[0],W2.hip[0])+17;
       body+=`<line class="floor" x1="${_f(dx+wx)}" y1="30" x2="${_f(dx+wx)}" y2="161"/>`;}
+    if(!hold&&i>0&&!fr[i-1].lift&&!fr[i].lift&&poseTravel(fr[i-1],fr[i])>26)body+=ghostSVG(fr[i-1],dx);// d'ou l'on part
     body+=poseCel(fr[i],dx);
+    if(!hold&&i>0)body+=moveArrow(fr[i-1],fr[i],dx);
     if(hold&&key!=='wallsit'){
       const P=buildPose(fr[i]),a=P.head,b=P.legN[2];
       const ex=(b[0]-a[0])*0.1,ey=(b[1]-a[1])*0.1;
