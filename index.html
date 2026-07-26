@@ -328,6 +328,9 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .blg.on{color:var(--tm);border-color:currentColor;}
 @keyframes bdRing{0%,100%{opacity:.35;stroke-width:3}50%{opacity:1;stroke-width:6}}
 .bd-hi{fill:none;animation:bdRing 1.5s ease-in-out infinite;}
+.demo-view{background:var(--bgi);border:1px solid var(--bd2);color:var(--tm);font-size:9px;font-weight:900;letter-spacing:.5px;padding:5px 9px;border-radius:9px;cursor:pointer;white-space:nowrap;}
+.demo-load{display:flex;align-items:center;justify-content:center;height:200px;font-size:11px;font-weight:700;color:var(--tmut);}
+.demo-hint{text-align:center;font-size:9px;color:var(--tmut);padding:2px 0 6px;}
 .demo-mute{display:block;margin:12px auto 0;background:none;border:none;color:var(--tmut);font-size:10px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 10px;opacity:.75;}
 .info-b{background:none;border:1px solid var(--bd2);color:var(--tmut);width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .info-b:active{border-color:var(--cb);color:var(--cb);}
@@ -391,7 +394,10 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
         <div class="demo-name" id="demo-name"></div>
         <div class="demo-mus" id="demo-mus"></div>
       </div>
-      <button class="demo-x" onclick="closeDemo()">&times;</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <button class="demo-x" onclick="closeDemo()">&times;</button>
+        <button class="demo-view" id="demo-viewbtn" style="display:none" onclick="togDemoView()">&#x1F9CA; 3D</button>
+      </div>
     </div>
     <div class="demo-stage" id="demo-stage"></div>
     <div id="demo-board"></div>
@@ -541,6 +547,8 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
     <div class="set-grp" style="border-color:var(--cb)"><span class="hud-name" style="color:var(--cb)">&#x1F393; COACHING</span>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Fiches des nouveaux mouvements</span><div class="tsw on" id="demo-tsw" onclick="togDemoAuto()"></div></div>
       <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">La fiche d'un exercice s'ouvre automatiquement la premiere fois que tu le rencontres. Le bouton (i) reste disponible a tout moment.</p>
+      <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Coach 3D</span><div class="tsw on" id="d3-tsw" onclick="tog3D()"></div></div>
+      <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">Affiche un personnage 3D anime quand un modele existe pour l'exercice. Sinon, et hors ligne, la fiche montre le schema.</p>
       <button class="toggle-btn mt" style="width:100%;font-size:11px" onclick="openBoardGuide()">&#x1F3CB;&#xFE0F; GUIDE DE LA PLANCHE PUSH-UP</button>
       <button class="toggle-btn mt" style="width:100%;font-size:11px" onclick="resetDemos()">&#x1F441;&#xFE0F; REAFFICHER TOUTES LES FICHES</button>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Sons</span><div class="tsw on" id="snd-tsw" onclick="togSound()"></div></div>
@@ -774,7 +782,7 @@ async function reqWL(){if(!('wakeLock'in navigator))return;try{wl=await navigato
 function relWL(){if(wl){wl.release();wl=null;}}
 function togSound(){S.sound=S.sound===false;save();document.getElementById('snd-tsw').classList.toggle('on',S.sound!==false);if(S.sound!==false)beep(880,90);}
 function togVib(){S.vibrate=S.vibrate===false;save();document.getElementById('vib-tsw').classList.toggle('on',S.vibrate!==false);if(S.vibrate!==false)buzz(60);}
-function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});}
+function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'d3-tsw':S.use3D!==false};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});}
 function togTheme(){S.theme=S.theme==='dark'?'light':'dark';applyTheme();save();}
 function applyTheme(){if(S.theme==='light'){document.body.classList.add('light');document.getElementById('tsw').classList.add('on');}else{document.body.classList.remove('light');document.getElementById('tsw').classList.remove('on');}}
 function checkSaveReminder(){if(S.totalWO<1)return;const d=S.lastExport?Math.floor((Date.now()-new Date(S.lastExport))/86400000):999;if(d>=60)setTimeout(()=>document.getElementById('save-popup').classList.add('show'),2500);}
@@ -1235,6 +1243,26 @@ const W_ARM=[15,10,7.5],W_LEG=[20,12.5,8.5,7];
 const B_ARM=[{t:.44,w:15.5},{t:.32,w:11.5}];              // biceps, avant-bras
 const B_LEG=[{t:.42,w:20.5},{t:.28,w:14.5},null];         // quadriceps, mollet
 const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)',C_SHIRT='#3d4a66',C_SHIRT2='#2c3752';
+const C_FACE='#232b3d',C_HAIR='#2f3950';
+/* Repere local de la tete apres rotation : -y = sommet du crane, -x = l'AVANT
+   du visage. Le nez depasse volontairement du contour, c'est lui qui donne le
+   sens du regard d'un seul coup d'oeil. */
+function faceSVG(front){
+  const rx=RIG.headRx,ry=RIG.headRy;
+  const eye=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="1.75" ry="2.4" fill="${C_FACE}"/>`;
+  if(front)return`<path d="M${-rx+.5},-3 C${-rx+.5},${-ry-1.2} ${-rx*.55},${-ry-2.4} 0,${-ry-2.4}`
+      +` C${rx*.55},${-ry-2.4} ${rx-.5},${-ry-1.2} ${rx-.5},-3`
+      +` C${rx-3.4},-8.8 ${rx-6.5},-10.4 0,-10.4 C${-rx+6.5},-10.4 ${-rx+3.4},-8.8 ${-rx+.5},-3 Z" fill="${C_HAIR}"/>`
+    +eye(-4.2,-0.3)+eye(4.2,-0.3)
+    +`<path d="M0,2.2 L-1.7,5.4" fill="none" stroke="${C_FACE}" stroke-width="1.3" stroke-linecap="round"/>`
+    +`<path d="M-3.3,8.2 Q0,10.4 3.3,8.2" fill="none" stroke="${C_FACE}" stroke-width="1.5" stroke-linecap="round"/>`;
+  // Profil : cheveux sur le crane et la nuque, visage degage vers l'avant.
+  return`<path d="M${-rx+2.4},-5.5 C${-rx+1},${-ry-1.4} ${-rx*.4},${-ry-2.6} ${rx*.2},${-ry-1.8}`
+      +` C${rx-.6},${-ry+2.6} ${rx+1},-3.5 ${rx-.8},5.5 C${rx-2.2},-2.5 ${rx-5},-7.4 ${-rx+2.4},-5.5 Z" fill="${C_HAIR}"/>`
+    +eye(-4.8,-0.6)
+    +`<path d="M${-rx+1.4},1.2 L${-rx-2.8},4 L${-rx+2},5.4 Z" fill="${C_FACE}"/>`
+    +`<path d="M${-rx+3.4},8.4 L${-rx+7.4},8.7" fill="none" stroke="${C_FACE}" stroke-width="1.5" stroke-linecap="round"/>`;
+}
 let _gid=0;
 function poseCel(pose,dx,mask){
   const P=buildPose(pose);
@@ -1282,9 +1310,10 @@ function poseCel(pose,dx,mask){
     +` C${-6-k},${RIG.headRy+k} ${-RIG.headRx-k},${7+k} ${-RIG.headRx-k},${-2}`
     +` C${-RIG.headRx-k},${-9-k*.5} ${-7-k},${-RIG.headRy-k} 0,${-RIG.headRy-k} Z`;
   if(mask){
-    const gh=mask==='ghost';
+    const gh=mask==='ghost',si=mask==='silh';
     const allc=[...far,...body,...near];
     let m=gh?`<g transform="translate(${dx},0)" opacity=".26" fill="var(--figRim)">`
+        :si?`<g transform="translate(${dx},0)" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round">`
             :`<g transform="translate(${dx},0)" fill="#000" stroke="#000" stroke-width="7" stroke-linejoin="round">`;
     m+=allc.map(q=>`<path d="${q.d}"/>`).join('');
     allc.forEach(q=>{q.balls.forEach(([x,y,r])=>m+=`<circle cx="${_f(x)}" cy="${_f(y)}" r="${_f(r)}"/>`);
@@ -1304,19 +1333,26 @@ function poseCel(pose,dx,mask){
   o+=dress(tee,C_SHIRT);
   o+=`<g transform="translate(${_f(P.head[0])} ${_f(P.head[1])}) rotate(${_f(ang)})">`
     +`<path d="${egg(1.4)}" fill="${C_RIM}"/><path d="${egg(0)}" fill="url(#${gid})"/>`
-    +`<ellipse cx="-4" cy="-6" rx="4.6" ry="6" transform="rotate(-18 -4 -6)" fill="url(#h${gid})"/></g>`;
+    +`<ellipse cx="-4" cy="-9" rx="4" ry="4.6" transform="rotate(-18 -4 -9)" fill="url(#h${gid})"/>`
+    +faceSVG(P.front)+`</g>`;
   o+=roots(0)(near);                   // epaule et hanche fondues dans le tronc
   o+=grp(near,ovals[1]);               // membres proches : devant
   o+=dress(sleeve(P.armN),C_SHIRT);
-  // Reperes de face : "COACH" sur la poitrine ; de profil, la bande de col.
   const pp=Math.atan2(P.sh[1]-P.hip[1],P.sh[0]-P.hip[0])/D2R;   // axe du tronc
   const fr=pp-90;                                               // normale avant
+  // Flocage : une ombre portee sombre sous la lettre claire, comme un imprime.
+  const floc=(c,sx)=>{
+    const t=(fill,ox,oy)=>`<text x="${_f(ox)}" y="${_f(oy)}" text-anchor="middle" dominant-baseline="central" font-size="8.5" font-weight="900" letter-spacing=".6" fill="${fill}" font-family="-apple-system,Helvetica Neue,Helvetica,sans-serif">COACH</text>`;
+    return`<g transform="translate(${_f(c[0])} ${_f(c[1])}) rotate(${_f(pp+90)})${sx?` scale(${sx},1)`:''}">`
+      +t('#151d2f',.8,1.1)+t('#f4f8ff',0,0)+`</g>`;
+  };
   if(P.front){
-    const c=lerp(P.sh,shirtBot,.42);
-    o+=`<text x="${_f(c[0])}" y="${_f(c[1])}" transform="rotate(${_f(pp+90)} ${_f(c[0])} ${_f(c[1])})" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="900" letter-spacing=".4" fill="#eaf2ff" font-family="-apple-system,Helvetica,sans-serif">COACH</text>`;
+    o+=floc(lerp(P.sh,shirtBot,.42),0);
   }else{
-    const a=PT(lerp(P.sh,shirtBot,.06),fr,W_SH/2-4.5),b=PT(lerp(P.sh,shirtBot,.62),fr,shirtW/2-4);
-    o+=`<path d="${chain([a,b],[5,4]).d}" fill="#eaf2ff" opacity=".9"/>`;
+    // De profil un mot comprime reste illisible : on garde la bande de col,
+    // c'est le visage qui donne desormais le sens.
+    const a=PT(lerp(P.sh,shirtBot,.05),fr,W_SH/2-5),b=PT(lerp(P.sh,shirtBot,.58),fr,shirtW/2-4.5);
+    o+=`<path d="${chain([a,b],[4.5,3.6]).d}" fill="#eaf2ff" opacity=".85"/>`;
   }
   }
   // Materiel, place d'apres la position reelle des mains.
@@ -1346,7 +1382,17 @@ function poseCel(pose,dx,mask){
   }
   if(P.acc==='wheel'){const w=[(h1[0]+h2[0])/2,(h1[1]+h2[1])/2+4];
     o+=`<circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="19" fill="${C_RIM}"/><circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="16" fill="var(--bgi)"/><circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="13" fill="none" stroke="${ac}" stroke-width="7"/><circle cx="${_f(w[0])}" cy="${_f(w[1])}" r="4.5" fill="${ac}"/>`;}
-  return o+`</g>`;
+  o+=`</g>`;
+  // Ombre propre : un aplat degrade applique a la silhouette ENTIERE via un
+  // masque. Une seule passe, donc aucune tache aux recouvrements de membres.
+  const sm='sm'+gid;
+  o+=`<defs><linearGradient id="g${sm}" x1="0" y1="0" x2=".85" y2="1">`
+    +`<stop offset="0" stop-color="#0a1020" stop-opacity="0"/><stop offset=".42" stop-color="#0a1020" stop-opacity=".05"/>`
+    +`<stop offset="1" stop-color="#070d1a" stop-opacity=".4"/></linearGradient>`
+    +`<mask id="${sm}" maskUnits="userSpaceOnUse" x="${dx}" y="0" width="300" height="200">`
+    +`<rect x="${dx}" y="0" width="300" height="200" fill="#000"/>${poseCel(pose,dx,'silh')}</mask></defs>`
+    +`<rect x="${dx}" y="0" width="300" height="200" fill="url(#g${sm})" mask="url(#${sm})"/>`;
+  return o;
 }
 
 // Amplitude du geste : sert a n'afficher le fantome que s'il apporte vraiment
@@ -1582,6 +1628,67 @@ const DEMO={
 };
 const WU_DEMO={'Rotations des epaules':'bands','Cercles de bras':'bands','Flexions du cou':'bands','Ouverture de poitrine':'bands','Rotations du buste':'russian','Chat-Vache':'plank','Marche sur place':'tread','Sauts legers':'jumprope','Mobilite des poignets':'pu','Fentes marchees':'lunge','Balancers de jambe':'lunge'};
 
+/* ════════ COACH 3D ════════
+   Registre des modeles animes : cle d'exercice -> fichier glTF/GLB (+ nom du
+   clip d'animation s'il y en a plusieurs dans le fichier).
+   Les fichiers vont dans le dossier MODEL_BASE, a cote de index.html.
+   Tant qu'un exercice n'est pas dans ce registre — ou que le modele ne charge
+   pas (hors ligne, CDN bloque) — la fiche retombe sur le schema vectoriel.
+   Exemple : mat_squat:{f:'squat.glb', a:'Squat'} */
+const MODEL_BASE='models/';
+const MODEL3D={};
+/* Visualiseur : copie locale d'abord (l'app doit marcher hors ligne), CDN en
+   secours. Pour la version locale, deposer model-viewer.min.js dans MODEL_BASE. */
+const MV_SRC=[MODEL_BASE+'model-viewer.min.js',
+              'https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js'];
+let mvState='idle';                       // idle | loading | ready | failed
+let demoView='auto';                      // auto | 2d | 3d
+function has3D(k){return S.use3D!==false&&!!MODEL3D[k]&&mvState!=='failed';}
+// Chargement paresseux : le visualiseur n'est telecharge qu'a la premiere fiche 3D.
+function loadMV(){
+  if(mvState==='ready')return Promise.resolve(true);
+  if(mvState==='failed')return Promise.resolve(false);
+  if(mvState==='loading')return customElements.whenDefined('model-viewer').then(()=>true).catch(()=>false);
+  mvState='loading';
+  const tryOne=src=>new Promise(res=>{
+    let settled=false;const fin=ok=>{if(!settled){settled=true;clearTimeout(to);res(ok);}};
+    const to=setTimeout(()=>fin(false),9000);
+    const sc=document.createElement('script');sc.type='module';sc.src=src;
+    sc.onerror=()=>fin(false);
+    sc.onload=()=>customElements.whenDefined('model-viewer').then(()=>fin(true),()=>fin(false));
+    document.head.appendChild(sc);
+  });
+  return (async()=>{
+    for(const src of MV_SRC){if(await tryOne(src)){mvState='ready';return true;}}
+    mvState='failed';return false;
+  })();
+}
+function stage3D(key){
+  const m=MODEL3D[key];
+  return`<model-viewer id="mv3d" src="${MODEL_BASE}${m.f}"${m.a?` animation-name="${m.a}"`:''} autoplay
+    camera-controls touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" exposure="1.05"
+    camera-orbit="15deg 82deg 105%" min-camera-orbit="auto 20deg auto" max-camera-orbit="auto 100deg auto"
+    style="width:100%;height:270px;background:transparent"></model-viewer>
+    <div class="demo-hint">Fais glisser pour tourner autour du coach</div>`;
+}
+// Choisit 3D ou schema, et bascule tout seul sur le schema si le modele echoue.
+function renderDemoStage(key){
+  const st=document.getElementById('demo-stage'),bt=document.getElementById('demo-viewbtn');
+  const can3=has3D(key),use3=can3&&demoView!=='2d';
+  if(bt){bt.style.display=can3?'block':'none';bt.innerHTML=use3?'&#x1F4D0; SCHEMA':'&#x1F9CA; 3D';}
+  if(!use3){st.innerHTML=animSVG(DEMO[key].a);return;}
+  st.innerHTML='<div class="demo-load">Chargement du coach 3D...</div>';
+  loadMV().then(ok=>{
+    if(document.getElementById('demo-name').dataset.k!==key)return;   // fiche changee entre-temps
+    if(!ok){st.innerHTML=animSVG(DEMO[key].a);if(bt)bt.style.display='none';return;}
+    st.innerHTML=stage3D(key);
+    const mv=document.getElementById('mv3d');
+    if(mv)mv.addEventListener('error',()=>{st.innerHTML=animSVG(DEMO[key].a);if(bt)bt.style.display='none';},{once:true});
+  });
+}
+function togDemoView(){demoView=(demoView==='2d')?'3d':'2d';renderDemoStage(demoKey);}
+function tog3D(){S.use3D=S.use3D===false;save();document.getElementById('d3-tsw').classList.toggle('on',S.use3D!==false);if(demoKey)renderDemoStage(demoKey);}
+
 /* ════════ MODALE DEMO ════════ */
 let demoQ=[],demoI=0,demoKey=null;
 function exKeyOf(ex){if(!ex)return null;if(ex.k&&DEMO[ex.k])return ex.k;const n=(ex.n||'').toLowerCase();return Object.keys(DEMO).find(k=>(EX[k]?.n||'').toLowerCase()===n)||null;}
@@ -1592,7 +1699,8 @@ function openDemo(key,queue){
   document.getElementById('demo-step').innerText=demoQ.length>1?`NOUVEAU MOUVEMENT ${demoI+1} / ${demoQ.length}`:'COMMENT FAIRE';
   document.getElementById('demo-name').innerText=ex.n||key;
   document.getElementById('demo-mus').innerText='Muscles : '+d.m;
-  document.getElementById('demo-stage').innerHTML=animSVG(d.a);
+  document.getElementById('demo-name').dataset.k=key;
+  renderDemoStage(key);
   document.getElementById('demo-board').innerHTML=boardBlock(d.bd);
   document.getElementById('demo-cues').innerHTML=d.c.map((t,i)=>`<div class="demo-li"><b>${i+1}.</b><span>${t}</span></div>`).join('');
   document.getElementById('demo-err').innerHTML=d.e.map(t=>`<div class="demo-li err"><b>&times;</b><span>${t}</span></div>`).join('');
@@ -1621,6 +1729,8 @@ function openBoardGuide(){
   document.getElementById('demo-step').innerText='GUIDE';
   document.getElementById('demo-name').innerText='Planche Push-Up';
   document.getElementById('demo-mus').innerText='Code couleur des reperes';
+  document.getElementById('demo-name').dataset.k='';
+  const vb=document.getElementById('demo-viewbtn');if(vb)vb.style.display='none';
   document.getElementById('demo-stage').innerHTML=boardSVG(null);
   document.getElementById('demo-board').innerHTML=`<div class="demo-sec"><div class="board-legend">${legend}</div></div>`;
   document.getElementById('demo-cues').innerHTML=[
