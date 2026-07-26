@@ -7,7 +7,21 @@ mouvement l'affiche à la place du schéma, avec un bouton pour revenir au sché
 Tant qu'un exercice n'a pas ses photos, il garde son schéma vectoriel — qui
 reste la seule source couvrant les 31 exercices, hors ligne et sans téléchargement.
 
-## Déclarer une paire
+## Le plus simple : depuis l'app
+
+**Réglages → Coaching → 📷 CHARGER MES PHOTOS D'EXERCICES.**
+
+La liste des 31 exercices s'affiche avec deux emplacements chacun (départ /
+arrivée). On choisit une image depuis le téléphone, elle est redimensionnée à
+900 px et convertie en WebP automatiquement, puis rangée dans le navigateur
+(IndexedDB). Aucun fichier à déposer, aucune ligne de code.
+
+Ces photos **restent sur l'appareil** : elles ne partent pas dans la synchro
+cloud, qui ne transporte que des données de séance. Sur un second appareil, il
+faut les recharger — ou passer par la méthode ci-dessous, qui les livre avec
+l'app pour tout le monde.
+
+## L'autre méthode : livrées avec l'app
 
 1. Déposer les deux fichiers ici (`.webp` de préférence, sinon `.png`).
 2. Les enregistrer dans `index.html`, objet `PHOTO` :
