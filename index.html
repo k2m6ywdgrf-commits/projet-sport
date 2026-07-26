@@ -1234,7 +1234,7 @@ function chain(pts,ws,rootR){
 const W_ARM=[15,10,7.5],W_LEG=[20,12.5,8.5,7];
 const B_ARM=[{t:.44,w:15.5},{t:.32,w:11.5}];              // biceps, avant-bras
 const B_LEG=[{t:.42,w:20.5},{t:.28,w:14.5},null];         // quadriceps, mollet
-const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)';
+const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)',C_SHIRT='#3d4a66',C_SHIRT2='#2c3752';
 let _gid=0;
 function poseCel(pose,dx,mask){
   const P=buildPose(pose);
@@ -1245,6 +1245,11 @@ function poseCel(pose,dx,mask){
   const near=[mk(P.armN,W_ARM,B_ARM,R_DELT),mk(P.legN,W_LEG,B_LEG,R_HIP)];
   // Tronc en trois points : epaules larges, taille marquee, bassin qui reprend.
   const waist=[P.sh[0]+(P.hip[0]-P.sh[0])*.56,P.sh[1]+(P.hip[1]-P.sh[1])*.56];
+  // Tee-shirt : sans lui, impossible de dire ou est le devant du corps.
+  const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+  const shirtBot=lerp(P.sh,P.hip,.72),shirtW=W_SH-(W_SH-W_WAIST)*.72;
+  const tee=chain([P.sh,shirtBot],[W_SH-1,shirtW-1]);
+  const sleeve=A=>chain([A[0],lerp(A[0],A[1],.48)],[W_ARM[0]+1.5,15.8]);
   const body=[chain([P.sh,waist,P.hip],[W_SH,W_WAIST,W_HIP]),chain([P.sh,P.neck],[14,12.5])];
   // Main : ovale oriente dans l'axe de l'avant-bras.
   const ovg=(a,b,rx,ry,ext)=>{const an=Math.atan2(b[1]-a[1],b[0]-a[0])/D2R,c=PT(b,an,ext||0);
@@ -1289,13 +1294,30 @@ function poseCel(pose,dx,mask){
     return m+`</g>`;
   }
   if(!mask){
+  // Cote oppose legerement assombri : c'est ce qui separe l'avant de l'arriere.
+  const wash=list=>`<g opacity=".26" fill="#101828">${list.map(q=>`<path d="${q.d}"/>`).join('')}`
+    +list.map(q=>q.balls.map(([x,y,r])=>`<circle cx="${_f(x)}" cy="${_f(y)}" r="${_f(r)}"/>`).join('')).join('')+`</g>`;
+  const dress=(q,c)=>`<path d="${q.d}" fill="${c}"/>`;
   o+=grp(far,ovals[0]);                // membres eloignes : au fond
+  o+=dress(sleeve(P.armF),C_SHIRT2)+wash(far);
   o+=grp(body);                        // tronc et cou
+  o+=dress(tee,C_SHIRT);
   o+=`<g transform="translate(${_f(P.head[0])} ${_f(P.head[1])}) rotate(${_f(ang)})">`
     +`<path d="${egg(1.4)}" fill="${C_RIM}"/><path d="${egg(0)}" fill="url(#${gid})"/>`
     +`<ellipse cx="-4" cy="-6" rx="4.6" ry="6" transform="rotate(-18 -4 -6)" fill="url(#h${gid})"/></g>`;
   o+=roots(0)(near);                   // epaule et hanche fondues dans le tronc
   o+=grp(near,ovals[1]);               // membres proches : devant
+  o+=dress(sleeve(P.armN),C_SHIRT);
+  // Reperes de face : "COACH" sur la poitrine ; de profil, la bande de col.
+  const pp=Math.atan2(P.sh[1]-P.hip[1],P.sh[0]-P.hip[0])/D2R;   // axe du tronc
+  const fr=pp-90;                                               // normale avant
+  if(P.front){
+    const c=lerp(P.sh,shirtBot,.42);
+    o+=`<text x="${_f(c[0])}" y="${_f(c[1])}" transform="rotate(${_f(pp+90)} ${_f(c[0])} ${_f(c[1])})" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="900" letter-spacing=".4" fill="#eaf2ff" font-family="-apple-system,Helvetica,sans-serif">COACH</text>`;
+  }else{
+    const a=PT(lerp(P.sh,shirtBot,.06),fr,W_SH/2-4.5),b=PT(lerp(P.sh,shirtBot,.62),fr,shirtW/2-4);
+    o+=`<path d="${chain([a,b],[5,4]).d}" fill="#eaf2ff" opacity=".9"/>`;
+  }
   }
   // Materiel, place d'apres la position reelle des mains.
   const ac=P.ac||'#ff8a3d',h1=P.armF[2],h2=P.armN[2];
