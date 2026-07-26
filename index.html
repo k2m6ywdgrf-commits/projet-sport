@@ -10,8 +10,8 @@
 <link rel="apple-touch-icon" href="icon.png">
 <title>CYBER_PUMP v3</title>
 <style>
-:root{--bg:#070a16;--bg2:#0c1230;--bgc:#10142a;--bgi:#161b38;--tm:#f3f5fc;--tmut:#7d84ab;--cy:#fbbf24;--cw:#fff;--cb:#5ee7ff;--cp:#a78bfa;--cr:#fb7185;--cg:#34d399;--co:#ff8a3d;--bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.14);--gy:rgba(251,191,36,.22);--gb:rgba(94,231,255,.22);--gr:rgba(251,113,133,.22);--gg:rgba(52,211,153,.22);--go:rgba(255,138,61,.22);--figline:#eaf9ff;--figshadow:#04101a;}
-body.light{--bg:#eef0f8;--bg2:#fff;--bgc:#fff;--bgi:#eef0fa;--tm:#0d0e20;--tmut:#5c619a;--cy:#b8920a;--cw:#2a2a55;--cb:#0077aa;--cp:#7c3aed;--cr:#e11d48;--cg:#047857;--co:#ea580c;--bd:#dde1f0;--bd2:#c8cee6;--figline:#0e2c3d;--figshadow:#1b2440;}
+:root{--bg:#070a16;--bg2:#0c1230;--bgc:#10142a;--bgi:#161b38;--tm:#f3f5fc;--tmut:#7d84ab;--cy:#fbbf24;--cw:#fff;--cb:#5ee7ff;--cp:#a78bfa;--cr:#fb7185;--cg:#34d399;--co:#ff8a3d;--bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.14);--gy:rgba(251,191,36,.22);--gb:rgba(94,231,255,.22);--gr:rgba(251,113,133,.22);--gg:rgba(52,211,153,.22);--go:rgba(255,138,61,.22);--figline:#eaf9ff;--figshadow:#04101a;--figA:#ffffff;--figB:#eef0f4;--figC:#cbd0da;--figD:#9aa3b2;--figRim:#98a0ae;}
+body.light{--bg:#eef0f8;--bg2:#fff;--bgc:#fff;--bgi:#eef0fa;--tm:#0d0e20;--tmut:#5c619a;--cy:#b8920a;--cw:#2a2a55;--cb:#0077aa;--cp:#7c3aed;--cr:#e11d48;--cg:#047857;--co:#ea580c;--bd:#dde1f0;--bd2:#c8cee6;--figline:#0e2c3d;--figshadow:#1b2440;--figA:#f0f4fa;--figB:#d7dee9;--figC:#a7b2c4;--figD:#77839a;--figRim:#5c687b;}
 *{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;background:radial-gradient(ellipse 120% 60% at 50% -10%,#161e44 0%,var(--bg2) 38%,var(--bg) 100%) var(--bg);background-attachment:fixed;color:var(--tm);overflow-x:hidden;padding-bottom:100px;padding-top:env(safe-area-inset-top);transition:background .3s,color .3s;}
 body.light{background:var(--bg);}
@@ -1200,43 +1200,82 @@ function capsule(a,b,w1,w2){
     +` A${_f(r2)},${_f(r2)} 0 0 0 ${_f(b[0]-px*r2)},${_f(b[1]-py*r2)}`
     +` L${_f(a[0]-px*r1)},${_f(a[1]-py*r1)} A${_f(r1)},${_f(r1)} 0 0 0 ${_f(a[0]+px*r1)},${_f(a[1]+py*r1)} Z`;
 }
+// Ventre musculaire : au lieu d'un simple cone d'une articulation a l'autre, on
+// insere un point renfle au milieu de chaque os (biceps, quadriceps, mollet).
+function flesh(pts,ws,bones){
+  const P=[pts[0]],W=[ws[0]];
+  for(let i=1;i<pts.length;i++){
+    const b=bones&&bones[i-1];
+    if(b){P.push([pts[i-1][0]+(pts[i][0]-pts[i-1][0])*b.t,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*b.t]);W.push(b.w);}
+    P.push(pts[i]);W.push(ws[i]);
+  }
+  return{P,W};
+}
 // Chaine d'os : capsules + billes aux articulations pour combler les angles.
 function chain(pts,ws,rootR){
   let d='';const balls=[];
   for(let i=1;i<pts.length;i++)d+=capsule(pts[i-1],pts[i],ws[i-1],ws[i]);
-  for(let i=1;i<pts.length-1;i++)balls.push([pts[i][0],pts[i][1],ws[i]/2]);
+  for(let i=1;i<pts.length-1;i++){
+    const a1=Math.atan2(pts[i][1]-pts[i-1][1],pts[i][0]-pts[i-1][0]);
+    const a2=Math.atan2(pts[i+1][1]-pts[i][1],pts[i+1][0]-pts[i][0]);
+    let t=Math.abs((a2-a1)*180/Math.PI)%360;if(t>180)t=360-t;
+    if(t>14)balls.push([pts[i][0],pts[i][1],ws[i]/2]);   // vraie articulation
+  }
   // root = epaule ou hanche : dessinee uniquement dans la passe de remplissage
   const root=rootR?[pts[0][0],pts[0][1],rootR]:null;
   return{d,balls,root};
 }
-const W_ARM=[14,11,8],W_LEG=[19,14,10,8],W_SH=30,W_HIP=24,C_RIM='#98a0ae';
+// epaule, coude, poignet / hanche, genou, cheville, orteil
+const W_ARM=[15,10,7.5],W_LEG=[20,12.5,8.5,7];
+const B_ARM=[{t:.44,w:15.5},{t:.32,w:11.5}];              // biceps, avant-bras
+const B_LEG=[{t:.42,w:20.5},{t:.28,w:14.5},null];         // quadriceps, mollet
+const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)';
 let _gid=0;
 function poseCel(pose,dx){
   const P=buildPose(pose);
   const gid='cl'+(_gid++);
-  const R_DELT=W_ARM[0]/2+2.5,R_HIP=W_LEG[0]/2+1.5;
-  const far=[chain(P.armF,W_ARM,R_DELT),chain(P.legF,W_LEG,R_HIP)];
-  const near=[chain(P.armN,W_ARM,R_DELT),chain(P.legN,W_LEG,R_HIP)];
-  const body=[chain([P.sh,P.hip],[W_SH,W_HIP]),chain([P.sh,P.neck],[14,12])];
-  const hands=[[P.armF[2],5.5],[P.armN[2],5.5]],feet=[[P.legF[3],5],[P.legN[3],5]];
+  const R_DELT=W_ARM[0]/2+1,R_HIP=W_LEG[0]/2+0.5;
+  const mk=(pts,ws,bones,r)=>{const f=flesh(pts,ws,bones);return chain(f.P,f.W,r);};
+  const far=[mk(P.armF,W_ARM,B_ARM,R_DELT),mk(P.legF,W_LEG,B_LEG,R_HIP)];
+  const near=[mk(P.armN,W_ARM,B_ARM,R_DELT),mk(P.legN,W_LEG,B_LEG,R_HIP)];
+  // Tronc en trois points : epaules larges, taille marquee, bassin qui reprend.
+  const waist=[P.sh[0]+(P.hip[0]-P.sh[0])*.56,P.sh[1]+(P.hip[1]-P.sh[1])*.56];
+  const body=[chain([P.sh,waist,P.hip],[W_SH,W_WAIST,W_HIP]),chain([P.sh,P.neck],[14,12.5])];
+  // Main : ovale oriente dans l'axe de l'avant-bras. Pied : talon + orteils.
+  const ovg=(a,b,rx,ry,ext)=>{const an=Math.atan2(b[1]-a[1],b[0]-a[0])/D2R,c=PT(b,an,ext||0);
+    return{x:c[0],y:c[1],rx,ry,a:an};};
+  const ovals=[[ovg(P.armF[1],P.armF[2],7.5,5.8,3)],[ovg(P.armN[1],P.armN[2],7.5,5.8,3)]];
+  const heel=(L)=>{const an=Math.atan2(L[3][1]-L[2][1],L[3][0]-L[2][0])/D2R;const h=PT(L[2],an+180,4.5);
+    return{x:h[0],y:h[1],rx:6.5,ry:6,a:an};};
+  ovals[0].push(heel(P.legF),ovg(P.legF[2],P.legF[3],6,5,1.5));
+  ovals[1].push(heel(P.legN),ovg(P.legN[2],P.legN[3],6,5,1.5));
   const ang=Math.atan2(P.head[1]-P.neck[1],P.head[0]-P.neck[0])/D2R+90;
   const cx=P.hip[0];
   let o=`<g transform="translate(${dx},0)">`;
   o+=`<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="70" y1="10" x2="230" y2="172">
-<stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#eef0f4"/><stop offset=".74" stop-color="#cbd0da"/><stop offset="1" stop-color="#9aa3b2"/></linearGradient>
-<radialGradient id="s${gid}"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>`;
+<stop offset="0" stop-color="var(--figA)"/><stop offset=".4" stop-color="var(--figB)"/><stop offset=".74" stop-color="var(--figC)"/><stop offset="1" stop-color="var(--figD)"/></linearGradient>
+<radialGradient id="s${gid}"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<radialGradient id="h${gid}"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>`;
   o+=`<ellipse cx="${_f(cx)}" cy="161" rx="52" ry="9" fill="url(#s${gid})"/>`;
-  const blob=(b,g)=>b.map(([q,r])=>`<circle cx="${_f(q[0])}" cy="${_f(q[1])}" r="${_f(r+g)}" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
+  const blob=(b,g)=>b.map(o=>`<ellipse cx="${_f(o.x)}" cy="${_f(o.y)}" rx="${_f(o.rx+g)}" ry="${_f(o.ry+g)}" transform="rotate(${_f(o.a)} ${_f(o.x)} ${_f(o.y)})" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   const balls=(q,g)=>q.balls.map(([x,y,r])=>`<circle cx="${_f(x)}" cy="${_f(y)}" r="${_f(r+g)}" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   // Deux passes par groupe : lisere de contact sombre, puis volume.
   const roots=g=>list=>list.filter(q=>q.root).map(q=>`<circle cx="${_f(q.root[0])}" cy="${_f(q.root[1])}" r="${_f(q.root[2]+g)}" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   const grp=(list,ext)=>`<g fill="${C_RIM}" stroke="${C_RIM}" stroke-width="2.4" stroke-linejoin="round">${list.map(q=>`<path d="${q.d}"/>`).join('')}</g>${list.map(q=>balls(q,1.2)).join('')}${ext?blob(ext,1.2):''}`
     +`<g fill="url(#${gid})">${list.map(q=>`<path d="${q.d}"/>`).join('')}</g>${list.map(q=>balls(q,0)).join('')}${ext?blob(ext,0):''}${roots(0)(list)}`;
-  o+=grp(far,[hands[0],feet[0]]);      // membres eloignes : au fond
+  o+=grp(far,ovals[0]);                // membres eloignes : au fond
   o+=grp(body);                        // tronc et cou
-  o+=`<g transform="rotate(${_f(ang)} ${_f(P.head[0])} ${_f(P.head[1])})"><ellipse cx="${_f(P.head[0])}" cy="${_f(P.head[1])}" rx="${RIG.headRx+1.4}" ry="${RIG.headRy+1.4}" fill="${C_RIM}"/><ellipse cx="${_f(P.head[0])}" cy="${_f(P.head[1])}" rx="${RIG.headRx}" ry="${RIG.headRy}" fill="url(#${gid})"/></g>`;
-  o+=grp(near,[hands[1],feet[1]]);     // membres proches : devant
-  o+=roots(0)([...far,...near]);       // epaules et hanches lissees en dernier
+  // Crane ovoide (plus large en haut, machoire plus fine) plutot qu'une ellipse.
+  const egg=k=>`M0,${-RIG.headRy-k} C${7+k},${-RIG.headRy-k} ${RIG.headRx+k},${-9-k*.5} ${RIG.headRx+k},${-2}`
+    +` C${RIG.headRx+k},${7+k} ${6+k},${RIG.headRy+k} 0,${RIG.headRy+k}`
+    +` C${-6-k},${RIG.headRy+k} ${-RIG.headRx-k},${7+k} ${-RIG.headRx-k},${-2}`
+    +` C${-RIG.headRx-k},${-9-k*.5} ${-7-k},${-RIG.headRy-k} 0,${-RIG.headRy-k} Z`;
+  o+=`<g transform="translate(${_f(P.head[0])} ${_f(P.head[1])}) rotate(${_f(ang)})">`
+    +`<path d="${egg(1.4)}" fill="${C_RIM}"/><path d="${egg(0)}" fill="url(#${gid})"/>`
+    +`<ellipse cx="-4" cy="-6" rx="4.6" ry="6" transform="rotate(-18 -4 -6)" fill="url(#h${gid})"/></g>`;
+  o+=roots(0)(near);                   // epaule et hanche fondues dans le tronc
+  o+=grp(near,ovals[1]);               // membres proches : devant
   // Materiel, place d'apres la position reelle des mains.
   const ac=P.ac||'#ff8a3d',h1=P.armF[2],h2=P.armN[2];
   const line=(d,col,w)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
