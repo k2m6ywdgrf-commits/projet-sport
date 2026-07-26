@@ -1162,7 +1162,7 @@ async function resetAll(){if(confirm('Reinitialiser definitivement toutes les do
    que des ANGLES articulaires. Les proportions sont donc identiques partout.
    Angles en degres, repere ecran (y vers le bas) : 0 = droite, 90 = bas,
    -90 = haut, 180 = gauche. Le personnage regarde vers la gauche. */
-const RIG={neck:12,torso:42,uarm:24,farm:22,thigh:28,shin:28,foot:13,headOff:18,headRx:12,headRy:14.5};
+const RIG={neck:12,torso:42,uarm:24,farm:22,thigh:28,shin:28,foot:12,headOff:18,headRx:12,headRy:14.5};
 const D2R=Math.PI/180,_f=n=>n.toFixed(1);
 const PT=(p,a,l)=>[p[0]+l*Math.cos(a*D2R),p[1]+l*Math.sin(a*D2R)];
 const FLOOR=158;
@@ -1170,7 +1170,7 @@ const FLOOR=158;
    aN/aF = [epaule, coude] du bras proche / eloigne ; lN/lF = [hanche, genou,
    cheville] ; hd = inclinaison de la tete ; lift = hauteur de saut. */
 function buildPose(o){
-  const front=o.v==='front',so=front?16:7,ho=front?10:6;
+  const front=o.v==='front',so=front?16:7,ho=front?10:3.5;
   const hip=[150,100],sp=o.sp,pp=sp+90;
   const sh=PT(hip,sp,RIG.torso);
   const hd=o.hd!==undefined?o.hd:sp;
@@ -1251,8 +1251,10 @@ function poseCel(pose,dx,mask){
     return{x:c[0],y:c[1],rx,ry,a:an};};
   const ovals=[[ovg(P.armF[1],P.armF[2],7.5,5.8,3)],[ovg(P.armN[1],P.armN[2],7.5,5.8,3)]];
   // Talon : courte capsule partant de la cheville vers l'arriere du pied.
+  // Talon : simple arrondi derriere la cheville. Plus long, le pied devenait
+  // une planche de bois.
   const heelC=L=>{const an=Math.atan2(L[3][1]-L[2][1],L[3][0]-L[2][0])/D2R;
-    return chain([L[2],PT(L[2],an+180,8)],[8.5,7]);};
+    return chain([L[2],PT(L[2],an+180,4)],[8.5,6.5]);};
   const ang=Math.atan2(P.head[1]-P.neck[1],P.head[0]-P.neck[0])/D2R+90;
   const cx=P.hip[0];
   let o=mask?'':`<g transform="translate(${dx},0)">`;
