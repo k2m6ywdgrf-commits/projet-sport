@@ -1236,7 +1236,7 @@ const B_ARM=[{t:.44,w:15.5},{t:.32,w:11.5}];              // biceps, avant-bras
 const B_LEG=[{t:.42,w:20.5},{t:.28,w:14.5},null];         // quadriceps, mollet
 const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)';
 let _gid=0;
-function poseCel(pose,dx){
+function poseCel(pose,dx,mask){
   const P=buildPose(pose);
   const gid='cl'+(_gid++);
   const R_DELT=W_ARM[0]/2+1,R_HIP=W_LEG[0]/2+0.5;
@@ -1246,41 +1246,55 @@ function poseCel(pose,dx){
   // Tronc en trois points : epaules larges, taille marquee, bassin qui reprend.
   const waist=[P.sh[0]+(P.hip[0]-P.sh[0])*.56,P.sh[1]+(P.hip[1]-P.sh[1])*.56];
   const body=[chain([P.sh,waist,P.hip],[W_SH,W_WAIST,W_HIP]),chain([P.sh,P.neck],[14,12.5])];
-  // Main : ovale oriente dans l'axe de l'avant-bras. Pied : talon + orteils.
+  // Main : ovale oriente dans l'axe de l'avant-bras.
   const ovg=(a,b,rx,ry,ext)=>{const an=Math.atan2(b[1]-a[1],b[0]-a[0])/D2R,c=PT(b,an,ext||0);
     return{x:c[0],y:c[1],rx,ry,a:an};};
   const ovals=[[ovg(P.armF[1],P.armF[2],7.5,5.8,3)],[ovg(P.armN[1],P.armN[2],7.5,5.8,3)]];
-  const heel=(L)=>{const an=Math.atan2(L[3][1]-L[2][1],L[3][0]-L[2][0])/D2R;const h=PT(L[2],an+180,4.5);
-    return{x:h[0],y:h[1],rx:6.5,ry:6,a:an};};
-  ovals[0].push(heel(P.legF),ovg(P.legF[2],P.legF[3],6,5,1.5));
-  ovals[1].push(heel(P.legN),ovg(P.legN[2],P.legN[3],6,5,1.5));
+  // Talon : courte capsule partant de la cheville vers l'arriere du pied.
+  const heelC=L=>{const an=Math.atan2(L[3][1]-L[2][1],L[3][0]-L[2][0])/D2R;
+    return chain([L[2],PT(L[2],an+180,8)],[8.5,7]);};
   const ang=Math.atan2(P.head[1]-P.neck[1],P.head[0]-P.neck[0])/D2R+90;
   const cx=P.hip[0];
-  let o=`<g transform="translate(${dx},0)">`;
-  o+=`<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="70" y1="10" x2="230" y2="172">
+  let o=mask?'':`<g transform="translate(${dx},0)">`;
+  o+=mask?'':`<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="70" y1="10" x2="230" y2="172">
 <stop offset="0" stop-color="var(--figA)"/><stop offset=".4" stop-color="var(--figB)"/><stop offset=".74" stop-color="var(--figC)"/><stop offset="1" stop-color="var(--figD)"/></linearGradient>
 <radialGradient id="s${gid}"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
 <radialGradient id="h${gid}"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
 </defs>`;
-  o+=`<ellipse cx="${_f(cx)}" cy="161" rx="52" ry="9" fill="url(#s${gid})"/>`;
+  o+=mask?'':`<ellipse cx="${_f(cx)}" cy="161" rx="52" ry="9" fill="url(#s${gid})"/>`;
   const blob=(b,g)=>b.map(o=>`<ellipse cx="${_f(o.x)}" cy="${_f(o.y)}" rx="${_f(o.rx+g)}" ry="${_f(o.ry+g)}" transform="rotate(${_f(o.a)} ${_f(o.x)} ${_f(o.y)})" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   const balls=(q,g)=>q.balls.map(([x,y,r])=>`<circle cx="${_f(x)}" cy="${_f(y)}" r="${_f(r+g)}" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   // Deux passes par groupe : lisere de contact sombre, puis volume.
   const roots=g=>list=>list.filter(q=>q.root).map(q=>`<circle cx="${_f(q.root[0])}" cy="${_f(q.root[1])}" r="${_f(q.root[2]+g)}" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   const grp=(list,ext)=>`<g fill="${C_RIM}" stroke="${C_RIM}" stroke-width="2.4" stroke-linejoin="round">${list.map(q=>`<path d="${q.d}"/>`).join('')}</g>${list.map(q=>balls(q,1.2)).join('')}${ext?blob(ext,1.2):''}`
     +`<g fill="url(#${gid})">${list.map(q=>`<path d="${q.d}"/>`).join('')}</g>${list.map(q=>balls(q,0)).join('')}${ext?blob(ext,0):''}${roots(0)(list)}`;
-  o+=grp(far,ovals[0]);                // membres eloignes : au fond
-  o+=grp(body);                        // tronc et cou
+  far.push(heelC(P.legF));near.push(heelC(P.legN));
   // Crane ovoide (plus large en haut, machoire plus fine) plutot qu'une ellipse.
   const egg=k=>`M0,${-RIG.headRy-k} C${7+k},${-RIG.headRy-k} ${RIG.headRx+k},${-9-k*.5} ${RIG.headRx+k},${-2}`
     +` C${RIG.headRx+k},${7+k} ${6+k},${RIG.headRy+k} 0,${RIG.headRy+k}`
     +` C${-6-k},${RIG.headRy+k} ${-RIG.headRx-k},${7+k} ${-RIG.headRx-k},${-2}`
     +` C${-RIG.headRx-k},${-9-k*.5} ${-7-k},${-RIG.headRy-k} 0,${-RIG.headRy-k} Z`;
+  if(mask){
+    const gh=mask==='ghost';
+    const allc=[...far,...body,...near];
+    let m=gh?`<g transform="translate(${dx},0)" opacity=".26" fill="var(--figRim)">`
+            :`<g transform="translate(${dx},0)" fill="#000" stroke="#000" stroke-width="7" stroke-linejoin="round">`;
+    m+=allc.map(q=>`<path d="${q.d}"/>`).join('');
+    allc.forEach(q=>{q.balls.forEach(([x,y,r])=>m+=`<circle cx="${_f(x)}" cy="${_f(y)}" r="${_f(r)}"/>`);
+      if(q.root)m+=`<circle cx="${_f(q.root[0])}" cy="${_f(q.root[1])}" r="${_f(q.root[2])}"/>`;});
+    [...ovals[0],...ovals[1]].forEach(v=>m+=`<ellipse cx="${_f(v.x)}" cy="${_f(v.y)}" rx="${_f(v.rx)}" ry="${_f(v.ry)}" transform="rotate(${_f(v.a)} ${_f(v.x)} ${_f(v.y)})"/>`);
+    m+=`<g transform="translate(${_f(P.head[0])} ${_f(P.head[1])}) rotate(${_f(ang)})"><path d="${egg(gh?0:2)}"/></g>`;
+    return m+`</g>`;
+  }
+  if(!mask){
+  o+=grp(far,ovals[0]);                // membres eloignes : au fond
+  o+=grp(body);                        // tronc et cou
   o+=`<g transform="translate(${_f(P.head[0])} ${_f(P.head[1])}) rotate(${_f(ang)})">`
     +`<path d="${egg(1.4)}" fill="${C_RIM}"/><path d="${egg(0)}" fill="url(#${gid})"/>`
     +`<ellipse cx="-4" cy="-6" rx="4.6" ry="6" transform="rotate(-18 -4 -6)" fill="url(#h${gid})"/></g>`;
   o+=roots(0)(near);                   // epaule et hanche fondues dans le tronc
   o+=grp(near,ovals[1]);               // membres proches : devant
+  }
   // Materiel, place d'apres la position reelle des mains.
   const ac=P.ac||'#ff8a3d',h1=P.armF[2],h2=P.armN[2];
   const line=(d,col,w)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
@@ -1320,16 +1334,9 @@ function poseTravel(a,b){
   for(let i=0;i<ja.length;i++)m=Math.max(m,Math.hypot(jb[i][0]-ja[i][0],jb[i][1]-ja[i][1]));
   return m;
 }
-// Silhouette de la position precedente, en fil de fer : on voit d'ou l'on part.
-function ghostSVG(pose,dx){
-  const P=buildPose(pose);
-  const mk=(pts,ws,bones)=>{const f=flesh(pts,ws,bones);return chain(f.P,f.W).d;};
-  const waist=[P.sh[0]+(P.hip[0]-P.sh[0])*.56,P.sh[1]+(P.hip[1]-P.sh[1])*.56];
-  const d=[mk(P.armF,W_ARM,B_ARM),mk(P.legF,W_LEG,B_LEG),chain([P.sh,waist,P.hip],[W_SH,W_WAIST,W_HIP]).d,
-           mk(P.armN,W_ARM,B_ARM),mk(P.legN,W_LEG,B_LEG)].join('');
-  return`<g transform="translate(${dx},0)" fill="none" stroke="var(--figRim)" stroke-width="2" opacity=".32" stroke-linejoin="round">`
-    +`<path d="${d}"/><ellipse cx="${_f(P.head[0])}" cy="${_f(P.head[1])}" rx="${RIG.headRx}" ry="${RIG.headRy}"/></g>`;
-}
+// Silhouette pleine de la position precedente : on voit d'ou l'on part.
+function ghostSVG(pose,dx){return poseCel(pose,dx,'ghost');}
+
 // Fleche de direction. On suit en priorite l'articulation qui PORTE le geste
 // (bassin, epaules), et seulement a defaut une extremite. La fleche est ensuite
 // repoussee a l'exterieur du corps pour ne jamais le traverser.
@@ -1441,7 +1448,8 @@ function animSVG(key){
     body+=`<line class="floor" x1="${dx+22}" y1="161" x2="${dx+278}" y2="161"/>`;
     if(key==='wallsit'){const W2=buildPose(fr[i]),wx=Math.max(W2.sh[0],W2.hip[0])+17;
       body+=`<line class="floor" x1="${_f(dx+wx)}" y1="30" x2="${_f(dx+wx)}" y2="161"/>`;}
-    if(!hold&&i>0&&!fr[i-1].lift&&!fr[i].lift&&poseTravel(fr[i-1],fr[i])>26)body+=ghostSVG(fr[i-1],dx);// d'ou l'on part
+    if(!hold&&i>0&&!fr[i-1].lift&&!fr[i].lift&&poseTravel(fr[i-1],fr[i])>26)
+      body+=ghostSVG(fr[i-1],dx);      // d'ou l'on part : masque par la pose reelle
     body+=poseCel(fr[i],dx);
     if(!hold&&i>0)body+=moveArrow(fr[i-1],fr[i],dx);
     if(hold&&key!=='wallsit'){
