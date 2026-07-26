@@ -328,6 +328,10 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .blg.on{color:var(--tm);border-color:currentColor;}
 @keyframes bdRing{0%,100%{opacity:.35;stroke-width:3}50%{opacity:1;stroke-width:6}}
 .bd-hi{fill:none;animation:bdRing 1.5s ease-in-out infinite;}
+.ph-row{display:flex;gap:8px;}
+.ph{flex:1;min-width:0;margin:0;}
+.ph img{width:100%;height:auto;display:block;border-radius:14px;background:var(--bgc);}
+.ph figcaption{text-align:center;font-size:11px;font-weight:900;letter-spacing:2px;color:var(--tmut);padding-top:7px;}
 .demo-view{background:var(--bgi);border:1px solid var(--bd2);color:var(--tm);font-size:9px;font-weight:900;letter-spacing:.5px;padding:5px 9px;border-radius:9px;cursor:pointer;white-space:nowrap;}
 .demo-load{display:flex;align-items:center;justify-content:center;height:200px;font-size:11px;font-weight:700;color:var(--tmut);}
 .demo-hint{text-align:center;font-size:9px;color:var(--tmut);padding:2px 0 6px;}
@@ -547,6 +551,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
     <div class="set-grp" style="border-color:var(--cb)"><span class="hud-name" style="color:var(--cb)">&#x1F393; COACHING</span>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Fiches des nouveaux mouvements</span><div class="tsw on" id="demo-tsw" onclick="togDemoAuto()"></div></div>
       <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">La fiche d'un exercice s'ouvre automatiquement la premiere fois que tu le rencontres. Le bouton (i) reste disponible a tout moment.</p>
+      <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Photos du coach</span><div class="tsw on" id="dph-tsw" onclick="togPhoto()"></div></div>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Coach 3D</span><div class="tsw on" id="d3-tsw" onclick="tog3D()"></div></div>
       <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">Affiche un personnage 3D anime quand un modele existe pour l'exercice. Sinon, et hors ligne, la fiche montre le schema.</p>
       <button class="toggle-btn mt" style="width:100%;font-size:11px" onclick="openBoardGuide()">&#x1F3CB;&#xFE0F; GUIDE DE LA PLANCHE PUSH-UP</button>
@@ -782,7 +787,7 @@ async function reqWL(){if(!('wakeLock'in navigator))return;try{wl=await navigato
 function relWL(){if(wl){wl.release();wl=null;}}
 function togSound(){S.sound=S.sound===false;save();document.getElementById('snd-tsw').classList.toggle('on',S.sound!==false);if(S.sound!==false)beep(880,90);}
 function togVib(){S.vibrate=S.vibrate===false;save();document.getElementById('vib-tsw').classList.toggle('on',S.vibrate!==false);if(S.vibrate!==false)buzz(60);}
-function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'d3-tsw':S.use3D!==false};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});}
+function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'d3-tsw':S.use3D!==false,'dph-tsw':S.usePhoto!==false};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});}
 function togTheme(){S.theme=S.theme==='dark'?'light':'dark';applyTheme();save();}
 function applyTheme(){if(S.theme==='light'){document.body.classList.add('light');document.getElementById('tsw').classList.add('on');}else{document.body.classList.remove('light');document.getElementById('tsw').classList.remove('on');}}
 function checkSaveReminder(){if(S.totalWO<1)return;const d=S.lastExport?Math.floor((Date.now()-new Date(S.lastExport))/86400000):999;if(d>=60)setTimeout(()=>document.getElementById('save-popup').classList.add('show'),2500);}
@@ -1242,28 +1247,17 @@ function chain(pts,ws,rootR){
 const W_ARM=[15,10,7.5],W_LEG=[20,12.5,8.5,7];
 const B_ARM=[{t:.44,w:15.5},{t:.32,w:11.5}];              // biceps, avant-bras
 const B_LEG=[{t:.42,w:20.5},{t:.28,w:14.5},null];         // quadriceps, mollet
-const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)',C_SHIRT='#3d4a66',C_SHIRT2='#2c3752';
-const C_FACE='#232b3d',C_HAIR='#2f3950';
-/* Repere local de la tete apres rotation : -y = sommet du crane, -x = l'AVANT
-   du visage. Le nez depasse volontairement du contour, c'est lui qui donne le
-   sens du regard d'un seul coup d'oeil. */
-function faceSVG(front){
-  const rx=RIG.headRx,ry=RIG.headRy;
-  const eye=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="1.75" ry="2.4" fill="${C_FACE}"/>`;
-  if(front)return`<path d="M${-rx+.5},-3 C${-rx+.5},${-ry-1.2} ${-rx*.55},${-ry-2.4} 0,${-ry-2.4}`
-      +` C${rx*.55},${-ry-2.4} ${rx-.5},${-ry-1.2} ${rx-.5},-3`
-      +` C${rx-3.4},-8.8 ${rx-6.5},-10.4 0,-10.4 C${-rx+6.5},-10.4 ${-rx+3.4},-8.8 ${-rx+.5},-3 Z" fill="${C_HAIR}"/>`
-    +eye(-4.2,-0.3)+eye(4.2,-0.3)
-    +`<path d="M0,2.2 L-1.7,5.4" fill="none" stroke="${C_FACE}" stroke-width="1.3" stroke-linecap="round"/>`
-    +`<path d="M-3.3,8.2 Q0,10.4 3.3,8.2" fill="none" stroke="${C_FACE}" stroke-width="1.5" stroke-linecap="round"/>`;
-  // Profil : cheveux sur le crane et la nuque, visage degage vers l'avant.
-  return`<path d="M${-rx+2.4},-5.5 C${-rx+1},${-ry-1.4} ${-rx*.4},${-ry-2.6} ${rx*.2},${-ry-1.8}`
-      +` C${rx-.6},${-ry+2.6} ${rx+1},-3.5 ${rx-.8},5.5 C${rx-2.2},-2.5 ${rx-5},-7.4 ${-rx+2.4},-5.5 Z" fill="${C_HAIR}"/>`
-    +eye(-4.8,-0.6)
-    +`<path d="M${-rx+1.4},1.2 L${-rx-2.8},4 L${-rx+2},5.4 Z" fill="${C_FACE}"/>`
-    +`<path d="M${-rx+3.4},8.4 L${-rx+7.4},8.7" fill="none" stroke="${C_FACE}" stroke-width="1.5" stroke-linecap="round"/>`;
-}
+const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)',C_SHIRT='#3b4a6b',C_SHIRT2='#2d3a56';
+// Chaque piece a son propre lisere plus sombre : sans lui les gris se fondent
+// les uns dans les autres et le bas du corps devient une masse informe.
+const WEAR={short:['#9aa0a8','#6b7079'],liner:['#5f636d','#494d56'],sock:['#767c87','#585d67'],
+            shoe:['#3a4767','#25304b'],sole:['#eef1f6','#b7bece']};
 let _gid=0;
+/* La reference a une tete lisse, sans visage. On garde juste une arete de nez
+   dans le repere local (-x = avant), sans quoi le sens du regard disparait de
+   profil. */
+function faceSVG(){return'';}
+
 function poseCel(pose,dx,mask){
   const P=buildPose(pose);
   const gid='cl'+(_gid++);
@@ -1278,6 +1272,21 @@ function poseCel(pose,dx,mask){
   const shirtBot=lerp(P.sh,P.hip,.72),shirtW=W_SH-(W_SH-W_WAIST)*.72;
   const tee=chain([P.sh,shirtBot],[W_SH-1,shirtW-1]);
   const sleeve=A=>chain([A[0],lerp(A[0],A[1],.48)],[W_ARM[0]+1.5,15.8]);
+  // Bas du corps : short gris, sous-short de compression, manchon de mollet et
+  // chaussure marine a semelle blanche, comme sur la photo de reference.
+  const legwear=L=>{
+    const piece=(q,k)=>`<path d="${q.d}" fill="${WEAR[k][1]}" stroke="${WEAR[k][1]}" stroke-width="2.4" stroke-linejoin="round"/><path d="${q.d}" fill="${WEAR[k][0]}"/>`;
+    let w=piece(chain([lerp(L[0],L[1],.36),lerp(L[0],L[1],.66)],[W_LEG[0]+1,W_LEG[1]+4.5]),'liner');
+    w+=piece(chain([lerp(L[1],L[2],.26),lerp(L[1],L[2],.95)],[W_LEG[1]+2.5,W_LEG[2]+2.5]),'sock');
+    // Chaussure : la semelle se pose du cote oppose au genou.
+    const an=Math.atan2(L[3][1]-L[2][1],L[3][0]-L[2][0])/D2R;
+    const hp=PT(L[2],an+180,5),tp=PT(L[3],an,2);
+    const far=d=>Math.hypot(PT(L[2],d,10)[0]-L[1][0],PT(L[2],d,10)[1]-L[1][1]);
+    const dn=far(an+90)>far(an-90)?an+90:an-90;
+    w+=piece(chain([PT(hp,dn,3),PT(tp,dn,3)],[6.5,5.5]),'sole');
+    w+=piece(chain([hp,tp],[12,9]),'shoe');
+    return w;
+  };
   const body=[chain([P.sh,waist,P.hip],[W_SH,W_WAIST,W_HIP]),chain([P.sh,P.neck],[14,12.5])];
   // Main : ovale oriente dans l'axe de l'avant-bras.
   const ovg=(a,b,rx,ry,ext)=>{const an=Math.atan2(b[1]-a[1],b[0]-a[0])/D2R,c=PT(b,an,ext||0);
@@ -1328,7 +1337,7 @@ function poseCel(pose,dx,mask){
     +list.map(q=>q.balls.map(([x,y,r])=>`<circle cx="${_f(x)}" cy="${_f(y)}" r="${_f(r)}"/>`).join('')).join('')+`</g>`;
   const dress=(q,c)=>`<path d="${q.d}" fill="${c}"/>`;
   o+=grp(far,ovals[0]);                // membres eloignes : au fond
-  o+=dress(sleeve(P.armF),C_SHIRT2)+wash(far);
+  o+=dress(sleeve(P.armF),C_SHIRT2)+legwear(P.legF)+wash(far);
   o+=grp(body);                        // tronc et cou
   o+=dress(tee,C_SHIRT);
   o+=`<g transform="translate(${_f(P.head[0])} ${_f(P.head[1])}) rotate(${_f(ang)})">`
@@ -1337,7 +1346,11 @@ function poseCel(pose,dx,mask){
     +faceSVG(P.front)+`</g>`;
   o+=roots(0)(near);                   // epaule et hanche fondues dans le tronc
   o+=grp(near,ovals[1]);               // membres proches : devant
-  o+=dress(sleeve(P.armN),C_SHIRT);
+  o+=dress(sleeve(P.armN),C_SHIRT)+legwear(P.legN);
+  // Short : une jambe de short par cuisse, plus une ceinture qui relie les deux.
+  {const sp=q=>`<path d="${q.d}" fill="${WEAR.short[1]}" stroke="${WEAR.short[1]}" stroke-width="2.4" stroke-linejoin="round"/><path d="${q.d}" fill="${WEAR.short[0]}"/>`;
+   const legpart=L=>chain([lerp(L[0],L[1],-.06),lerp(L[0],L[1],.46)],[W_LEG[0]+2,W_LEG[0]-.5]);
+   o+=sp(legpart(P.legF))+sp(legpart(P.legN));}
   const pp=Math.atan2(P.sh[1]-P.hip[1],P.sh[0]-P.hip[0])/D2R;   // axe du tronc
   const fr=pp-90;                                               // normale avant
   // Flocage : une ombre portee sombre sous la lettre claire, comme un imprime.
@@ -1635,6 +1648,12 @@ const WU_DEMO={'Rotations des epaules':'bands','Cercles de bras':'bands','Flexio
    Tant qu'un exercice n'est pas dans ce registre — ou que le modele ne charge
    pas (hors ligne, CDN bloque) — la fiche retombe sur le schema vectoriel.
    Exemple : mat_squat:{f:'squat.glb', a:'Squat'} */
+/* Photos du coach : une paire d'images par exercice (depart / arrivee), posees
+   dans le dossier PHOTO_BASE. C'est la source la plus riche ; a defaut on passe
+   au modele 3D, puis au schema vectoriel.
+   Exemple : mat_squat:{s:'squat_depart.webp', e:'squat_arrivee.webp'} */
+const PHOTO_BASE='photos/';
+const PHOTO={};
 const MODEL_BASE='models/';
 const MODEL3D={};
 /* Visualiseur : copie locale d'abord (l'app doit marcher hors ligne), CDN en
@@ -1644,6 +1663,14 @@ const MV_SRC=[MODEL_BASE+'model-viewer.min.js',
 let mvState='idle';                       // idle | loading | ready | failed
 let demoView='auto';                      // auto | 2d | 3d
 function has3D(k){return S.use3D!==false&&!!MODEL3D[k]&&mvState!=='failed';}
+function hasPhoto(k){return S.usePhoto!==false&&!!PHOTO[k];}
+// Une image manquante ne doit jamais laisser un trou : on retire la paire et
+// la fiche bascule sur le media suivant.
+function photoFail(k){delete PHOTO[k];if(demoKey===k)renderDemoStage(k);}
+function stagePhoto(key){
+  const p=PHOTO[key],one=(f,l)=>`<figure class="ph"><img src="${PHOTO_BASE}${f}" alt="${l}" loading="lazy" onerror="photoFail('${key}')"><figcaption>${l}</figcaption></figure>`;
+  return`<div class="ph-row">${one(p.s,'DEPART')}${p.e?one(p.e,'ARRIVEE'):''}</div>`;
+}
 // Chargement paresseux : le visualiseur n'est telecharge qu'a la premiere fiche 3D.
 function loadMV(){
   if(mvState==='ready')return Promise.resolve(true);
@@ -1674,9 +1701,11 @@ function stage3D(key){
 // Choisit 3D ou schema, et bascule tout seul sur le schema si le modele echoue.
 function renderDemoStage(key){
   const st=document.getElementById('demo-stage'),bt=document.getElementById('demo-viewbtn');
-  const can3=has3D(key),use3=can3&&demoView!=='2d';
-  if(bt){bt.style.display=can3?'block':'none';bt.innerHTML=use3?'&#x1F4D0; SCHEMA':'&#x1F9CA; 3D';}
-  if(!use3){st.innerHTML=animSVG(DEMO[key].a);return;}
+  // Priorite : photos > modele 3D > schema.
+  const ph=hasPhoto(key),can3=has3D(key),rich=ph||can3,useRich=rich&&demoView!=='2d';
+  if(bt){bt.style.display=rich?'block':'none';bt.innerHTML=useRich?'&#x1F4D0; SCHEMA':(ph?'&#x1F4F7; PHOTO':'&#x1F9CA; 3D');}
+  if(!useRich){st.innerHTML=animSVG(DEMO[key].a);return;}
+  if(ph){st.innerHTML=stagePhoto(key);return;}
   st.innerHTML='<div class="demo-load">Chargement du coach 3D...</div>';
   loadMV().then(ok=>{
     if(document.getElementById('demo-name').dataset.k!==key)return;   // fiche changee entre-temps
@@ -1687,6 +1716,7 @@ function renderDemoStage(key){
   });
 }
 function togDemoView(){demoView=(demoView==='2d')?'3d':'2d';renderDemoStage(demoKey);}
+function togPhoto(){S.usePhoto=S.usePhoto===false;save();document.getElementById('dph-tsw').classList.toggle('on',S.usePhoto!==false);if(demoKey)renderDemoStage(demoKey);}
 function tog3D(){S.use3D=S.use3D===false;save();document.getElementById('d3-tsw').classList.toggle('on',S.use3D!==false);if(demoKey)renderDemoStage(demoKey);}
 
 /* ════════ MODALE DEMO ════════ */
