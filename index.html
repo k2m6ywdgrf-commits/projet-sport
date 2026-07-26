@@ -307,19 +307,9 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .demo-x{background:none;border:none;color:var(--tmut);font-size:24px;line-height:1;cursor:pointer;padding:0 2px;}
 .demo-stage{background:var(--bgi);border:1px solid var(--bd);border-radius:18px;padding:4px;margin-bottom:11px;}
 .demo-stage svg,.board-wrap svg{display:block;width:100%;height:auto;}
-.fig{fill:none;stroke:var(--cb);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;}
-.fig circle{fill:var(--cb);stroke:none;}
-.fig.gh{stroke:var(--tmut);opacity:.28;}.fig.gh circle{fill:var(--tmut);}
 .floor{stroke:var(--bd2);stroke-width:3;stroke-linecap:round;}
-.gline{stroke:var(--cg);stroke-width:2;stroke-dasharray:6 5;opacity:.55;fill:none;}
-@keyframes fk2a{0%,36%{opacity:1}50%,86%{opacity:0}100%{opacity:1}}
-@keyframes fk2b{0%,36%{opacity:0}50%,86%{opacity:1}100%{opacity:0}}
-@keyframes fk3a{0%,20%{opacity:1}33%,87%{opacity:0}100%{opacity:1}}
-@keyframes fk3b{0%,20%{opacity:0}33%,53%{opacity:1}66%,100%{opacity:0}}
-@keyframes fk3c{0%,53%{opacity:0}66%,87%{opacity:1}100%{opacity:0}}
-.f2-0{animation:fk2a 2.4s ease-in-out infinite}.f2-1{animation:fk2b 2.4s ease-in-out infinite}
-.f3-0{animation:fk3a 3s ease-in-out infinite}.f3-1{animation:fk3b 3s ease-in-out infinite}.f3-2{animation:fk3c 3s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){.f2-0,.f2-1,.f3-0,.f3-1,.f3-2{animation:none}.f2-1,.f3-1,.f3-2{opacity:.25}}
+.figlbl{font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;fill:var(--tmut);}
+.figarrow{stroke:var(--cb);stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.85;}
 .demo-sec{margin-bottom:11px;}
 .demo-t{font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--tmut);margin-bottom:6px;}
 .demo-li{display:flex;gap:8px;font-size:12px;line-height:1.45;margin-bottom:5px;color:var(--tm);}
@@ -1206,17 +1196,17 @@ const POSE={
          {h:[150,52],p:[[150,64,150,122],[150,122,132,158],[150,122,170,158],[150,76,86,88],[150,76,214,88],[86,88,118,64,150,80,182,64,214,88]]}],
   jumprope:[{h:[150,58],p:[[150,70,150,124],[150,124,138,158],[150,124,162,158],[150,84,116,104],[150,84,184,104],[116,104,150,168,184,104]]},
             {h:[150,44],p:[[150,56,150,110],[150,110,136,136],[150,110,164,136],[150,70,116,92],[150,70,184,92],[116,92,150,40,184,92]]}],
-  squat:[{h:[150,54],p:[[150,66,150,116],[150,116,134,158],[150,116,166,158],[150,78,124,96],[150,78,176,96]]},
-         {h:[142,86],p:[[144,98,158,130],[158,130,132,158],[158,130,180,152],[144,98,116,96],[144,98,172,96]]}],
-  lunge:[{h:[150,54],p:[[150,66,150,116],[150,116,134,158],[150,116,166,158]]},
-         {h:[146,66],p:[[146,78,150,126],[150,126,110,158],[150,126,192,130,196,158]]}],
+  squat:[{h:[150,48],p:[[152,60,152,114],[152,114,150,150],[150,150,168,157],[152,74,130,106]]},
+         {h:[124,64],p:[[140,88,166,124],[166,124,108,126],[108,126,120,152],[120,152,138,158],[140,88,98,92]]}],
+  lunge:[{h:[150,48],p:[[152,60,152,114],[152,114,150,150],[150,150,168,157],[152,74,130,106]]},
+         {h:[150,50],p:[[152,62,152,116],[152,116,112,126],[112,126,110,150],[110,150,92,156],[152,116,192,148],[192,148,212,156]]}],
   wallsit:[{h:[214,72],p:[[214,84,214,128],[214,128,158,128],[158,128,158,158],[214,84,186,110]]},
            {h:[214,75],p:[[214,87,214,129],[214,129,158,129],[158,129,158,158],[214,87,186,112]]}],
-  calf:[{h:[150,60],p:[[150,72,150,124],[150,124,140,158],[150,124,160,158],[150,84,124,108],[150,84,176,108]]},
-        {h:[150,44],p:[[150,56,150,110],[150,110,140,146,148,158],[150,110,160,146,168,158],[150,68,124,92],[150,68,176,92]]}],
-  jumpsquat:[{h:[142,86],p:[[144,98,158,130],[158,130,132,158],[158,130,180,152],[144,98,116,96],[144,98,172,96]]},
-             {h:[150,36],p:[[150,48,150,98],[150,98,132,132],[150,98,168,132],[150,56,118,26],[150,56,182,26]]},
-             {h:[150,60],p:[[150,72,150,120],[150,120,134,158],[150,120,166,158],[150,82,126,108],[150,82,174,108]]}],
+  calf:[{h:[150,48],p:[[152,60,152,114],[152,114,150,150],[150,150,168,157],[152,74,130,106]]},
+        {h:[150,32],p:[[152,44,152,98],[152,98,150,134],[150,134,170,157],[152,58,130,90]]}],
+  jumpsquat:[{h:[124,64],p:[[140,88,166,124],[166,124,108,126],[108,126,120,152],[120,152,138,158],[140,88,98,92]]},
+             {h:[148,26],p:[[150,38,150,92],[150,92,142,128],[142,128,158,136],[150,50,122,20]]},
+             {h:[130,58],p:[[146,80,170,112],[170,112,116,116],[116,116,126,142],[126,142,144,150],[146,80,104,86]]}],
   bike:[{h:[176,60],p:[[176,72,164,118],[164,118,128,142],[164,118,196,138],[176,80,140,92],[128,142,196,138]]},
         {h:[176,60],p:[[176,72,164,118],[164,118,196,138],[164,118,128,142],[176,80,140,92],[128,142,196,138]]}],
   ellip:[{h:[150,54],p:[[150,66,150,118],[150,118,116,152],[150,118,186,150],[150,78,110,96],[150,78,190,110]]},
@@ -1225,72 +1215,117 @@ const POSE={
          {h:[150,52],p:[[150,64,150,116],[150,116,184,150],[150,116,116,128,110,152],[150,76,184,96],[150,76,116,96]]}]
 };
 function polyPts(a){let s='';for(let i=0;i<a.length;i+=2)s+=(i?' ':'')+a[i]+','+a[i+1];return s;}
-function poseG(p,cls){if(!p)return'';const t=p.p&&p.p[0];
-  const neck=(p.h&&t)?`<line x1="${p.h[0]}" y1="${p.h[1]}" x2="${t[0]}" y2="${t[1]}"/>`:'';
-  return`<g class="fig ${cls}">${neck}${p.h?`<circle cx="${p.h[0]}" cy="${p.h[1]}" r="10"/>`:''}${(p.p||[]).map(l=>`<polyline points="${polyPts(l)}"/>`).join('')}</g>`;}
+// Degrades et ombre : donnent le volume "3D" aux bonhommes.
+function figDefs(){return`<defs>
+<linearGradient id="fgl" gradientUnits="userSpaceOnUse" x1="0" y1="24" x2="0" y2="170">
+<stop offset="0" stop-color="#b6f4ff"/><stop offset=".45" stop-color="#5ed4f5"/><stop offset="1" stop-color="#1a6b90"/></linearGradient>
+<radialGradient id="fgh" cx=".33" cy=".28" r=".85">
+<stop offset="0" stop-color="#eafdff"/><stop offset=".45" stop-color="#6fdcf7"/><stop offset="1" stop-color="#1c6e93"/></radialGradient>
+<filter id="fgs" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>`;}
+// Une pose = 3 passes empilees : contour sombre, volume degrade, lumiere.
+function pose3D(p,dx){
+  if(!p)return'';
+  const t=p.p&&p.p[0];
+  const segs=(p.h&&t)?[[p.h[0],p.h[1],t[0],t[1]],...(p.p||[])]:[...(p.p||[])];
+  const ln=(a,st,w,x)=>`<polyline points="${polyPts(a)}" fill="none" stroke="${st}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${x||''}/>`;
+  const xs=segs.flatMap(a=>a.filter((_,i)=>i%2===0));
+  const cx=(Math.min(...xs)+Math.max(...xs))/2,rx=(Math.max(...xs)-Math.min(...xs))/2+12;
+  let o=`<g transform="translate(${dx},0)">`;
+  o+=`<ellipse cx="${cx.toFixed(1)}" cy="165" rx="${rx.toFixed(1)}" ry="7" fill="#000" opacity=".4" filter="url(#fgs)"/>`;
+  o+=segs.map(a=>ln(a,'#0a2a3a',26)).join('');
+  if(p.h)o+=`<circle cx="${p.h[0]}" cy="${p.h[1]}" r="16" fill="#0a2a3a"/>`;
+  o+=segs.map(a=>ln(a,'url(#fgl)',20)).join('');
+  if(p.h)o+=`<circle cx="${p.h[0]}" cy="${p.h[1]}" r="13" fill="url(#fgh)"/>`;
+  o+=segs.map(a=>ln(a,'rgba(255,255,255,.32)',5,' transform="translate(-1.5,-4.5)"')).join('');
+  if(p.h)o+=`<circle cx="${p.h[0]-4.5}" cy="${p.h[1]-5}" r="3.8" fill="rgba(255,255,255,.5)"/>`;
+  return o+`</g>`;
+}
+// Images fixes cote a cote : position de depart -> position d'arrivee.
 function animSVG(key){
   const fr=POSE[key];if(!fr)return'';
-  const cls=fr.length>=3?['f3-0','f3-1','f3-2']:['f2-0','f2-1'];
-  const wall=key==='wallsit'?'<line class="floor" x1="232" y1="30" x2="232" y2="160"/>':'';
-  return`<svg viewBox="0 0 300 180" role="img"><line class="floor" x1="16" y1="160" x2="284" y2="160"/>${wall}${fr.map((p,i)=>poseG(p,cls[i]||cls[0])).join('')}</svg>`;
+  const n=fr.length,W=300,H=200;
+  const lbl=n>=3?['DEPART','MILIEU','ARRIVEE']:['DEPART','ARRIVEE'];
+  let body='';
+  for(let i=0;i<n;i++){
+    const dx=i*W;
+    body+=`<line class="floor" x1="${dx+24}" y1="162" x2="${dx+276}" y2="162"/>`;
+    if(key==='wallsit')body+=`<line class="floor" x1="${dx+244}" y1="34" x2="${dx+244}" y2="162"/>`;
+    body+=pose3D(fr[i],dx);
+    body+=`<text class="figlbl" x="${dx+W/2}" y="190" text-anchor="middle">${lbl[i]||('ETAPE '+(i+1))}</text>`;
+    if(i<n-1)body+=`<path class="figarrow" d="M${dx+W-14},96 l28,0 m-10,-10 l10,10 l-10,10"/>`;
+  }
+  return`<svg viewBox="0 0 ${n*W} ${H}" role="img">${figDefs()}${body}</svg>`;
 }
 
 /* ════════ PLANCHE PUSH-UP : SCHEMA + SURBRILLANCE ════════
-   Reproduction du plateau : 2 panneaux, disques 6 branches, poignees laterales.
-   Chaque repere (trou) porte un id ; on met en surbrillance la zone couleur
-   de l'exercice, et plus fortement le repere principal a utiliser. */
-const BHOLE={oT:[114,56],oM:[104,110],oB:[114,164],tO:[166,44],tI:[232,44],iT:[266,56],iM:[276,110],iB:[266,164],bO:[166,176],bI:[232,176]};
-const BZONE={y:['oT','oM','oB'],w:['tO','tI'],b:['iT','iM','iB'],o:['bO','bI']};
+   Une poignee se fixe sur DEUX trous : les reperes vont donc par paires.
+   Chaque position = une paire de trous, posee sur la bande de couleur
+   correspondante. On dessine un panneau, et on le duplique en miroir. */
 const BCOL={y:'#fbbf24',w:'#dbeafe',b:'#5ee7ff',o:'#ff8a3d'};
 const BLBL={y:'Jaune — Pectoraux',w:'Blanc — Epaules',b:'Bleu — Dos / arriere',o:'Orange — Triceps'};
-function boardSVG(zone,main){
-  const M=x=>620-x;                      // miroir du panneau droit
-  let holes='',rings='';
-  Object.entries(BHOLE).forEach(([id,[x,y]])=>{
-    const inZone=zone&&BZONE[zone].includes(id),isMain=id===main;
-    const dim=zone&&!inZone?'.3':'1';
-    [x,M(x)].forEach(px=>{
-      holes+=`<circle cx="${px}" cy="${y}" r="9" fill="#191c2b" stroke="#000" stroke-width="2" opacity="${dim}"/>`;
-      if(inZone)rings+=`<circle class="${isMain?'bd-hi':''}" cx="${px}" cy="${y}" r="${isMain?14:11}" fill="none" stroke="${BCOL[zone]}" stroke-width="${isMain?5:2.5}" opacity="${isMain?1:.5}"/>`;
-    });
-  });
-  // Disque central a 6 branches (comme sur le plateau : X clair en haut, V jaune en bas)
-  const disc=cx=>[[180,'#fbbf24'],[0,'#5ee7ff'],[-150,'#dbeafe'],[-30,'#dbeafe'],[120,'#fbbf24'],[60,'#fbbf24']]
-      .map(([a,c])=>{const r=a*Math.PI/180;return`<line x1="${cx}" y1="110" x2="${(cx+48*Math.cos(r)).toFixed(1)}" y2="${(110+48*Math.sin(r)).toFixed(1)}" stroke="${c}" stroke-width="9" stroke-linecap="round"/>`;}).join('');
-  const discBase=cx=>`<circle cx="${cx}" cy="110" r="58" fill="#0b0d14" stroke="#000" stroke-width="3"/>`;
+// a = angle de la paire autour du disque (degres, repere SVG : 180 = vers l'exterieur)
+const BPOS={y1:{c:'y',a:180},y2:{c:'y',a:216},w1:{c:'w',a:267},o1:{c:'o',a:95},b1:{c:'b',a:4}};
+const BC=[190,110],BR=80,BSPREAD=11,BDISC=52;   // centre du disque, rayon des trous, demi-ecart d'une paire
+const bpt=(r,deg)=>{const a=deg*Math.PI/180;return[BC[0]+r*Math.cos(a),BC[1]+r*Math.sin(a)];};
+const bpair=k=>[bpt(BR,BPOS[k].a-BSPREAD),bpt(BR,BPOS[k].a+BSPREAD)];
+const barc=(a1,a2,c,zone)=>{const[x1,y1]=bpt(BR,a1),[x2,y2]=bpt(BR,a2);const op=!zone?'.7':(zone===c?'.95':'.28');return`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${BR},${BR} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${BCOL[c]}" stroke-width="20" stroke-linecap="round" opacity="${op}"/>`;};
+function boardPanel(pos){
+  const zone=pos?BPOS[pos].c:null;
   // Bandes de couleur peintes sur le plateau, sous les reperes
-  const paint=f=>`<path d="M${f(118)},50 L${f(96)},110 L${f(118)},170" fill="none" stroke="#fbbf24" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M${f(262)},50 L${f(284)},110 L${f(262)},170" fill="none" stroke="#5ee7ff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M${f(148)},44 L${f(250)},44" fill="none" stroke="#dbeafe" stroke-width="11" stroke-linecap="round"/>
-<path d="M${f(148)},176 L${f(250)},176" fill="none" stroke="#ff8a3d" stroke-width="11" stroke-linecap="round"/>`;
+  let o=barc(163,233,'y',zone)+barc(250,284,'w',zone)+barc(78,112,'o',zone)+barc(-13,21,'b',zone);
+  // Disque central a 6 branches
+  o+=`<circle cx="190" cy="110" r="${BDISC}" fill="#0b0d14" stroke="#000" stroke-width="3"/>`;
+  o+=[[180,BCOL.y],[0,BCOL.b],[-150,BCOL.w],[-30,BCOL.w],[120,BCOL.y],[60,BCOL.y]]
+     .map(([a,c])=>{const[x,y]=bpt(43,a);return`<line x1="190" y1="110" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${c}" stroke-width="8" stroke-linecap="round"/>`;}).join('');
+  o+=`<circle cx="190" cy="110" r="9" fill="#191c2b" stroke="#000" stroke-width="2"/>`;
+  // Les 10 trous : 5 positions x 2 trous (une poignee = deux ergots)
+  Object.keys(BPOS).forEach(k=>{
+    const sameZone=zone&&BPOS[k].c===zone,isMain=k===pos;
+    const dim=pos&&!sameZone?'.3':'1';
+    bpair(k).forEach(([x,y])=>{o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="8.5" fill="#12141d" stroke="#000" stroke-width="2.5" opacity="${dim}"/>`;});
+    if(sameZone&&!isMain)bpair(k).forEach(([x,y])=>{o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="none" stroke="${BCOL[zone]}" stroke-width="2.5" opacity=".5"/>`;});
+  });
+  // Paire ciblee : les deux ergots relies, pour montrer qu'ils vont ensemble
+  if(pos){
+    const[[x1,y1],[x2,y2]]=bpair(pos),col=BCOL[zone];
+    o+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="7" stroke-linecap="round"/>`;
+    [[x1,y1],[x2,y2]].forEach(([x,y])=>{
+      o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="8.5" fill="${col}"/>`;
+      o+=`<circle class="bd-hi" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="15" fill="none" stroke="${col}" stroke-width="4"/>`;
+    });
+  }
+  return o;
+}
+function boardSVG(pos){
+  const panel=boardPanel(pos);
   return`<svg viewBox="0 0 620 220">
 <rect x="6" y="14" width="608" height="192" rx="46" fill="#14161f" stroke="#000" stroke-width="3"/>
 <ellipse cx="38" cy="110" rx="13" ry="38" fill="var(--bg2)" stroke="#000" stroke-width="2"/>
 <ellipse cx="582" cy="110" rx="13" ry="38" fill="var(--bg2)" stroke="#000" stroke-width="2"/>
+<g>${panel}</g><g transform="translate(620,0) scale(-1,1)">${panel}</g>
 <line x1="310" y1="16" x2="310" y2="204" stroke="#000" stroke-width="4"/>
 <rect x="301" y="46" width="18" height="46" rx="6" fill="#0b0d14" stroke="#000" stroke-width="2"/>
-<rect x="301" y="128" width="18" height="46" rx="6" fill="#0b0d14" stroke="#000" stroke-width="2"/>
-${discBase(190)}${discBase(430)}${paint(x=>x)}${paint(M)}${disc(190)}${disc(430)}
-<circle cx="190" cy="110" r="10" fill="#191c2b" stroke="#000" stroke-width="2"/><circle cx="430" cy="110" r="10" fill="#191c2b" stroke="#000" stroke-width="2"/>
-${holes}${rings}</svg>`;
+<rect x="301" y="128" width="18" height="46" rx="6" fill="#0b0d14" stroke="#000" stroke-width="2"/></svg>`;
 }
 function boardBlock(b){
   if(!b)return'';
-  const legend=['y','w','b','o'].map(c=>`<span class="blg ${b.c===c?'on':''}" style="${b.c===c?'color:'+BCOL[c]:''}"><i style="background:${BCOL[c]}"></i>${BLBL[c]}</span>`).join('');
-  return`<div class="demo-sec"><div class="demo-t">&#x1F3CB;&#xFE0F; Position des mains sur la planche</div>
-  <div class="board-wrap">${boardSVG(b.c,b.main)}<div class="board-note" style="border-color:${BCOL[b.c]}"><span style="color:${BCOL[b.c]}">&#x25CF;</span> ${b.note}</div><div class="board-legend">${legend}</div></div></div>`;
+  const zone=BPOS[b.p].c;
+  const legend=['y','w','b','o'].map(c=>`<span class="blg ${zone===c?'on':''}" style="${zone===c?'color:'+BCOL[c]:''}"><i style="background:${BCOL[c]}"></i>${BLBL[c]}</span>`).join('');
+  return`<div class="demo-sec"><div class="demo-t">&#x1F3CB;&#xFE0F; Position des poignees sur la planche</div>
+  <div class="board-wrap">${boardSVG(b.p)}<div class="board-note" style="border-color:${BCOL[zone]}"><span style="color:${BCOL[zone]}">&#x25CF;</span> ${b.note}</div><div class="board-legend">${legend}</div></div></div>`;
 }
 
 /* ════════ FICHES COACH ════════ */
 const DEMO={
-  board_pecs:{a:'pu',m:'Pectoraux (faisceau externe), deltoides anterieurs',c:['Mains sur les reperes les plus ecartes, environ 1,5x la largeur des epaules.','Coudes a 45 degres du buste, jamais a 90.','Descends jusqu\'a ce que la poitrine frole la planche.','Corps en une seule ligne : nuque, dos, bassin, talons.'],e:['Coudes en croix (perpendiculaires au corps) : agressif pour l\'epaule.','Bassin qui s\'affaisse ou qui pointe vers le haut.','Amplitude partielle : tu perds l\'essentiel du travail.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou mains surelevees sur un support.',bd:{c:'y',main:'oM',note:'Reperes JAUNES exterieurs : prise la plus large, cible les pectoraux.'}},
-  board_standard:{a:'pu',m:'Pectoraux, triceps, gainage complet',c:['Mains a la largeur des epaules, juste sous les epaules.','Serre les fessiers et rentre les cotes : le buste ne doit pas cambrer.','Regard 20 cm devant les mains, nuque neutre.','Pousse le sol loin de toi en haut du mouvement.'],e:['Tete qui plonge en avant avant la poitrine.','Fesses qui montent en premier.','Rebond en bas : casse la tension.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, meme placement de mains.',bd:{c:'y',main:'oT',note:'Reperes JAUNES : mains a largeur d\'epaules, alignees sous les epaules.'}},
-  board_shoulders:{a:'pike',m:'Deltoides anterieurs et lateraux, triceps',c:['Bassin haut, corps en V inverse.','Descends le sommet du crane vers le sol, entre les mains.','Coudes vers l\'avant, pas vers l\'exterieur.','Plus les pieds sont proches des mains, plus c\'est dur.'],e:['Dos rond : garde la poitrine ouverte.','Descendre le menton au lieu du sommet du crane.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds plus loin des mains, ou pompes inclinees.',bd:{c:'w',main:'tO',note:'Reperes BLANCS a l\'avant : les mains partent devant les epaules pour le travail deltoides.'}},
-  board_triceps:{a:'pu',m:'Triceps (longue portion), pectoraux internes',c:['Coudes serres, ils frolent les cotes pendant toute la descente.','Avant-bras verticaux vus de profil.','Verrouille les coudes en haut sans hyperextension.'],e:['Coudes qui s\'ecartent : l\'exercice devient une pompe classique.','Epaules qui montent vers les oreilles.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou pompes triceps mains surelevees.',bd:{c:'o',main:'bO',note:'Reperes ORANGE en bas : mains proches du corps, coudes le long des cotes.'}},
-  archer:{a:'pu',m:'Pectoraux et triceps en unilateral, gainage anti-rotation',c:['Un bras plie qui travaille, l\'autre tendu sur le cote.','Le bassin reste face au sol : pas de rotation.','Alterne un cote puis l\'autre a chaque repetition.'],e:['Pivoter le bassin pour tricher.','Bras tendu qui plie a moitie : choisis ton cote.'],b:'Inspire en descendant, expire en poussant.',x:'Pompes larges classiques, ou archer sur les genoux.',bd:{c:'y',main:'oM',note:'Reperes JAUNES exterieurs : l\'ecart maximal permet le transfert de charge.'}},
-  pike:{a:'pike',m:'Deltoides, triceps, haut du dos',c:['Position en V, jambes tendues si possible.','Le sommet du crane descend entre les mains.','Coudes a 45 degres, pas en croix.'],e:['Chercher a descendre plus bas en arrondissant le dos.','Regarder vers l\'avant : garde la nuque dans l\'axe.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds recules pour reduire la charge.',bd:{c:'w',main:'tI',note:'Reperes BLANCS : mains avancees, epaules au-dessus des mains.'}},
-  pseudo:{a:'pu',m:'Pectoraux, deltoides anterieurs, poignets, gainage',c:['Mains au niveau du bas des pectoraux, doigts orientes vers les pieds.','Buste penche vers l\'avant, epaules devant les mains.','Mouvement lent : c\'est un exercice de force, pas de volume.'],e:['Aller trop vite : risque pour les poignets.','Poignets non echauffes.'],b:'Inspire en descendant, expire lentement en poussant.',x:'Reduis l\'inclinaison du buste, ou fais-le sur les genoux.',bd:{c:'y',main:'oB',note:'Reperes JAUNES bas : mains au niveau du bas des pectoraux, doigts vers les pieds.'}},
-  diamond:{a:'pu',m:'Triceps, pectoraux internes',c:['Index et pouces se touchent : forme un losange.','Coudes serres, ils longent le buste.','La poitrine descend vers les mains, pas vers le sol devant.'],e:['Ecarter les coudes : tu perds le travail des triceps.','Descendre le nez au lieu de la poitrine.'],b:'Inspire en descendant, expire en poussant.',x:'Mains rapprochees sans losange complet, ou sur les genoux.',bd:{c:'o',main:'bI',note:'Reperes ORANGE centraux : la prise la plus serree du plateau.'}},
+  board_pecs:{a:'pu',m:'Pectoraux (faisceau externe), deltoides anterieurs',c:['Mains sur les reperes les plus ecartes, environ 1,5x la largeur des epaules.','Coudes a 45 degres du buste, jamais a 90.','Descends jusqu\'a ce que la poitrine frole la planche.','Corps en une seule ligne : nuque, dos, bassin, talons.'],e:['Coudes en croix (perpendiculaires au corps) : agressif pour l\'epaule.','Bassin qui s\'affaisse ou qui pointe vers le haut.','Amplitude partielle : tu perds l\'essentiel du travail.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou mains surelevees sur un support.',bd:{p:'y1',note:'Poignees sur la paire de trous JAUNES la plus externe (2 trous par poignee). Prise la plus large : ce sont les pectoraux qui encaissent.'}},
+  board_standard:{a:'pu',m:'Pectoraux, triceps, gainage complet',c:['Mains a la largeur des epaules, juste sous les epaules.','Serre les fessiers et rentre les cotes : le buste ne doit pas cambrer.','Regard 20 cm devant les mains, nuque neutre.','Pousse le sol loin de toi en haut du mouvement.'],e:['Tete qui plonge en avant avant la poitrine.','Fesses qui montent en premier.','Rebond en bas : casse la tension.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, meme placement de mains.',bd:{p:'y2',note:'Poignees sur la paire JAUNE avancee (2 trous par poignee), largeur d\'epaules, alignees sous les epaules.'}},
+  board_shoulders:{a:'pike',m:'Deltoides anterieurs et lateraux, triceps',c:['Bassin haut, corps en V inverse.','Descends le sommet du crane vers le sol, entre les mains.','Coudes vers l\'avant, pas vers l\'exterieur.','Plus les pieds sont proches des mains, plus c\'est dur.'],e:['Dos rond : garde la poitrine ouverte.','Descendre le menton au lieu du sommet du crane.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds plus loin des mains, ou pompes inclinees.',bd:{p:'w1',note:'Poignees sur la paire BLANCHE avant (2 trous par poignee) : les mains partent devant les epaules pour cibler les deltoides.'}},
+  board_triceps:{a:'pu',m:'Triceps (longue portion), pectoraux internes',c:['Coudes serres, ils frolent les cotes pendant toute la descente.','Avant-bras verticaux vus de profil.','Verrouille les coudes en haut sans hyperextension.'],e:['Coudes qui s\'ecartent : l\'exercice devient une pompe classique.','Epaules qui montent vers les oreilles.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou pompes triceps mains surelevees.',bd:{p:'o1',note:'Poignees sur la paire ORANGE arriere (2 trous par poignee) : mains proches du corps, coudes le long des cotes.'}},
+  archer:{a:'pu',m:'Pectoraux et triceps en unilateral, gainage anti-rotation',c:['Un bras plie qui travaille, l\'autre tendu sur le cote.','Le bassin reste face au sol : pas de rotation.','Alterne un cote puis l\'autre a chaque repetition.'],e:['Pivoter le bassin pour tricher.','Bras tendu qui plie a moitie : choisis ton cote.'],b:'Inspire en descendant, expire en poussant.',x:'Pompes larges classiques, ou archer sur les genoux.',bd:{p:'y1',note:'Poignees sur la paire JAUNE la plus externe (2 trous par poignee) : l\'ecart maximal permet le transfert de charge d\'un bras a l\'autre.'}},
+  pike:{a:'pike',m:'Deltoides, triceps, haut du dos',c:['Position en V, jambes tendues si possible.','Le sommet du crane descend entre les mains.','Coudes a 45 degres, pas en croix.'],e:['Chercher a descendre plus bas en arrondissant le dos.','Regarder vers l\'avant : garde la nuque dans l\'axe.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds recules pour reduire la charge.',bd:{p:'w1',note:'Poignees sur la paire BLANCHE (2 trous par poignee) : mains avancees, epaules a l\'aplomb des mains.'}},
+  pseudo:{a:'pu',m:'Pectoraux, deltoides anterieurs, poignets, gainage',c:['Mains au niveau du bas des pectoraux, doigts orientes vers les pieds.','Buste penche vers l\'avant, epaules devant les mains.','Mouvement lent : c\'est un exercice de force, pas de volume.'],e:['Aller trop vite : risque pour les poignets.','Poignets non echauffes.'],b:'Inspire en descendant, expire lentement en poussant.',x:'Reduis l\'inclinaison du buste, ou fais-le sur les genoux.',bd:{p:'y2',note:'Poignees sur la paire JAUNE avancee (2 trous par poignee), tournees pour orienter les doigts vers les pieds.'}},
+  diamond:{a:'pu',m:'Triceps, pectoraux internes',c:['Index et pouces se touchent : forme un losange.','Coudes serres, ils longent le buste.','La poitrine descend vers les mains, pas vers le sol devant.'],e:['Ecarter les coudes : tu perds le travail des triceps.','Descendre le nez au lieu de la poitrine.'],b:'Inspire en descendant, expire en poussant.',x:'Mains rapprochees sans losange complet, ou sur les genoux.',bd:{p:'o1',note:'Poignees sur la paire ORANGE (2 trous par poignee) : la prise la plus serree du plateau.'}},
   ab_wheel:{a:'abwheel',m:'Grand droit, transverse, dorsaux, epaules',c:['Depart a genoux, bassin en retroversion (pubis vers le nombril).','Deroule lentement en gardant le dos plat.','Ne va que jusqu\'ou tu peux revenir sans cambrer.','Reviens en tirant avec les abdos, pas avec les bras.'],e:['Cambrer le bas du dos : la premiere cause de lombalgie sur cet exercice.','Aller trop loin des la premiere seance.'],b:'Inspire en deroulant, expire en revenant.',x:'Amplitude reduite (mi-course), ou face a un mur qui bloque la roue.'},
   jump_rope:{a:'jumprope',m:'Mollets, cardio, coordination',c:['Sauts bas : 2 a 3 cm du sol suffisent.','La corde est tournee par les poignets, pas par les bras.','Coudes proches du corps, regard devant.','Amortis sur l\'avant du pied, genoux souples.'],e:['Sauter trop haut : tu t\'epuises en 30 secondes.','Talons qui claquent au sol.'],b:'Respiration continue et reguliere, ne bloque jamais.',x:'Sauts sans corde (shadow) ou pas de course sur place.'},
   bands:{a:'bands',m:'Deltoides posterieurs, rhomboides, trapezes moyens',c:['Bras tendus devant, elastique a hauteur de poitrine.','Ecarte en serrant les omoplates l\'une vers l\'autre.','Garde les epaules basses, loin des oreilles.','Retour freine : ne laisse pas l\'elastique te ramener.'],e:['Cambrer le bas du dos pour aider.','Hausser les epaules.'],b:'Expire en ecartant, inspire au retour.',x:'Elastique plus fin, ou mains plus ecartees au depart.'},
@@ -1356,16 +1391,17 @@ function openBoardGuide(){
   document.getElementById('demo-step').innerText='GUIDE';
   document.getElementById('demo-name').innerText='Planche Push-Up';
   document.getElementById('demo-mus').innerText='Code couleur des reperes';
-  document.getElementById('demo-stage').innerHTML=boardSVG(null,null);
+  document.getElementById('demo-stage').innerHTML=boardSVG(null);
   document.getElementById('demo-board').innerHTML=`<div class="demo-sec"><div class="board-legend">${legend}</div></div>`;
   document.getElementById('demo-cues').innerHTML=[
-    'JAUNE (exterieur) : pectoraux. Plus tu t\'ecartes, plus les pectoraux travaillent.',
-    'BLANC (avant) : epaules. Mains devant les epaules, bassin haut.',
-    'ORANGE (bas, serre) : triceps. Coudes le long du corps.',
+    'Chaque poignee se fixe sur DEUX trous : les reperes vont par paires. Enfonce les deux ergots a fond et verifie qu\'ils ne bougent plus avant de charger.',
+    'JAUNE (exterieur) : pectoraux. Plus la paire est externe, plus les pectoraux travaillent.',
+    'BLANC (avant) : epaules. Poignees devant les epaules, bassin haut.',
+    'ORANGE (arriere, serre) : triceps. Coudes le long du corps.',
     'BLEU (interieur) : dos et arriere d\'epaule — a utiliser avec les elastiques (tirage) ou en prise inversee.',
-    'Change de repere entre les series pour varier l\'angle de travail.'
+    'Change de paire entre les series pour varier l\'angle de travail.'
   ].map((t,i)=>`<div class="demo-li"><b>${i+1}.</b><span>${t}</span></div>`).join('');
-  document.getElementById('demo-err').innerHTML=`<div class="demo-li err"><b>&times;</b><span>Ne bloque jamais un coude en hyperextension en haut du mouvement.</span></div><div class="demo-li err"><b>&times;</b><span>Poignets froids : fais toujours la mobilite des poignets avant.</span></div>`;
+  document.getElementById('demo-err').innerHTML=`<div class="demo-li err"><b>&times;</b><span>Ne bloque jamais un coude en hyperextension en haut du mouvement.</span></div><div class="demo-li err"><b>&times;</b><span>Poignets froids : fais toujours la mobilite des poignets avant.</span></div><div class="demo-li err"><b>&times;</b><span>Une poignee enfoncee sur un seul trou : elle pivote sous la charge et tu chutes.</span></div>`;
   document.getElementById('demo-br').innerHTML='<b>Regle simple :</b> plus les mains sont ecartees, plus ce sont les pectoraux ; plus elles sont serrees, plus ce sont les triceps.';
   document.getElementById('demo-easy').innerHTML='<b>&#x2193;</b><span>Debutant : reste sur les reperes jaunes et blancs, sur les genoux, avant de passer aux positions serrees.</span>';
   document.getElementById('demo-cta').innerText="C'EST COMPRIS";
