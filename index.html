@@ -328,16 +328,6 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .blg.on{color:var(--tm);border-color:currentColor;}
 @keyframes bdRing{0%,100%{opacity:.35;stroke-width:3}50%{opacity:1;stroke-width:6}}
 .bd-hi{fill:none;animation:bdRing 1.5s ease-in-out infinite;}
-.ph-item{display:flex;align-items:center;gap:10px;background:var(--bgi);border:1px solid var(--bd);border-radius:14px;padding:9px 11px;margin-bottom:7px;}
-.ph-name{flex:1;min-width:0;font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ph-slots{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.ph-slot{width:46px;height:56px;border-radius:10px;border:1px dashed var(--bd2);background:var(--bgc);color:var(--tmut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;padding:0;overflow:hidden;position:relative;}
-.ph-slot span{font-size:17px;font-weight:900;line-height:1;}
-.ph-slot b{font-size:7px;font-weight:900;letter-spacing:.3px;text-transform:uppercase;}
-.ph-slot.on{border-style:solid;border-color:var(--cb);}
-.ph-slot.on img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.ph-slot.on b{position:relative;z-index:1;align-self:stretch;text-align:center;background:rgba(4,5,12,.62);color:#fff;padding:2px 0;margin-top:auto;}
-.ph-del{background:none;border:none;color:var(--cr);font-size:19px;cursor:pointer;padding:0 3px;line-height:1;}
 .ph-row{display:flex;gap:8px;}
 .ph{flex:1;min-width:0;margin:0;}
 .ph img{width:100%;height:auto;display:block;border-radius:14px;background:var(--bgc);}
@@ -397,23 +387,6 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
     <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cg)"></span><span><b>Vert</b> &mdash; synchronise</span></div>
     <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cy)"></span><span><b>Jaune</b> &mdash; enregistrement en cours</span></div>
     <div class="cloud-leg"><span class="cloud-dot" style="background:var(--cr)"></span><span><b>Rouge</b> &mdash; erreur de synchronisation</span></div>
-  </div>
-</div>
-<div class="demo-ov" id="photos-ov" onclick="if(event.target===this)closePhotos()">
-  <div class="demo-sheet">
-    <div class="handle"></div>
-    <div class="demo-head">
-      <div style="min-width:0">
-        <div class="demo-step">Photos du coach</div>
-        <div class="demo-name">Illustrer les exercices</div>
-        <div class="demo-mus" id="ph-count"></div>
-      </div>
-      <button class="demo-x" onclick="closePhotos()">&times;</button>
-    </div>
-    <p style="font-size:11px;color:var(--tmut);line-height:1.5;margin-bottom:12px">Ajoute une photo de <b>depart</b> et une d'<b>arrivee</b> pour chaque exercice. Elles remplacent le schema dans la fiche du mouvement. Elles restent sur cet appareil et ne sont pas envoyees dans le cloud.</p>
-    <div id="ph-list"></div>
-    <input type="file" id="ph-file" accept="image/*" style="display:none" onchange="onPhotoPicked(event)">
-    <button class="btn-launch mt" onclick="closePhotos()">TERMINE</button>
   </div>
 </div>
 <div class="demo-ov" id="demo-ov" onclick="if(event.target===this)closeDemo()">
@@ -579,7 +552,6 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Fiches des nouveaux mouvements</span><div class="tsw on" id="demo-tsw" onclick="togDemoAuto()"></div></div>
       <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">La fiche d'un exercice s'ouvre automatiquement la premiere fois que tu le rencontres. Le bouton (i) reste disponible a tout moment.</p>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Photos du coach</span><div class="tsw on" id="dph-tsw" onclick="togPhoto()"></div></div>
-      <button class="toggle-btn mt" style="width:100%;font-size:11px" onclick="openPhotos()">&#x1F4F7; CHARGER MES PHOTOS D'EXERCICES</button>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Coach 3D</span><div class="tsw on" id="d3-tsw" onclick="tog3D()"></div></div>
       <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">Affiche un personnage 3D anime quand un modele existe pour l'exercice. Sinon, et hors ligne, la fiche montre le schema.</p>
       <button class="toggle-btn mt" style="width:100%;font-size:11px" onclick="openBoardGuide()">&#x1F3CB;&#xFE0F; GUIDE DE LA PLANCHE PUSH-UP</button>
@@ -1676,65 +1648,6 @@ const WU_DEMO={'Rotations des epaules':'bands','Cercles de bras':'bands','Flexio
    Tant qu'un exercice n'est pas dans ce registre — ou que le modele ne charge
    pas (hors ligne, CDN bloque) — la fiche retombe sur le schema vectoriel.
    Exemple : mat_squat:{f:'squat.glb', a:'Squat'} */
-/* ════════ PHOTOS LOCALES (IndexedDB) ════════
-   Les photos chargees depuis l'app sont stockees dans IndexedDB (et non dans
-   localStorage, dont le quota d'environ 5 Mo serait sature par une dizaine
-   d'images). L'index des exercices illustres vit dans S pour rester lisible
-   sans attendre une lecture asynchrone. */
-const IDB_NAME='cp2img',IDB_STORE='photos';
-let _idb=null;
-function idb(){
-  if(_idb)return _idb;
-  _idb=new Promise((res,rej)=>{const r=indexedDB.open(IDB_NAME,1);
-    r.onupgradeneeded=()=>r.result.createObjectStore(IDB_STORE);
-    r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
-  return _idb;
-}
-const idbTx=(mode,fn)=>idb().then(d=>new Promise((res,rej)=>{
-  const t=d.transaction(IDB_STORE,mode),q=fn(t.objectStore(IDB_STORE));
-  t.onerror=()=>rej(t.error);t.oncomplete=()=>res(q&&q.result);}));
-const idbPut=(k,v)=>idbTx('readwrite',st=>st.put(v,k));
-const idbGet=k=>idbTx('readonly',st=>st.get(k));
-const idbDel=k=>idbTx('readwrite',st=>st.delete(k));
-// Reduction avant stockage : une photo de telephone fait plusieurs Mo.
-function shrinkImage(file,max=900,q=.82){
-  return new Promise((res,rej)=>{
-    const img=new Image(),url=URL.createObjectURL(file);
-    img.onload=()=>{URL.revokeObjectURL(url);
-      const sc=Math.min(1,max/Math.max(img.width,img.height));
-      const w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));
-      const c=document.createElement('canvas');c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      c.toBlob(b=>b?res(b):rej(new Error('encodage')),'image/webp',q);};
-    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('image illisible'));};
-    img.src=url;});
-}
-const photoIdx=()=>(S.photoIdx||(S.photoIdx={}));
-const hasLocalPhoto=k=>!!(photoIdx()[k]&&photoIdx()[k].s);
-let _purl=[];
-function freePhotoURLs(){_purl.forEach(URL.revokeObjectURL);_purl=[];}
-// Recupere la paire et fabrique des URL temporaires pour l'affichage.
-async function loadPhotoPair(k){
-  const idx=photoIdx()[k];if(!idx||!idx.s)return null;
-  try{
-    const a=await idbGet(k+'_s');if(!a)throw 0;
-    const b=idx.e?await idbGet(k+'_e'):null;
-    const us=URL.createObjectURL(a);_purl.push(us);
-    let ue=null;if(b){ue=URL.createObjectURL(b);_purl.push(ue);}
-    return{s:us,e:ue};
-  }catch(e){delete photoIdx()[k];save();return null;}
-}
-async function setPhoto(k,slot,file){
-  const blob=await shrinkImage(file);
-  await idbPut(k+'_'+slot,blob);
-  const i=photoIdx();i[k]=i[k]||{};i[k][slot]=1;save();
-  return blob.size;
-}
-async function clearPhoto(k){
-  await idbDel(k+'_s').catch(()=>{});await idbDel(k+'_e').catch(()=>{});
-  delete photoIdx()[k];save();
-}
-
 /* Photos livrees avec l'app : une paire d'images par exercice, posees
    dans le dossier PHOTO_BASE. C'est la source la plus riche ; a defaut on passe
    au modele 3D, puis au schema vectoriel.
@@ -1790,7 +1703,7 @@ const MV_SRC=[MODEL_BASE+'model-viewer.min.js',
 let mvState='idle';                       // idle | loading | ready | failed
 let demoView='auto';                      // auto | 2d | 3d
 function has3D(k){return S.use3D!==false&&!!MODEL3D[k]&&mvState!=='failed';}
-function hasPhoto(k){return S.usePhoto!==false&&(hasLocalPhoto(k)||!!PHOTO[k]);}
+function hasPhoto(k){return S.usePhoto!==false&&!!PHOTO[k];}
 // Une image manquante ne doit jamais laisser un trou : on retire la paire et
 // la fiche bascule sur le media suivant.
 function photoFail(k){delete PHOTO[k];if(demoKey===k)renderDemoStage(k);}
@@ -1832,17 +1745,7 @@ function renderDemoStage(key){
   const ph=hasPhoto(key),can3=has3D(key),rich=ph||can3,useRich=rich&&demoView!=='2d';
   if(bt){bt.style.display=rich?'block':'none';bt.innerHTML=useRich?'&#x1F4D0; SCHEMA':(ph?'&#x1F4F7; PHOTO':'&#x1F9CA; 3D');}
   if(!useRich){st.innerHTML=animSVG(DEMO[key].a);return;}
-  if(ph){
-    if(!hasLocalPhoto(key)){st.innerHTML=stagePhoto(key);return;}
-    st.innerHTML='<div class="demo-load">Chargement des photos...</div>';
-    loadPhotoPair(key).then(u=>{
-      if(demoKey!==key)return;
-      if(!u){renderDemoStage(key);return;}
-      const one=(src,l)=>`<figure class="ph"><img src="${src}" alt="${l}"><figcaption>${l}</figcaption></figure>`;
-      st.innerHTML=`<div class="ph-row">${one(u.s,'DEPART')}${u.e?one(u.e,'ARRIVEE'):''}</div>`;
-    });
-    return;
-  }
+  if(ph){st.innerHTML=stagePhoto(key);return;}
   st.innerHTML='<div class="demo-load">Chargement du coach 3D...</div>';
   loadMV().then(ok=>{
     if(document.getElementById('demo-name').dataset.k!==key)return;   // fiche changee entre-temps
@@ -1853,39 +1756,6 @@ function renderDemoStage(key){
   });
 }
 function togDemoView(){demoView=(demoView==='2d')?'3d':'2d';renderDemoStage(demoKey);}
-let phTarget=null;
-function openPhotos(){renderPhotoList();document.getElementById('photos-ov').classList.add('open');}
-function closePhotos(){freePhotoURLs();document.getElementById('photos-ov').classList.remove('open');}
-function pickPhoto(k,slot){phTarget={k,slot};const f=document.getElementById('ph-file');f.value='';f.click();}
-async function onPhotoPicked(e){
-  const file=e.target.files&&e.target.files[0];if(!file||!phTarget)return;
-  const{k,slot}=phTarget;phTarget=null;
-  try{
-    const sz=await setPhoto(k,slot,file);
-    flashToast('&#x1F4F7;','PHOTO AJOUTEE',(EX[k]?.n)||k,(slot==='s'?'Depart':'Arrivee')+' - '+Math.round(sz/1024)+' Ko');
-    renderPhotoList();
-  }catch(err){
-    flashToast('&#x26A0;&#xFE0F;','ECHEC','Image non enregistree',(err&&err.message)||'Format non reconnu.');
-  }
-}
-async function removePhoto(k){await clearPhoto(k);renderPhotoList();flashToast('&#x1F5D1;&#xFE0F;','PHOTOS RETIREES',(EX[k]?.n)||k,'La fiche repasse au schema.');}
-// Liste des 31 exercices avec l'etat de chaque emplacement.
-async function renderPhotoList(){
-  freePhotoURLs();
-  const c=document.getElementById('ph-list');if(!c)return;
-  const keys=Object.keys(DEMO).filter(k=>EX[k]);
-  const done=keys.filter(hasLocalPhoto).length;
-  document.getElementById('ph-count').innerText=done+' / '+keys.length+' exercices illustres';
-  const rows=await Promise.all(keys.map(async k=>{
-    const u=hasLocalPhoto(k)?await loadPhotoPair(k):null;
-    const slot=(s,l,src)=>`<button class="ph-slot${src?' on':''}" onclick="pickPhoto('${k}','${s}')">`
-      +(src?`<img src="${src}" alt="">`:`<span>+</span>`)+`<b>${l}</b></button>`;
-    return`<div class="ph-item"><div class="ph-name">${EX[k].n}</div>`
-      +`<div class="ph-slots">${slot('s','Depart',u&&u.s)}${slot('e','Arrivee',u&&u.e)}`
-      +(u?`<button class="ph-del" onclick="removePhoto('${k}')" aria-label="Retirer">&times;</button>`:'')+`</div></div>`;
-  }));
-  c.innerHTML=rows.join('');
-}
 function togPhoto(){S.usePhoto=S.usePhoto===false;save();document.getElementById('dph-tsw').classList.toggle('on',S.usePhoto!==false);if(demoKey)renderDemoStage(demoKey);}
 function tog3D(){S.use3D=S.use3D===false;save();document.getElementById('d3-tsw').classList.toggle('on',S.use3D!==false);if(demoKey)renderDemoStage(demoKey);}
 
@@ -1911,7 +1781,7 @@ function openDemo(key,queue){
   document.getElementById('demo-ov').classList.add('open');
 }
 function demoNext(){if(demoI<demoQ.length-1){openDemo(demoQ[demoI+1],demoQ);return;}closeDemo();}
-function closeDemo(){freePhotoURLs();document.getElementById('demo-ov').classList.remove('open');demoQ=[];demoKey=null;}
+function closeDemo(){document.getElementById('demo-ov').classList.remove('open');demoQ=[];demoKey=null;}
 function demoMute(){if(demoKey){if(!S.hideDemo)S.hideDemo={};S.hideDemo[demoKey]=true;save();flashToast('&#x1F507;','DEMO MASQUEE',(EX[demoKey]?.n)||'Exercice','Elle ne s\'ouvrira plus toute seule. Le bouton (i) reste dispo.');}demoNext();}
 // Ouvre automatiquement la fiche des mouvements jamais realises (une seule fois).
 function autoDemo(exs){
