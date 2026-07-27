@@ -131,6 +131,7 @@ body.light{background:var(--bg);}
 .amrap-cd{font-size:58px;font-weight:900;color:var(--co);font-variant-numeric:tabular-nums;line-height:1;text-align:center;}
 .amrap-reps{font-size:20px;font-weight:900;color:var(--cy);text-align:center;letter-spacing:1px;margin-top:4px;}
 .amrap-exnum{font-size:9px;font-weight:900;letter-spacing:2px;color:var(--tmut);text-transform:uppercase;text-align:center;margin-bottom:6px;}
+.amrap-thumb{display:block;margin:8px auto 0;max-height:84px;max-width:70%;border-radius:12px;opacity:.92;}
 .amrap-rc{font-size:44px;font-weight:900;color:var(--cb);text-align:center;}
 .amrap-rl{font-size:9px;font-weight:700;color:var(--tmut);text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:2px;}
 .amrap-btn{width:140px;height:140px;border-radius:50%;background:rgba(255,138,61,.1);border:3px solid var(--co);color:var(--co);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 0 30px var(--go);transition:all .1s;margin:8px auto 0;}
@@ -333,8 +334,6 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .ph img{width:100%;height:auto;display:block;border-radius:14px;background:var(--bgc);}
 .ph figcaption{text-align:center;font-size:11px;font-weight:900;letter-spacing:2px;color:var(--tmut);padding-top:7px;}
 .demo-view{background:var(--bgi);border:1px solid var(--bd2);color:var(--tm);font-size:9px;font-weight:900;letter-spacing:.5px;padding:5px 9px;border-radius:9px;cursor:pointer;white-space:nowrap;}
-.demo-load{display:flex;align-items:center;justify-content:center;height:200px;font-size:11px;font-weight:700;color:var(--tmut);}
-.demo-hint{text-align:center;font-size:9px;color:var(--tmut);padding:2px 0 6px;}
 .demo-mute{display:block;margin:12px auto 0;background:none;border:none;color:var(--tmut);font-size:10px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px 10px;opacity:.75;}
 .info-b{background:none;border:1px solid var(--bd2);color:var(--tmut);width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .info-b:active{border-color:var(--cb);color:var(--cb);}
@@ -359,6 +358,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 <div class="amrap-ov" id="amrap-ov">
   <div id="a-trans-ov"><div class="atl" id="atl">PRET ?</div><div class="atn" id="atn"></div><div class="atcd" id="atcd">3</div></div>
   <div style="text-align:center"><div class="amrap-lbl">&#x23F1; TEMPS RESTANT</div><div class="amrap-cd" id="a-cd">05:00</div></div>
+  <div id="a-thumb-w" style="display:none"><img id="a-thumb" class="amrap-thumb" alt=""></div>
   <div style="text-align:center;flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px 0">
     <div class="amrap-exnum" id="a-exnum">EXERCICE 1/4</div>
     <div class="amrap-exo" id="a-exo"></div>
@@ -552,8 +552,6 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Fiches des nouveaux mouvements</span><div class="tsw on" id="demo-tsw" onclick="togDemoAuto()"></div></div>
       <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">La fiche d'un exercice s'ouvre automatiquement la premiere fois que tu le rencontres. Le bouton (i) reste disponible a tout moment.</p>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Photos du coach</span><div class="tsw on" id="dph-tsw" onclick="togPhoto()"></div></div>
-      <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Coach 3D</span><div class="tsw on" id="d3-tsw" onclick="tog3D()"></div></div>
-      <p style="font-size:9px;color:var(--tmut);margin-top:7px;line-height:1.5">Affiche un personnage 3D anime quand un modele existe pour l'exercice. Sinon, et hors ligne, la fiche montre le schema.</p>
       <button class="toggle-btn mt" style="width:100%;font-size:11px" onclick="openBoardGuide()">&#x1F3CB;&#xFE0F; GUIDE DE LA PLANCHE PUSH-UP</button>
       <button class="toggle-btn mt" style="width:100%;font-size:11px" onclick="resetDemos()">&#x1F441;&#xFE0F; REAFFICHER TOUTES LES FICHES</button>
       <div class="theme-row"><span style="font-size:12px;font-weight:800;text-transform:uppercase">Sons</span><div class="tsw on" id="snd-tsw" onclick="togSound()"></div></div>
@@ -787,7 +785,7 @@ async function reqWL(){if(!('wakeLock'in navigator))return;try{wl=await navigato
 function relWL(){if(wl){wl.release();wl=null;}}
 function togSound(){S.sound=S.sound===false;save();document.getElementById('snd-tsw').classList.toggle('on',S.sound!==false);if(S.sound!==false)beep(880,90);}
 function togVib(){S.vibrate=S.vibrate===false;save();document.getElementById('vib-tsw').classList.toggle('on',S.vibrate!==false);if(S.vibrate!==false)buzz(60);}
-function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'d3-tsw':S.use3D!==false,'dph-tsw':S.usePhoto!==false};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});}
+function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'dph-tsw':S.usePhoto!==false};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});}
 function togTheme(){S.theme=S.theme==='dark'?'light':'dark';applyTheme();save();}
 function applyTheme(){if(S.theme==='light'){document.body.classList.add('light');document.getElementById('tsw').classList.add('on');}else{document.body.classList.remove('light');document.getElementById('tsw').classList.remove('on');}}
 function checkSaveReminder(){if(S.totalWO<1)return;const d=S.lastExport?Math.floor((Date.now()-new Date(S.lastExport))/86400000):999;if(d>=60)setTimeout(()=>document.getElementById('save-popup').classList.add('show'),2500);}
@@ -1123,7 +1121,12 @@ function runAmrap(exs){
 function showAmrapTrans(title,sub,sec,cb){const ov=document.getElementById('a-trans-ov');ov.style.display='flex';document.getElementById('atl').innerText=title;document.getElementById('atn').innerText=sub||'';let t=sec;document.getElementById('atcd').innerText=t;clearInterval(aTransInt);aTransInt=setInterval(()=>{t--;document.getElementById('atcd').innerText=t;if(t<=0){clearInterval(aTransInt);ov.style.display='none';if(cb)cb();}},1000);}
 function startAmrapMain(){clearInterval(aMainInt);aEndAt=Date.now()+aTL*1000;aMainInt=setInterval(()=>{const t=Math.max(0,Math.ceil((aEndAt-Date.now())/1000));if(t===aTL)return;aTL=t;updACD();if(t>0&&t<=3)beep(660,60);if(t<=0){clearInterval(aMainInt);clearInterval(aSubInt);clearInterval(aTransInt);aEnd();}},200);}
 function updACD(){const m=String(Math.floor(aTL/60)).padStart(2,'0'),s=String(aTL%60).padStart(2,'0');const el=document.getElementById('a-cd');if(el)el.innerText=`${m}:${s}`;}
-function showAEx(idx){aCurrentEx=idx;const ex=aExs[idx];const tot=aExs.length;const ib=document.getElementById('a-info');if(ib)ib.style.display=(ex.k&&DEMO[ex.k])?'flex':'none';document.getElementById('a-exnum').innerText=`EXERCICE ${idx+1} / ${tot}`;document.getElementById('a-exo').innerText=ex.n;document.getElementById('a-tip').innerText=ex.t;document.getElementById('a-reps').innerText=ex.repsStr;const btn=document.getElementById('a-main-btn');if(ex.timed){document.getElementById('a-subtimer').style.display='block';btn.innerHTML='<div style="font-size:22px">⏭️</div><div>PASSER</div>';startASubTimer(ex.dur);}else{document.getElementById('a-subtimer').style.display='none';btn.innerHTML='<div style="font-size:28px">✅</div><div>FAIT !</div>';}}
+function showAEx(idx){aCurrentEx=idx;const ex=aExs[idx];const tot=aExs.length;const ib=document.getElementById('a-info');if(ib)ib.style.display=(ex.k&&DEMO[ex.k])?'flex':'none';
+  // Petit rappel visuel de la position sous le chrono ; le bouton (i) reste le seul moyen de voir le detail complet.
+  const tw=document.getElementById('a-thumb-w'),ti=document.getElementById('a-thumb');
+  if(ex.k&&hasPhoto(ex.k)){ti.onerror=()=>{tw.style.display='none';};ti.src=PHOTO_BASE+PHOTO[ex.k].s;tw.style.display='block';}
+  else tw.style.display='none';
+  document.getElementById('a-exnum').innerText=`EXERCICE ${idx+1} / ${tot}`;document.getElementById('a-exo').innerText=ex.n;document.getElementById('a-tip').innerText=ex.t;document.getElementById('a-reps').innerText=ex.repsStr;const btn=document.getElementById('a-main-btn');if(ex.timed){document.getElementById('a-subtimer').style.display='block';btn.innerHTML='<div style="font-size:22px">⏭️</div><div>PASSER</div>';startASubTimer(ex.dur);}else{document.getElementById('a-subtimer').style.display='none';btn.innerHTML='<div style="font-size:28px">✅</div><div>FAIT !</div>';}}
 function startASubTimer(sec){clearInterval(aSubInt);let t=sec;const circ=2*Math.PI*47;document.getElementById('a-sub-cd').innerText=t;document.getElementById('a-sub-ring').style.strokeDashoffset='0';const sEnd=Date.now()+sec*1000;aSubInt=setInterval(()=>{const nt=Math.max(0,Math.ceil((sEnd-Date.now())/1000));const cd=document.getElementById('a-sub-cd'),ring=document.getElementById('a-sub-ring');if(!cd){clearInterval(aSubInt);return;}if(nt!==t){t=nt;cd.innerText=t;if(t>0&&t<=3)beep(660,60);}if(ring)ring.style.strokeDashoffset=circ*(1-t/sec);if(t<=0){clearInterval(aSubInt);buzz([50,50,50]);beep(880,150);aNextEx();}},200);}
 function aNextEx(){clearInterval(aSubInt);const nextIdx=(aCurrentEx+1)%aExs.length;const isNewRound=nextIdx===0;if(isNewRound){aR++;const rc=document.getElementById('a-rc');if(rc)rc.innerText=aR;buzz([100,50,100]);beep(880,200);}showAmrapTrans(isNewRound?`ROUND ${aR} !`:'SUIVANT',aExs[nextIdx]?.n||'',isNewRound?3:1,()=>showAEx(nextIdx));}
 function aEnd(){
@@ -1641,16 +1644,8 @@ const DEMO={
 };
 const WU_DEMO={'Rotations des epaules':'bands','Cercles de bras':'bands','Flexions du cou':'bands','Ouverture de poitrine':'bands','Rotations du buste':'russian','Chat-Vache':'plank','Marche sur place':'tread','Sauts legers':'jumprope','Mobilite des poignets':'pu','Fentes marchees':'lunge','Balancers de jambe':'lunge'};
 
-/* ════════ COACH 3D ════════
-   Registre des modeles animes : cle d'exercice -> fichier glTF/GLB (+ nom du
-   clip d'animation s'il y en a plusieurs dans le fichier).
-   Les fichiers vont dans le dossier MODEL_BASE, a cote de index.html.
-   Tant qu'un exercice n'est pas dans ce registre — ou que le modele ne charge
-   pas (hors ligne, CDN bloque) — la fiche retombe sur le schema vectoriel.
-   Exemple : mat_squat:{f:'squat.glb', a:'Squat'} */
 /* Photos livrees avec l'app : une paire d'images par exercice, posees
-   dans le dossier PHOTO_BASE. C'est la source la plus riche ; a defaut on passe
-   au modele 3D, puis au schema vectoriel.
+   dans le dossier PHOTO_BASE. A defaut, la fiche retombe sur le schema vectoriel.
    Exemple : mat_squat:{s:'squat_depart.webp', e:'squat_arrivee.webp'} */
 const PHOTO_BASE='photos/';
 const PHOTO={
@@ -1694,70 +1689,25 @@ const PHOTO={
   mac_elliptical:{s:'mac_elliptical_s.webp',e:'mac_elliptical_e.webp'},
   mac_treadmill: {s:'mac_treadmill_s.webp', e:'mac_treadmill_e.webp'},
 };
-const MODEL_BASE='models/';
-const MODEL3D={};
-/* Visualiseur : copie locale d'abord (l'app doit marcher hors ligne), CDN en
-   secours. Pour la version locale, deposer model-viewer.min.js dans MODEL_BASE. */
-const MV_SRC=[MODEL_BASE+'model-viewer.min.js',
-              'https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js'];
-let mvState='idle';                       // idle | loading | ready | failed
-let demoView='auto';                      // auto | 2d | 3d
-function has3D(k){return S.use3D!==false&&!!MODEL3D[k]&&mvState!=='failed';}
+let demoView='auto';                      // auto | 2d
 function hasPhoto(k){return S.usePhoto!==false&&!!PHOTO[k];}
 // Une image manquante ne doit jamais laisser un trou : on retire la paire et
-// la fiche bascule sur le media suivant.
+// la fiche bascule sur le schema.
 function photoFail(k){delete PHOTO[k];if(demoKey===k)renderDemoStage(k);}
 function stagePhoto(key){
   const p=PHOTO[key],one=(f,l)=>`<figure class="ph"><img src="${PHOTO_BASE}${f}" alt="${l}" loading="lazy" onerror="photoFail('${key}')"><figcaption>${l}</figcaption></figure>`;
   return`<div class="ph-row">${one(p.s,'DEPART')}${p.e?one(p.e,'ARRIVEE'):''}</div>`;
 }
-// Chargement paresseux : le visualiseur n'est telecharge qu'a la premiere fiche 3D.
-function loadMV(){
-  if(mvState==='ready')return Promise.resolve(true);
-  if(mvState==='failed')return Promise.resolve(false);
-  if(mvState==='loading')return customElements.whenDefined('model-viewer').then(()=>true).catch(()=>false);
-  mvState='loading';
-  const tryOne=src=>new Promise(res=>{
-    let settled=false;const fin=ok=>{if(!settled){settled=true;clearTimeout(to);res(ok);}};
-    const to=setTimeout(()=>fin(false),9000);
-    const sc=document.createElement('script');sc.type='module';sc.src=src;
-    sc.onerror=()=>fin(false);
-    sc.onload=()=>customElements.whenDefined('model-viewer').then(()=>fin(true),()=>fin(false));
-    document.head.appendChild(sc);
-  });
-  return (async()=>{
-    for(const src of MV_SRC){if(await tryOne(src)){mvState='ready';return true;}}
-    mvState='failed';return false;
-  })();
-}
-function stage3D(key){
-  const m=MODEL3D[key];
-  return`<model-viewer id="mv3d" src="${MODEL_BASE}${m.f}"${m.a?` animation-name="${m.a}"`:''} autoplay
-    camera-controls touch-action="pan-y" interaction-prompt="none" shadow-intensity="1" exposure="1.05"
-    camera-orbit="15deg 82deg 105%" min-camera-orbit="auto 20deg auto" max-camera-orbit="auto 100deg auto"
-    style="width:100%;height:270px;background:transparent"></model-viewer>
-    <div class="demo-hint">Fais glisser pour tourner autour du coach</div>`;
-}
-// Choisit 3D ou schema, et bascule tout seul sur le schema si le modele echoue.
+// Choisit photo ou schema, et bascule tout seul sur le schema si l'image echoue.
 function renderDemoStage(key){
   const st=document.getElementById('demo-stage'),bt=document.getElementById('demo-viewbtn');
-  // Priorite : photos > modele 3D > schema.
-  const ph=hasPhoto(key),can3=has3D(key),rich=ph||can3,useRich=rich&&demoView!=='2d';
-  if(bt){bt.style.display=rich?'block':'none';bt.innerHTML=useRich?'&#x1F4D0; SCHEMA':(ph?'&#x1F4F7; PHOTO':'&#x1F9CA; 3D');}
+  const ph=hasPhoto(key),useRich=ph&&demoView!=='2d';
+  if(bt){bt.style.display=ph?'block':'none';bt.innerHTML=useRich?'&#x1F4D0; SCHEMA':'&#x1F4F7; PHOTO';}
   if(!useRich){st.innerHTML=animSVG(DEMO[key].a);return;}
-  if(ph){st.innerHTML=stagePhoto(key);return;}
-  st.innerHTML='<div class="demo-load">Chargement du coach 3D...</div>';
-  loadMV().then(ok=>{
-    if(document.getElementById('demo-name').dataset.k!==key)return;   // fiche changee entre-temps
-    if(!ok){st.innerHTML=animSVG(DEMO[key].a);if(bt)bt.style.display='none';return;}
-    st.innerHTML=stage3D(key);
-    const mv=document.getElementById('mv3d');
-    if(mv)mv.addEventListener('error',()=>{st.innerHTML=animSVG(DEMO[key].a);if(bt)bt.style.display='none';},{once:true});
-  });
+  st.innerHTML=stagePhoto(key);
 }
-function togDemoView(){demoView=(demoView==='2d')?'3d':'2d';renderDemoStage(demoKey);}
+function togDemoView(){demoView=(demoView==='2d')?'auto':'2d';renderDemoStage(demoKey);}
 function togPhoto(){S.usePhoto=S.usePhoto===false;save();document.getElementById('dph-tsw').classList.toggle('on',S.usePhoto!==false);if(demoKey)renderDemoStage(demoKey);}
-function tog3D(){S.use3D=S.use3D===false;save();document.getElementById('d3-tsw').classList.toggle('on',S.use3D!==false);if(demoKey)renderDemoStage(demoKey);}
 
 /* ════════ MODALE DEMO ════════ */
 let demoQ=[],demoI=0,demoKey=null;
