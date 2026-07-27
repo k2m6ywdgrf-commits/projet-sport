@@ -1551,32 +1551,49 @@ function animSVG(key){
 }
 
 /* ════════ PLANCHE PUSH-UP : SCHEMA + SURBRILLANCE ════════
-   Une poignee se fixe sur DEUX trous : les reperes vont donc par paires.
-   Chaque position = une paire de trous, posee sur la bande de couleur
-   correspondante. On dessine un panneau, et on le duplique en miroir. */
+   Repris directement sur la planche reelle (photo de reference) : 10 trous
+   par panneau, en 4 groupes de couleur —
+     JAUNE  : 3 trous en colonne verticale, cote poignee (pectoraux)
+     BLEU   : 3 trous en colonne verticale, cote charniere (dos/arriere)
+     BLANC  : 2 trous en arc, en haut du disque (epaules)
+     ORANGE : 2 trous en arc, en bas du disque (triceps)
+   Une poignee se fixe sur DEUX trous adjacents d'un meme groupe. Le disque a
+   6 branches (2 blanches en haut, 1 jaune + 1 bleue a l'horizontale, 2 jaunes
+   en bas) est repris du meme releve. On dessine un panneau, duplique en miroir. */
 const BCOL={y:'#fbbf24',w:'#dbeafe',b:'#5ee7ff',o:'#ff8a3d'};
 const BLBL={y:'Jaune — Pectoraux',w:'Blanc — Epaules',b:'Bleu — Dos / arriere',o:'Orange — Triceps'};
-// a = angle de la paire autour du disque (degres, repere SVG : 180 = vers l'exterieur)
-const BPOS={y1:{c:'y',a:180},y2:{c:'y',a:216},w1:{c:'w',a:267},o1:{c:'o',a:95},b1:{c:'b',a:4}};
-const BC=[190,110],BR=80,BSPREAD=11,BDISC=52;   // centre du disque, rayon des trous, demi-ecart d'une paire
-const bpt=(r,deg)=>{const a=deg*Math.PI/180;return[BC[0]+r*Math.cos(a),BC[1]+r*Math.sin(a)];};
-const bpair=k=>[bpt(BR,BPOS[k].a-BSPREAD),bpt(BR,BPOS[k].a+BSPREAD)];
-const barc=(a1,a2,c,zone)=>{const[x1,y1]=bpt(BR,a1),[x2,y2]=bpt(BR,a2);const op=!zone?'.7':(zone===c?'.95':'.28');return`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${BR},${BR} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${BCOL[c]}" stroke-width="20" stroke-linecap="round" opacity="${op}"/>`;};
+const B_CX=190,B_CY=110,B_R=60;                 // centre et rayon du disque (= rayon des trous en arc)
+const B_COLX={y:120,b:260};                     // x des colonnes jaune (poignee) / bleue (charniere)
+const B_COLY=[50,110,170];                      // 3 hauteurs des colonnes jaune/bleue
+const B_ARCA={w:[-145,-35],o:[35,145]};         // angles des 2 trous blancs (haut) / oranges (bas)
+const bpol=(deg,r)=>{const a=deg*Math.PI/180;return[B_CX+r*Math.cos(a),B_CY+r*Math.sin(a)];};
+// Les trous d'un groupe de couleur, dans l'ordre (haut -> bas).
+const bGroup=c=>(c==='y'||c==='b')?B_COLY.map(y=>[B_COLX[c],y]):B_ARCA[c].map(a=>bpol(a,B_R));
+// Position = groupe de couleur + les 2 index de trous adjacents utilises par la poignee.
+const BPOS={y1:{c:'y',i:[0,1]},y2:{c:'y',i:[1,2]},b1:{c:'b',i:[0,1]},b2:{c:'b',i:[1,2]},w1:{c:'w',i:[0,1]},o1:{c:'o',i:[0,1]}};
+const bpair=k=>{const p=BPOS[k],g=bGroup(p.c);return[g[p.i[0]],g[p.i[1]]];};
 function boardPanel(pos){
   const zone=pos?BPOS[pos].c:null;
-  // Bandes de couleur peintes sur le plateau, sous les reperes
-  let o=barc(163,233,'y',zone)+barc(250,284,'w',zone)+barc(78,112,'o',zone)+barc(-13,21,'b',zone);
-  // Disque central a 6 branches
-  o+=`<circle cx="190" cy="110" r="${BDISC}" fill="#0b0d14" stroke="#000" stroke-width="3"/>`;
+  const bandOp=c=>!zone?'.6':(zone===c?'.88':'.2');
+  // Bandes de couleur peintes sous les reperes : droites pour jaune/bleu, en arc pour blanc/orange.
+  let o='';
+  ['y','b'].forEach(c=>{o+=`<line x1="${B_COLX[c]}" y1="${B_COLY[0]}" x2="${B_COLX[c]}" y2="${B_COLY[2]}" stroke="${BCOL[c]}" stroke-width="19" stroke-linecap="round" opacity="${bandOp(c)}"/>`;});
+  ['w','o'].forEach(c=>{const[[x1,y1],[x2,y2]]=B_ARCA[c].map(a=>bpol(a,B_R));o+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${B_R},${B_R} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${BCOL[c]}" stroke-width="19" stroke-linecap="round" opacity="${bandOp(c)}"/>`;});
+  // Disque central a 6 branches : 2 blanches en haut, jaune+bleue a l'horizontale, 2 jaunes en bas.
+  o+=`<circle cx="${B_CX}" cy="${B_CY}" r="${B_R}" fill="#0b0d14" stroke="#000" stroke-width="3"/>`;
   o+=[[180,BCOL.y],[0,BCOL.b],[-150,BCOL.w],[-30,BCOL.w],[120,BCOL.y],[60,BCOL.y]]
-     .map(([a,c])=>{const[x,y]=bpt(43,a);return`<line x1="190" y1="110" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${c}" stroke-width="8" stroke-linecap="round"/>`;}).join('');
-  o+=`<circle cx="190" cy="110" r="9" fill="#191c2b" stroke="#000" stroke-width="2"/>`;
-  // Les 10 trous : 5 positions x 2 trous (une poignee = deux ergots)
-  Object.keys(BPOS).forEach(k=>{
-    const sameZone=zone&&BPOS[k].c===zone,isMain=k===pos;
-    const dim=pos&&!sameZone?'.3':'1';
-    bpair(k).forEach(([x,y])=>{o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="8.5" fill="#12141d" stroke="#000" stroke-width="2.5" opacity="${dim}"/>`;});
-    if(sameZone&&!isMain)bpair(k).forEach(([x,y])=>{o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="none" stroke="${BCOL[zone]}" stroke-width="2.5" opacity=".5"/>`;});
+     .map(([a,c])=>{const[x,y]=bpol(a,46);return`<line x1="${B_CX}" y1="${B_CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${c}" stroke-width="8" stroke-linecap="round"/>`;}).join('');
+  o+=`<circle cx="${B_CX}" cy="${B_CY}" r="9" fill="#191c2b" stroke="#000" stroke-width="2"/>`;
+  // Les 10 trous : jaune x3, bleu x3, blanc x2, orange x2.
+  const active=pos?new Set(BPOS[pos].i):null;
+  ['y','b','w','o'].forEach(c=>{
+    const sameZone=zone&&c===zone;
+    bGroup(c).forEach(([x,y],i)=>{
+      const isActive=sameZone&&active.has(i);
+      const dim=pos&&!sameZone?'.3':'1';
+      if(!isActive)o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="8.5" fill="#12141d" stroke="#000" stroke-width="2.5" opacity="${dim}"/>`;
+      if(sameZone&&!isActive)o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="none" stroke="${BCOL[zone]}" stroke-width="2.5" opacity=".5"/>`;
+    });
   });
   // Paire ciblee : les deux ergots relies, pour montrer qu'ils vont ensemble
   if(pos){
@@ -1610,14 +1627,14 @@ function boardBlock(b){
 
 /* ════════ FICHES COACH ════════ */
 const DEMO={
-  board_pecs:{a:'pu',m:'Pectoraux (faisceau externe), deltoides anterieurs',c:['Mains sur les reperes les plus ecartes, environ 1,5x la largeur des epaules.','Coudes a 45 degres du buste, jamais a 90.','Descends jusqu\'a ce que la poitrine frole la planche.','Corps en une seule ligne : nuque, dos, bassin, talons.'],e:['Coudes en croix (perpendiculaires au corps) : agressif pour l\'epaule.','Bassin qui s\'affaisse ou qui pointe vers le haut.','Amplitude partielle : tu perds l\'essentiel du travail.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou mains surelevees sur un support.',bd:{p:'y1',note:'Poignees sur la paire de trous JAUNES la plus externe (2 trous par poignee). Prise la plus large : ce sont les pectoraux qui encaissent.'}},
-  board_standard:{a:'pu',m:'Pectoraux, triceps, gainage complet',c:['Mains a la largeur des epaules, juste sous les epaules.','Serre les fessiers et rentre les cotes : le buste ne doit pas cambrer.','Regard 20 cm devant les mains, nuque neutre.','Pousse le sol loin de toi en haut du mouvement.'],e:['Tete qui plonge en avant avant la poitrine.','Fesses qui montent en premier.','Rebond en bas : casse la tension.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, meme placement de mains.',bd:{p:'y2',note:'Poignees sur la paire JAUNE avancee (2 trous par poignee), largeur d\'epaules, alignees sous les epaules.'}},
-  board_shoulders:{a:'pike',m:'Deltoides anterieurs et lateraux, triceps',c:['Bassin haut, corps en V inverse.','Descends le sommet du crane vers le sol, entre les mains.','Coudes vers l\'avant, pas vers l\'exterieur.','Plus les pieds sont proches des mains, plus c\'est dur.'],e:['Dos rond : garde la poitrine ouverte.','Descendre le menton au lieu du sommet du crane.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds plus loin des mains, ou pompes inclinees.',bd:{p:'w1',note:'Poignees sur la paire BLANCHE avant (2 trous par poignee) : les mains partent devant les epaules pour cibler les deltoides.'}},
-  board_triceps:{a:'pu',m:'Triceps (longue portion), pectoraux internes',c:['Coudes serres, ils frolent les cotes pendant toute la descente.','Avant-bras verticaux vus de profil.','Verrouille les coudes en haut sans hyperextension.'],e:['Coudes qui s\'ecartent : l\'exercice devient une pompe classique.','Epaules qui montent vers les oreilles.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou pompes triceps mains surelevees.',bd:{p:'o1',note:'Poignees sur la paire ORANGE arriere (2 trous par poignee) : mains proches du corps, coudes le long des cotes.'}},
-  archer:{a:'pu',m:'Pectoraux et triceps en unilateral, gainage anti-rotation',c:['Un bras plie qui travaille, l\'autre tendu sur le cote.','Le bassin reste face au sol : pas de rotation.','Alterne un cote puis l\'autre a chaque repetition.'],e:['Pivoter le bassin pour tricher.','Bras tendu qui plie a moitie : choisis ton cote.'],b:'Inspire en descendant, expire en poussant.',x:'Pompes larges classiques, ou archer sur les genoux.',bd:{p:'y1',note:'Poignees sur la paire JAUNE la plus externe (2 trous par poignee) : l\'ecart maximal permet le transfert de charge d\'un bras a l\'autre.'}},
-  pike:{a:'pike',m:'Deltoides, triceps, haut du dos',c:['Position en V, jambes tendues si possible.','Le sommet du crane descend entre les mains.','Coudes a 45 degres, pas en croix.'],e:['Chercher a descendre plus bas en arrondissant le dos.','Regarder vers l\'avant : garde la nuque dans l\'axe.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds recules pour reduire la charge.',bd:{p:'w1',note:'Poignees sur la paire BLANCHE (2 trous par poignee) : mains avancees, epaules a l\'aplomb des mains.'}},
-  pseudo:{a:'pu',m:'Pectoraux, deltoides anterieurs, poignets, gainage',c:['Mains au niveau du bas des pectoraux, doigts orientes vers les pieds.','Buste penche vers l\'avant, epaules devant les mains.','Mouvement lent : c\'est un exercice de force, pas de volume.'],e:['Aller trop vite : risque pour les poignets.','Poignets non echauffes.'],b:'Inspire en descendant, expire lentement en poussant.',x:'Reduis l\'inclinaison du buste, ou fais-le sur les genoux.',bd:{p:'y2',note:'Poignees sur la paire JAUNE avancee (2 trous par poignee), tournees pour orienter les doigts vers les pieds.'}},
-  diamond:{a:'pu',m:'Triceps, pectoraux internes',c:['Index et pouces se touchent : forme un losange.','Coudes serres, ils longent le buste.','La poitrine descend vers les mains, pas vers le sol devant.'],e:['Ecarter les coudes : tu perds le travail des triceps.','Descendre le nez au lieu de la poitrine.'],b:'Inspire en descendant, expire en poussant.',x:'Mains rapprochees sans losange complet, ou sur les genoux.',bd:{p:'o1',note:'Poignees sur la paire ORANGE (2 trous par poignee) : la prise la plus serree du plateau.'}},
+  board_pecs:{a:'pu',m:'Pectoraux (faisceau externe), deltoides anterieurs',c:['Mains sur les reperes les plus ecartes, environ 1,5x la largeur des epaules.','Coudes a 45 degres du buste, jamais a 90.','Descends jusqu\'a ce que la poitrine frole la planche.','Corps en une seule ligne : nuque, dos, bassin, talons.'],e:['Coudes en croix (perpendiculaires au corps) : agressif pour l\'epaule.','Bassin qui s\'affaisse ou qui pointe vers le haut.','Amplitude partielle : tu perds l\'essentiel du travail.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou mains surelevees sur un support.',bd:{p:'y1',note:'Poignees sur la paire JAUNE du haut (2 trous par poignee), colonne cote poignees. Ce sont les pectoraux qui encaissent.'}},
+  board_standard:{a:'pu',m:'Pectoraux, triceps, gainage complet',c:['Mains a la largeur des epaules, juste sous les epaules.','Serre les fessiers et rentre les cotes : le buste ne doit pas cambrer.','Regard 20 cm devant les mains, nuque neutre.','Pousse le sol loin de toi en haut du mouvement.'],e:['Tete qui plonge en avant avant la poitrine.','Fesses qui montent en premier.','Rebond en bas : casse la tension.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, meme placement de mains.',bd:{p:'y2',note:'Poignees sur la paire JAUNE du bas (2 trous par poignee), colonne cote poignees. Largeur d\'epaules, alignees sous les epaules.'}},
+  board_shoulders:{a:'pike',m:'Deltoides anterieurs et lateraux, triceps',c:['Bassin haut, corps en V inverse.','Descends le sommet du crane vers le sol, entre les mains.','Coudes vers l\'avant, pas vers l\'exterieur.','Plus les pieds sont proches des mains, plus c\'est dur.'],e:['Dos rond : garde la poitrine ouverte.','Descendre le menton au lieu du sommet du crane.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds plus loin des mains, ou pompes inclinees.',bd:{p:'w1',note:'Poignees sur la paire BLANCHE, en haut du disque (2 trous par poignee, seule position possible) : les mains partent devant les epaules pour cibler les deltoides.'}},
+  board_triceps:{a:'pu',m:'Triceps (longue portion), pectoraux internes',c:['Coudes serres, ils frolent les cotes pendant toute la descente.','Avant-bras verticaux vus de profil.','Verrouille les coudes en haut sans hyperextension.'],e:['Coudes qui s\'ecartent : l\'exercice devient une pompe classique.','Epaules qui montent vers les oreilles.'],b:'Inspire en descendant, expire en poussant.',x:'Sur les genoux, ou pompes triceps mains surelevees.',bd:{p:'o1',note:'Poignees sur la paire ORANGE, en bas du disque (2 trous par poignee, seule position possible) : mains proches du corps, coudes le long des cotes.'}},
+  archer:{a:'pu',m:'Pectoraux et triceps en unilateral, gainage anti-rotation',c:['Un bras plie qui travaille, l\'autre tendu sur le cote.','Le bassin reste face au sol : pas de rotation.','Alterne un cote puis l\'autre a chaque repetition.'],e:['Pivoter le bassin pour tricher.','Bras tendu qui plie a moitie : choisis ton cote.'],b:'Inspire en descendant, expire en poussant.',x:'Pompes larges classiques, ou archer sur les genoux.',bd:{p:'y1',note:'Poignees sur la paire JAUNE du haut (2 trous par poignee), colonne cote poignees : la prise permet le transfert de charge d\'un bras a l\'autre.'}},
+  pike:{a:'pike',m:'Deltoides, triceps, haut du dos',c:['Position en V, jambes tendues si possible.','Le sommet du crane descend entre les mains.','Coudes a 45 degres, pas en croix.'],e:['Chercher a descendre plus bas en arrondissant le dos.','Regarder vers l\'avant : garde la nuque dans l\'axe.'],b:'Inspire en descendant, expire en poussant.',x:'Pieds recules pour reduire la charge.',bd:{p:'w1',note:'Poignees sur la paire BLANCHE, en haut du disque (2 trous par poignee, seule position possible) : mains avancees, epaules a l\'aplomb des mains.'}},
+  pseudo:{a:'pu',m:'Pectoraux, deltoides anterieurs, poignets, gainage',c:['Mains au niveau du bas des pectoraux, doigts orientes vers les pieds.','Buste penche vers l\'avant, epaules devant les mains.','Mouvement lent : c\'est un exercice de force, pas de volume.'],e:['Aller trop vite : risque pour les poignets.','Poignets non echauffes.'],b:'Inspire en descendant, expire lentement en poussant.',x:'Reduis l\'inclinaison du buste, ou fais-le sur les genoux.',bd:{p:'y2',note:'Poignees sur la paire JAUNE du bas (2 trous par poignee), colonne cote poignees, tournees pour orienter les doigts vers les pieds.'}},
+  diamond:{a:'pu',m:'Triceps, pectoraux internes',c:['Index et pouces se touchent : forme un losange.','Coudes serres, ils longent le buste.','La poitrine descend vers les mains, pas vers le sol devant.'],e:['Ecarter les coudes : tu perds le travail des triceps.','Descendre le nez au lieu de la poitrine.'],b:'Inspire en descendant, expire en poussant.',x:'Mains rapprochees sans losange complet, ou sur les genoux.',bd:{p:'o1',note:'Poignees sur la paire ORANGE, en bas du disque (2 trous par poignee, seule position possible) : la prise la plus serree du plateau.'}},
   ab_wheel:{a:'abwheel',m:'Grand droit, transverse, dorsaux, epaules',c:['Depart a genoux, bassin en retroversion (pubis vers le nombril).','Deroule lentement en gardant le dos plat.','Ne va que jusqu\'ou tu peux revenir sans cambrer.','Reviens en tirant avec les abdos, pas avec les bras.'],e:['Cambrer le bas du dos : la premiere cause de lombalgie sur cet exercice.','Aller trop loin des la premiere seance.'],b:'Inspire en deroulant, expire en revenant.',x:'Amplitude reduite (mi-course), ou face a un mur qui bloque la roue.'},
   jump_rope:{a:'jumprope',m:'Mollets, cardio, coordination',c:['Sauts bas : 2 a 3 cm du sol suffisent.','La corde est tournee par les poignets, pas par les bras.','Coudes proches du corps, regard devant.','Amortis sur l\'avant du pied, genoux souples.'],e:['Sauter trop haut : tu t\'epuises en 30 secondes.','Talons qui claquent au sol.'],b:'Respiration continue et reguliere, ne bloque jamais.',x:'Sauts sans corde (shadow) ou pas de course sur place.'},
   bands:{a:'bands',m:'Deltoides posterieurs, rhomboides, trapezes moyens',c:['Bras tendus devant, elastique a hauteur de poitrine.','Ecarte en serrant les omoplates l\'une vers l\'autre.','Garde les epaules basses, loin des oreilles.','Retour freine : ne laisse pas l\'elastique te ramener.'],e:['Cambrer le bas du dos pour aider.','Hausser les epaules.'],b:'Expire en ecartant, inspire au retour.',x:'Elastique plus fin, ou mains plus ecartees au depart.'},
@@ -1754,15 +1771,15 @@ function openBoardGuide(){
   document.getElementById('demo-stage').innerHTML=boardSVG(null);
   document.getElementById('demo-board').innerHTML=`<div class="demo-sec"><div class="board-legend">${legend}</div></div>`;
   document.getElementById('demo-cues').innerHTML=[
-    'Chaque poignee se fixe sur DEUX trous : les reperes vont par paires. Enfonce les deux ergots a fond et verifie qu\'ils ne bougent plus avant de charger.',
-    'JAUNE (exterieur) : pectoraux. Plus la paire est externe, plus les pectoraux travaillent.',
-    'BLANC (avant) : epaules. Poignees devant les epaules, bassin haut.',
-    'ORANGE (arriere, serre) : triceps. Coudes le long du corps.',
-    'BLEU (interieur) : dos et arriere d\'epaule — a utiliser avec les elastiques (tirage) ou en prise inversee.',
-    'Change de paire entre les series pour varier l\'angle de travail.'
+    'Chaque poignee se fixe sur DEUX trous adjacents : les reperes vont par paires. Enfonce les deux ergots a fond et verifie qu\'ils ne bougent plus avant de charger.',
+    'JAUNE, colonne verticale cote poignees : pectoraux. 3 trous disponibles = 2 paires possibles (haute ou basse) pour varier legerement l\'angle.',
+    'BLANC, arc en haut du disque (seule paire possible) : epaules. Mains devant les epaules, bassin haut.',
+    'ORANGE, arc en bas du disque (seule paire possible) : triceps. Coudes serres le long du corps.',
+    'BLEU, colonne verticale cote charniere : dos et arriere d\'epaule — a utiliser avec les elastiques (tirage) ou en prise inversee.',
+    'Sur la colonne jaune, alterne entre la paire haute et la paire basse d\'une seance a l\'autre pour varier l\'angle de travail.'
   ].map((t,i)=>`<div class="demo-li"><b>${i+1}.</b><span>${t}</span></div>`).join('');
   document.getElementById('demo-err').innerHTML=`<div class="demo-li err"><b>&times;</b><span>Ne bloque jamais un coude en hyperextension en haut du mouvement.</span></div><div class="demo-li err"><b>&times;</b><span>Poignets froids : fais toujours la mobilite des poignets avant.</span></div><div class="demo-li err"><b>&times;</b><span>Une poignee enfoncee sur un seul trou : elle pivote sous la charge et tu chutes.</span></div>`;
-  document.getElementById('demo-br').innerHTML='<b>Regle simple :</b> plus les mains sont ecartees, plus ce sont les pectoraux ; plus elles sont serrees, plus ce sont les triceps.';
+  document.getElementById('demo-br').innerHTML='<b>Regle simple :</b> chaque couleur cible un groupe different — jaune pectoraux, blanc epaules, orange triceps, bleu dos. Choisis la couleur du muscle que tu veux travailler, pas juste l\'ecart des mains.';
   document.getElementById('demo-easy').innerHTML='<b>&#x2193;</b><span>Debutant : reste sur les reperes jaunes et blancs, sur les genoux, avant de passer aux positions serrees.</span>';
   document.getElementById('demo-cta').innerText="C'EST COMPRIS";
   demoQ=[];demoI=0;demoKey=null;
