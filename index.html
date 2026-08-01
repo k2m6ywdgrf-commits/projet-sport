@@ -378,7 +378,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
     <div class="cloud-head"><span class="cloud-title">&#x2601;&#xFE0F; Etat du cloud</span><button class="cloud-x" onclick="closeCloudModal()">&times;</button></div>
     <div class="cloud-card">
       <div class="cloud-status"><span class="cloud-dot" id="cm-dot"></span><span class="cloud-stxt" id="cm-status">Hors ligne</span></div>
-      <div class="cloud-line" id="cm-conn-wrap" style="display:none">Connecte : <span class="cloud-email" id="cm-email"></span></div>
+      <div class="cloud-line" id="cm-conn-wrap" style="display:none;align-items:center;gap:6px">Connecte : <img id="cm-photo" style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:none;object-fit:cover" alt=""><span class="cloud-email" id="cm-email"></span></div>
       <div class="cloud-line" id="cm-mod-wrap" style="display:none">Derniere modif : <b id="cm-by"></b> <span id="cm-at"></span></div>
       <div class="cloud-line" id="cm-hint">Va dans <b>Reglages</b> pour activer la sauvegarde cloud.</div>
     </div>
@@ -567,7 +567,7 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
     </div>
     <div class="set-grp" style="border-color:var(--cp)"><span class="hud-name" style="color:var(--cp)">&#x2601;&#xFE0F; SYNCHRO CLOUD</span>
       <div class="save-info" style="margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--tmut)">Etat :</span><span style="font-size:11px;font-weight:800;color:var(--tmut)" id="sync-status">Hors ligne</span></div>
-      <div id="sync-user" style="font-size:10px;color:var(--tmut);margin-bottom:8px;display:none;word-break:break-all"></div>
+      <div id="sync-user" style="display:none;align-items:center;gap:8px;margin-bottom:8px"><img id="sync-user-photo" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:none;object-fit:cover" alt=""><span id="sync-user-email" style="font-size:10px;color:var(--tmut);word-break:break-all"></span></div>
       <p id="sync-gate" style="display:none;font-size:10px;font-weight:700;color:var(--cy);background:rgba(251,191,36,.08);border:1px solid var(--cy);border-radius:10px;padding:9px 11px;margin-bottom:8px;line-height:1.5">&#x26A0;&#xFE0F; Choisis d'abord un <b>pseudo</b> dans <b>Profil</b> (ci-dessus) pour pouvoir t'identifier dans le cloud.</p>
       <button class="toggle-btn active mt" style="width:100%" id="sync-btn" onclick="cloudToggle()">SE CONNECTER AVEC GOOGLE</button>
       <p style="font-size:9px;color:var(--tmut);margin-top:8px;line-height:1.5">Sauvegarde tes donnees dans le cloud et synchronise-les entre tes appareils (Google).</p>
@@ -1847,9 +1847,14 @@ function updateSyncUI(user,status){
   cloudUI={user,status:user?(status||'synced'):(status==='error'?'error':'offline')};
   const col=CLOUD_COL[cloudUI.status]||'var(--tmut)';
   const chip=document.getElementById('cloud-chip');if(chip){chip.style.color=col;chip.classList.toggle('on',!!user);}
-  const st=document.getElementById('sync-status'),btn=document.getElementById('sync-btn'),us=document.getElementById('sync-user');
+  const st=document.getElementById('sync-status'),btn=document.getElementById('sync-btn'),us=document.getElementById('sync-user'),usPhoto=document.getElementById('sync-user-photo'),usEmail=document.getElementById('sync-user-email');
   if(btn)btn.innerText=user?'SE DECONNECTER':'SE CONNECTER AVEC GOOGLE';
-  if(us){if(user){us.style.display='block';us.innerText=user.email||user.displayName||'';}else{us.style.display='none';us.innerText='';}}
+  if(us){
+    if(user){
+      us.style.display='flex';usEmail.innerText=user.email||user.displayName||'';
+      if(user.photoURL){usPhoto.src=user.photoURL;usPhoto.style.display='block';}else{usPhoto.style.display='none';}
+    }else{us.style.display='none';usEmail.innerText='';usPhoto.style.display='none';usPhoto.src='';}
+  }
   if(st){st.innerText=user?(CLOUD_TXT[cloudUI.status]||'Synchronise'):(status==='error'?'Erreur':'Hors ligne');st.style.color=col;}
   renderCloudModal();
   updateSyncGate();
@@ -1860,7 +1865,9 @@ function renderCloudModal(){
   document.getElementById('cm-status').innerText=cloudUI.user?(CLOUD_TXT[s]||'Synchronise'):(s==='error'?'Erreur':'Hors ligne');
   const conn=document.getElementById('cm-conn-wrap'),mod=document.getElementById('cm-mod-wrap'),hint=document.getElementById('cm-hint');
   if(cloudUI.user){
-    conn.style.display='block';document.getElementById('cm-email').innerText=cloudUI.user.email||cloudUI.user.displayName||'';
+    conn.style.display='flex';document.getElementById('cm-email').innerText=cloudUI.user.email||cloudUI.user.displayName||'';
+    const cmPhoto=document.getElementById('cm-photo');
+    if(cloudUI.user.photoURL){cmPhoto.src=cloudUI.user.photoURL;cmPhoto.style.display='block';}else{cmPhoto.style.display='none';cmPhoto.src='';}
     hint.style.display='none';
     if(cloudMeta.at){mod.style.display='block';document.getElementById('cm-by').innerText=cloudMeta.by||S.name||'—';document.getElementById('cm-at').innerText='· '+fmtCloudDate(cloudMeta.at);}
     else mod.style.display='none';
@@ -1924,7 +1931,8 @@ if (firebaseConfig.apiKey === "REMPLACER") {
   function pushNow(data){
     if (!uid) return;
     notify(auth.currentUser, 'saving');
-    setDoc(ref(), { payloadJSON: JSON.stringify(data), by: (data && data.name) || 'ATHLETE', updatedAt: serverTimestamp() })
+    const u = auth.currentUser;
+    setDoc(ref(), { payloadJSON: JSON.stringify(data), by: (data && data.name) || 'ATHLETE', email: (u && u.email) || null, photoURL: (u && u.photoURL) || null, updatedAt: serverTimestamp() })
       .then(()  => notify(auth.currentUser, 'synced'))
       .catch(() => notify(auth.currentUser, 'error'));
   }
