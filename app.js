@@ -149,7 +149,7 @@ function togSound(){S.sound=S.sound===false;save();document.getElementById('snd-
 function togVib(){S.vibrate=S.vibrate===false;save();document.getElementById('vib-tsw').classList.toggle('on',S.vibrate!==false);if(S.vibrate!==false)buzz(60);}
 function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'mastered-tsw':!!S.profile.masteredBase};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});
   ['wrist','knee','back'].forEach(k=>{const el=document.getElementById('limit-'+k);if(el)el.classList.toggle('on',!!S.profile.limitations[k]);});
-  ['debutant','intermediaire','avance'].forEach(k=>{const el=document.getElementById('lvl-'+k);if(el)el.classList.toggle('active',S.profile.level===k);});
+  ['debutant','intermediaire','avance'].forEach(k=>{const on=S.profile.level===k;const el=document.getElementById('lvl-'+k);if(el)el.classList.toggle('active',on);const elp=document.getElementById('lvl-'+k+'-p');if(elp)elp.classList.toggle('active',on);});
   const w=document.getElementById('inp-weight'),tw=document.getElementById('inp-tweight');if(w)w.value=S.profile.weight||'';if(tw)tw.value=S.profile.targetWeight||'';
   updWeightDelta();
 }
@@ -215,7 +215,7 @@ function renderUnlocks(){
 }
 function togMastered(){S.profile.masteredBase=!S.profile.masteredBase;save();document.getElementById('mastered-tsw').classList.toggle('on',S.profile.masteredBase);renderUnlocks();}
 function togLimit(l){S.profile.limitations[l]=!S.profile.limitations[l];save();document.getElementById('limit-'+l).classList.toggle('on',S.profile.limitations[l]);}
-function setDeclaredLevel(l){S.profile.level=l;save();['debutant','intermediaire','avance'].forEach(k=>document.getElementById('lvl-'+k).classList.toggle('active',k===l));}
+function setDeclaredLevel(l){S.profile.level=l;save();['debutant','intermediaire','avance'].forEach(k=>{const on=k===l;const el=document.getElementById('lvl-'+k);if(el)el.classList.toggle('active',on);const elp=document.getElementById('lvl-'+k+'-p');if(elp)elp.classList.toggle('active',on);});}
 function chWeight(v){S.profile.weight=v?parseFloat(v):null;save();updWeightDelta();}
 function chTargetWeight(v){S.profile.targetWeight=v?parseFloat(v):null;save();updWeightDelta();}
 function updWeightDelta(){
