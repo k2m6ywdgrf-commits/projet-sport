@@ -4,14 +4,14 @@
   --cy:#e2a23c;--cw:#ffffff;--cb:#ff5a36;--cp:#8b7cf6;--cr:#f5455c;--cg:#2fbe86;--co:#ffb020;
   --bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.16);
   --gy:rgba(226,162,60,.20);--gb:rgba(255,90,54,.20);--gr:rgba(245,69,92,.20);--gg:rgba(47,190,134,.20);--go:rgba(255,176,32,.20);
-  --figline:#eaf9ff;--figshadow:#04101a;--figA:#ffffff;--figB:#eef0f4;--figC:#cbd0da;--figD:#9aa3b2;--figRim:#98a0ae;
+  --figline:#eaf9ff;--figshadow:#04101a;--figA:#fbf4ed;--figB:#ecdfd0;--figC:#d3bfa9;--figD:#a68d76;--figRim:#8a7562;
 }
 body.light{
   --bg:#f2f3f6;--bg2:#ffffff;--bgc:#ffffff;--bgi:#eef0f5;
   --tm:#14151a;--tmut:#5c6270;
   --cy:#a5691a;--cw:#2a2a35;--cb:#e0431f;--cp:#6d5bd0;--cr:#d21e3c;--cg:#0e8f5c;--co:#c97a00;
   --bd:#dde0e8;--bd2:#c7cbd8;
-  --figline:#0e2c3d;--figshadow:#1b2440;--figA:#f0f4fa;--figB:#d7dee9;--figC:#a7b2c4;--figD:#77839a;--figRim:#5c687b;
+  --figline:#0e2c3d;--figshadow:#1b2440;--figA:#f7ece0;--figB:#e3d0bc;--figC:#c2a78e;--figD:#8f7563;--figRim:#6b5647;
 }
 *{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;background:radial-gradient(ellipse 120% 60% at 50% -10%,#1c1410 0%,var(--bg2) 38%,var(--bg) 100%) var(--bg);background-attachment:fixed;color:var(--tm);overflow-x:hidden;padding-bottom:104px;padding-top:env(safe-area-inset-top);transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}

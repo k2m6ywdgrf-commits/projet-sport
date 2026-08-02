@@ -206,7 +206,7 @@ function unlockLabel(k){const u=EX[k]&&EX[k].unlock;if(!u)return null;const base
    Squelette à longueurs d'os fixes ; chaque pose ne donne que des angles.
    Angles en degrés, repère écran (y vers le bas) : 0 = droite, 90 = bas,
    -90 = haut, 180 = gauche. Le personnage regarde vers la gauche. */
-const RIG={neck:12,torso:42,uarm:24,farm:22,thigh:28,shin:28,foot:12,headOff:18,headRx:12,headRy:14.5};
+const RIG={neck:12,torso:46,uarm:25,farm:23,thigh:32,shin:32,foot:13,headOff:16,headRx:10,headRy:12.5};
 const D2R=Math.PI/180,_f=n=>n.toFixed(1);
 const PT=(p,a,l)=>[p[0]+l*Math.cos(a*D2R),p[1]+l*Math.sin(a*D2R)];
 const FLOOR=158;
@@ -261,12 +261,12 @@ function chain(pts,ws,rootR){
   const root=rootR?[pts[0][0],pts[0][1],rootR]:null;
   return{d,balls,root};
 }
-const W_ARM=[15,10,7.5],W_LEG=[20,12.5,8.5,7];
-const B_ARM=[{t:.44,w:15.5},{t:.32,w:11.5}];
-const B_LEG=[{t:.42,w:20.5},{t:.28,w:14.5},null];
-const W_SH=32,W_WAIST=24,W_HIP=28,C_RIM='var(--figRim)',C_SHIRT='#3b4a6b',C_SHIRT2='#2d3a56';
-const WEAR={short:['#9aa0a8','#6b7079'],liner:['#5f636d','#494d56'],sock:['#767c87','#585d67'],
-            shoe:['#3a4767','#25304b'],sole:['#eef1f6','#b7bece']};
+const W_ARM=[13,9,7],W_LEG=[18,11.5,8,6.5];
+const B_ARM=[{t:.44,w:13.5},{t:.32,w:10}];
+const B_LEG=[{t:.42,w:18.5},{t:.28,w:13},null];
+const W_SH=30,W_WAIST=20,W_HIP=25,C_RIM='var(--figRim)',C_SHIRT='#6e5f52',C_SHIRT2='#54473c';
+const WEAR={short:['#a89a8c','#7d7166'],liner:['#6b5f54','#544a41'],sock:['#8a7d70','#6a5f54'],
+            shoe:['#e2664a','#a84a35'],sole:['#f5efe8','#c9b9a8']};
 let _gid=0;
 function faceSVG(){return'';}
 function poseCel(pose,dx,mask){
@@ -311,7 +311,7 @@ function poseCel(pose,dx,mask){
   const blob=(b,g)=>b.map(o=>`<ellipse cx="${_f(o.x)}" cy="${_f(o.y)}" rx="${_f(o.rx+g)}" ry="${_f(o.ry+g)}" transform="rotate(${_f(o.a)} ${_f(o.x)} ${_f(o.y)})" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   const balls=(q,g)=>q.balls.map(([x,y,r])=>`<circle cx="${_f(x)}" cy="${_f(y)}" r="${_f(r+g)}" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
   const roots=g=>list=>list.filter(q=>q.root).map(q=>`<circle cx="${_f(q.root[0])}" cy="${_f(q.root[1])}" r="${_f(q.root[2]+g)}" fill="${g?C_RIM:`url(#${gid})`}"/>`).join('');
-  const grp=(list,ext)=>`<g fill="${C_RIM}" stroke="${C_RIM}" stroke-width="2.4" stroke-linejoin="round">${list.map(q=>`<path d="${q.d}"/>`).join('')}</g>${list.map(q=>balls(q,1.2)).join('')}${ext?blob(ext,1.2):''}`
+  const grp=(list,ext)=>`<g fill="${C_RIM}" stroke="${C_RIM}" stroke-width="1" stroke-linejoin="round" opacity=".55">${list.map(q=>`<path d="${q.d}"/>`).join('')}</g>${list.map(q=>balls(q,.35)).join('')}${ext?blob(ext,.35):''}`
     +`<g fill="url(#${gid})">${list.map(q=>`<path d="${q.d}"/>`).join('')}</g>${list.map(q=>balls(q,0)).join('')}${ext?blob(ext,0):''}${roots(0)(list)}`;
   far.push(heelC(P.legF));near.push(heelC(P.legN));
   const egg=k=>`M0,${-RIG.headRy-k} C${7+k},${-RIG.headRy-k} ${RIG.headRx+k},${-9-k*.5} ${RIG.headRx+k},${-2}`
@@ -403,7 +403,7 @@ const ZONE_SPOT={
   y:P=>({p:lerpPt(P.sh,P.hip,.45),r:15}),
   w:P=>({p:P.sh,r:13}),
   b:P=>({p:midPt(P.armN[0],P.armN[1]),r:11}),
-  p:P=>({p:lerpPt(P.hip,P.sh,1.05),r:14}),
+  p:P=>({p:lerpPt(P.hip,P.sh,.96),r:14}),
   g:P=>({p:lerpPt(P.sh,P.hip,.75),r:16}),
   h:P=>({p:lerpPt(P.sh,P.hip,.5),r:19}),
   j:P=>({p:midPt(P.legN[0],P.legN[1]),r:15})
