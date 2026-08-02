@@ -660,7 +660,7 @@ async function resetAll(){if(confirm('Réinitialiser définitivement toutes les 
 /* ════════ FICHES MOUVEMENT ════════
    Chaque exercice est démontré par le même mannequin vectoriel — un seul
    style visuel, cohérent et disponible hors-ligne pour tous les exercices. */
-function renderDemoStage(key){document.getElementById('demo-stage').innerHTML=animSVG(DEMO[key].a);}
+function renderDemoStage(key){const z=EX[key]&&EX[key].z;document.getElementById('demo-stage').innerHTML=animSVG(DEMO[key].a,z,zoneColor(z));}
 
 let demoQ=[],demoI=0,demoKey=null;
 function exKeyOf(ex){if(!ex)return null;if(ex.k&&DEMO[ex.k])return ex.k;const n=(ex.n||'').toLowerCase();return Object.keys(DEMO).find(k=>(EX[k]?.n||'').toLowerCase()===n)||null;}
@@ -670,7 +670,8 @@ function openDemo(key,queue){
   const ex=EX[key]||{};
   document.getElementById('demo-step').innerText=demoQ.length>1?`NOUVEAU MOUVEMENT ${demoI+1} / ${demoQ.length}`:'COMMENT FAIRE';
   document.getElementById('demo-name').innerText=ex.n||key;
-  document.getElementById('demo-mus').innerText='Muscles : '+d.m;
+  const zl=ZONE[ex.z]?ZONE[ex.z].l:'';
+  document.getElementById('demo-mus').innerHTML=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${zoneColor(ex.z)};margin-right:6px;vertical-align:middle"></span>${zl?`<b style="color:${zoneColor(ex.z)}">${zl}</b> — `:''}${d.m}`;
   document.getElementById('demo-name').dataset.k=key;
   renderDemoStage(key);
   document.getElementById('demo-board').innerHTML=boardBlock(d.bd);

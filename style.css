@@ -327,8 +327,8 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .demo-stage svg,.board-wrap svg{display:block;width:100%;height:auto;}
 .floor{stroke:var(--bd2);stroke-width:3;stroke-linecap:round;}
 .figlbl{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;fill:var(--tmut);}
-.figarrow{stroke:var(--cb);stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.85;}
-.mvarrow{stroke:var(--cb);stroke-width:3.5;fill:var(--cb);stroke-linecap:round;stroke-linejoin:round;}
+.figarrow{stroke:var(--cb);stroke-width:4.5;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.9;}
+.mvarrow{stroke:var(--cb);stroke-width:5;fill:var(--cb);stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px currentColor);}
 .gline{stroke:var(--cg);stroke-width:3;stroke-dasharray:9 7;fill:none;opacity:.75;stroke-linecap:round;}
 .glbl{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;fill:var(--cg);}
 .demo-sec{margin-bottom:12px;}

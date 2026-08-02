@@ -349,19 +349,6 @@ function poseCel(pose,dx,mask){
   {const sp=q=>`<path d="${q.d}" fill="${WEAR.short[1]}" stroke="${WEAR.short[1]}" stroke-width="2.4" stroke-linejoin="round"/><path d="${q.d}" fill="${WEAR.short[0]}"/>`;
    const legpart=L=>chain([lerp(L[0],L[1],-.06),lerp(L[0],L[1],.46)],[W_LEG[0]+2,W_LEG[0]-.5]);
    o+=sp(legpart(P.legF))+sp(legpart(P.legN));}
-  const pp=Math.atan2(P.sh[1]-P.hip[1],P.sh[0]-P.hip[0])/D2R;
-  const fr=pp-90;
-  const floc=(c,sx)=>{
-    const t=(fill,ox,oy)=>`<text x="${_f(ox)}" y="${_f(oy)}" text-anchor="middle" dominant-baseline="central" font-size="8.5" font-weight="900" letter-spacing=".6" fill="${fill}" font-family="-apple-system,Helvetica Neue,Helvetica,sans-serif">PULSE</text>`;
-    return`<g transform="translate(${_f(c[0])} ${_f(c[1])}) rotate(${_f(pp+90)})${sx?` scale(${sx},1)`:''}">`
-      +t('#151d2f',.8,1.1)+t('#f4f8ff',0,0)+`</g>`;
-  };
-  if(P.front){
-    o+=floc(lerp(P.sh,shirtBot,.42),0);
-  }else{
-    const a=PT(lerp(P.sh,shirtBot,.05),fr,W_SH/2-5),b=PT(lerp(P.sh,shirtBot,.58),fr,shirtW/2-4.5);
-    o+=`<path d="${chain([a,b],[4.5,3.6]).d}" fill="#eaf2ff" opacity=".85"/>`;
-  }
   }
   const ac=P.ac||'#ff8a3d',h1=P.armF[2],h2=P.armN[2];
   const line=(d,col,w)=>`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
@@ -407,7 +394,28 @@ function poseTravel(a,b){
   return m;
 }
 function ghostSVG(pose,dx){return poseCel(pose,dx,'ghost');}
-function moveArrow(a,b,dx){
+/* Point approximatif du groupe musculaire travaillé, pour le halo de couleur
+   (voir muscleGlow). Compromis lisible plutôt qu'anatomiquement parfait :
+   le but est de montrer d'un coup d'œil OÙ ça travaille. */
+const lerpPt=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+const midPt=(a,b)=>lerpPt(a,b,.5);
+const ZONE_SPOT={
+  y:P=>({p:lerpPt(P.sh,P.hip,.45),r:15}),
+  w:P=>({p:P.sh,r:13}),
+  b:P=>({p:midPt(P.armN[0],P.armN[1]),r:11}),
+  p:P=>({p:lerpPt(P.hip,P.sh,1.05),r:14}),
+  g:P=>({p:lerpPt(P.sh,P.hip,.75),r:16}),
+  h:P=>({p:lerpPt(P.sh,P.hip,.5),r:19}),
+  j:P=>({p:midPt(P.legN[0],P.legN[1]),r:15})
+};
+function muscleGlow(pose,dx,zone,color){
+  const spot=ZONE_SPOT[zone];if(!spot||!color)return'';
+  const s=spot(buildPose(pose));
+  const cx=(s.p[0]+dx).toFixed(1),cy=s.p[1].toFixed(1),rx=s.r,ry=(s.r*.85).toFixed(1);
+  return`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${color}" opacity=".65" style="filter:blur(6px)"/>`
+    +`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="${color}" stroke-width="2.2" opacity=".95" style="filter:blur(.5px)"/>`;
+}
+function moveArrow(a,b,dx,color){
   const A=buildPose(a),B=buildPose(b);
   const j=P=>({hip:P.hip,sh:P.sh,head:P.head,hand:P.armN[2],foot:P.legN[3],knee:P.legN[1]});
   const pa=j(A),pb=j(B);
@@ -434,9 +442,10 @@ function moveArrow(a,b,dx){
   const hl=13,ha=Math.atan2(uy,ux);
   const tail=[s0[0]+ux*4,s0[1]+uy*4],tip=[s1[0]-ux*2,s1[1]-uy*2];
   const base=[tip[0]-hl*Math.cos(ha),tip[1]-hl*Math.sin(ha)];
-  const w1=[base[0]-8*Math.cos(ha-Math.PI/2),base[1]-8*Math.sin(ha-Math.PI/2)];
-  const w2=[base[0]+8*Math.cos(ha-Math.PI/2),base[1]+8*Math.sin(ha-Math.PI/2)];
-  return`<g transform="translate(${dx},0)" class="mvarrow">`
+  const w1=[base[0]-9*Math.cos(ha-Math.PI/2),base[1]-9*Math.sin(ha-Math.PI/2)];
+  const w2=[base[0]+9*Math.cos(ha-Math.PI/2),base[1]+9*Math.sin(ha-Math.PI/2)];
+  const col=color||'var(--cb)';
+  return`<g transform="translate(${dx},0)" class="mvarrow" style="stroke:${col};fill:${col};color:${col}">`
     +`<path d="M${_f(tail[0])},${_f(tail[1])} L${_f(base[0])},${_f(base[1])}" fill="none"/>`
     +`<path d="M${_f(tip[0])},${_f(tip[1])} L${_f(w1[0])},${_f(w1[1])} L${_f(w2[0])},${_f(w2[1])} Z" stroke="none"/></g>`;
 }
@@ -502,7 +511,7 @@ const POSE={
 function polyPts(a){let s='';for(let i=0;i<a.length;i+=2)s+=(i?' ':'')+a[i]+','+a[i+1];return s;}
 
 const HOLD={plank:1,splank:1,hollow:1,wallsit:1};
-function animSVG(key){
+function animSVG(key,zone,color){
   const fr=POSE[key];if(!fr)return'';
   const hold=!!HOLD[key],n=hold?1:fr.length,W=300,H=200;
   const lbl=hold?['POSITION À TENIR']:(n>=3?['DÉPART','MILIEU','ARRIVÉE']:['DÉPART','ARRIVÉE']);
@@ -515,7 +524,8 @@ function animSVG(key){
     if(!hold&&i>0&&!fr[i-1].lift&&!fr[i].lift&&poseTravel(fr[i-1],fr[i])>26)
       body+=ghostSVG(fr[i-1],dx);
     body+=poseCel(fr[i],dx);
-    if(!hold&&i>0)body+=moveArrow(fr[i-1],fr[i],dx);
+    body+=muscleGlow(fr[i],dx,zone,color);
+    if(!hold&&i>0)body+=moveArrow(fr[i-1],fr[i],dx,color);
     if(hold&&key!=='wallsit'){
       const P=buildPose(fr[i]),a=P.head,b=P.legN[2];
       const ex=(b[0]-a[0])*0.1,ey=(b[1]-a[1])*0.1;
