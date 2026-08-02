@@ -211,7 +211,7 @@ const D2R=Math.PI/180,_f=n=>n.toFixed(1);
 const PT=(p,a,l)=>[p[0]+l*Math.cos(a*D2R),p[1]+l*Math.sin(a*D2R)];
 const FLOOR=158;
 function buildPose(o){
-  const front=o.v==='front',so=front?16:7,ho=front?10:3.5;
+  const front=o.v==='front',so=front?16:13,ho=front?10:7;
   const hip=[150,100],sp=o.sp,pp=sp+90;
   const sh=PT(hip,sp,RIG.torso);
   const hd=o.hd!==undefined?o.hd:sp;
