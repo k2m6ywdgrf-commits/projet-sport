@@ -261,9 +261,9 @@ function chain(pts,ws,rootR){
   const root=rootR?[pts[0][0],pts[0][1],rootR]:null;
   return{d,balls,root};
 }
-const W_ARM=[13,9,7],W_LEG=[18,11.5,8,6.5];
+const W_ARM=[13,9,7],W_LEG=[21,12,8,6.5];
 const B_ARM=[{t:.44,w:13.5},{t:.32,w:10}];
-const B_LEG=[{t:.42,w:18.5},{t:.28,w:13},null];
+const B_LEG=[{t:.42,w:26},{t:.28,w:13.5},null];
 const W_SH=30,W_WAIST=20,W_HIP=25,C_RIM='var(--figRim)',C_SHIRT='#6e5f52',C_SHIRT2='#54473c';
 const WEAR={short:['#a89a8c','#7d7166'],liner:['#6b5f54','#544a41'],sock:['#8a7d70','#6a5f54'],
             shoe:['#e2664a','#a84a35'],sole:['#f5efe8','#c9b9a8']};
