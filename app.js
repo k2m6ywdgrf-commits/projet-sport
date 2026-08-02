@@ -147,7 +147,7 @@ async function reqWL(){if(!('wakeLock'in navigator))return;try{wl=await navigato
 function relWL(){if(wl){wl.release();wl=null;}}
 function togSound(){S.sound=S.sound===false;save();document.getElementById('snd-tsw').classList.toggle('on',S.sound!==false);if(S.sound!==false)beep(880,90);}
 function togVib(){S.vibrate=S.vibrate===false;save();document.getElementById('vib-tsw').classList.toggle('on',S.vibrate!==false);if(S.vibrate!==false)buzz(60);}
-function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'dph-tsw':S.usePhoto!==false,'mastered-tsw':!!S.profile.masteredBase};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});
+function syncPrefUI(){const m={'demo-tsw':S.demoAuto!==false,'snd-tsw':S.sound!==false,'vib-tsw':S.vibrate!==false,'mastered-tsw':!!S.profile.masteredBase};Object.entries(m).forEach(([id,on])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});
   ['wrist','knee','back'].forEach(k=>{const el=document.getElementById('limit-'+k);if(el)el.classList.toggle('on',!!S.profile.limitations[k]);});
   ['debutant','intermediaire','avance'].forEach(k=>{const el=document.getElementById('lvl-'+k);if(el)el.classList.toggle('active',S.profile.level===k);});
   const w=document.getElementById('inp-weight'),tw=document.getElementById('inp-tweight');if(w)w.value=S.profile.weight||'';if(tw)tw.value=S.profile.targetWeight||'';
@@ -588,9 +588,6 @@ function showAmrapTrans(title,sub,sec,cb){const ov=document.getElementById('a-tr
 function startAmrapMain(){clearInterval(aMainInt);aEndAt=Date.now()+aTL*1000;aMainInt=setInterval(()=>{const t=Math.max(0,Math.ceil((aEndAt-Date.now())/1000));if(t===aTL)return;aTL=t;updACD();if(t>0&&t<=3)beep(660,60);if(t<=0){clearInterval(aMainInt);clearInterval(aSubInt);clearInterval(aTransInt);aEnd();}},200);}
 function updACD(){const m=String(Math.floor(aTL/60)).padStart(2,'0'),s=String(aTL%60).padStart(2,'0');const el=document.getElementById('a-cd');if(el)el.innerText=`${m}:${s}`;}
 function showAEx(idx){aCurrentEx=idx;const ex=aExs[idx];const tot=aExs.length;const ib=document.getElementById('a-info');if(ib)ib.style.display=(ex.k&&DEMO[ex.k])?'flex':'none';
-  const tw=document.getElementById('a-thumb-w'),ti=document.getElementById('a-thumb');
-  if(ex.k&&hasPhoto(ex.k)){ti.onerror=()=>{tw.style.display='none';};ti.src=PHOTO_BASE+PHOTO[ex.k].s;tw.style.display='block';}
-  else tw.style.display='none';
   document.getElementById('a-exnum').innerText=`EXERCICE ${idx+1} / ${tot}`;document.getElementById('a-exo').innerText=ex.n;document.getElementById('a-tip').innerText=ex.t;document.getElementById('a-reps').innerText=ex.repsStr;const btn=document.getElementById('a-main-btn');if(ex.timed){document.getElementById('a-subtimer').style.display='block';btn.innerHTML='<div style="font-size:22px">⏭️</div><div>PASSER</div>';startASubTimer(ex.dur);}else{document.getElementById('a-subtimer').style.display='none';btn.innerHTML='<div style="font-size:28px">✅</div><div>FAIT !</div>';}}
 function startASubTimer(sec){clearInterval(aSubInt);let t=sec;const circ=2*Math.PI*47;document.getElementById('a-sub-cd').innerText=t;document.getElementById('a-sub-ring').style.strokeDashoffset='0';const sEnd=Date.now()+sec*1000;aSubInt=setInterval(()=>{const nt=Math.max(0,Math.ceil((sEnd-Date.now())/1000));const cd=document.getElementById('a-sub-cd'),ring=document.getElementById('a-sub-ring');if(!cd){clearInterval(aSubInt);return;}if(nt!==t){t=nt;cd.innerText=t;if(t>0&&t<=3)beep(660,60);}if(ring)ring.style.strokeDashoffset=circ*(1-t/sec);if(t<=0){clearInterval(aSubInt);buzz([50,50,50]);beep(880,150);aNextEx();}},200);}
 function aNextEx(){clearInterval(aSubInt);const nextIdx=(aCurrentEx+1)%aExs.length;const isNewRound=nextIdx===0;if(isNewRound){aR++;const rc=document.getElementById('a-rc');if(rc)rc.innerText=aR;buzz([100,50,100]);beep(880,200);}showAmrapTrans(isNewRound?`ROUND ${aR} !`:'SUIVANT',aExs[nextIdx]?.n||'',isNewRound?3:1,()=>showAEx(nextIdx));}
@@ -660,23 +657,10 @@ function exportJSON(){S.lastExport=new Date().toISOString();save();const a=docum
 function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{S=normalizeState(JSON.parse(ev.target.result));save();location.reload();}catch(err){alert("Erreur de fichier.");}};r.readAsText(f);}
 async function resetAll(){if(confirm('Réinitialiser définitivement toutes les données ?')){try{if(window.Cloud&&window.Cloud.deleteRemote)await window.Cloud.deleteRemote();}catch(e){}localStorage.removeItem('pulse1');localStorage.removeItem('cp2');location.reload();}}
 
-/* ════════ PHOTOS / FICHES MOUVEMENT ════════ */
-let demoView='auto';
-function hasPhoto(k){return S.usePhoto!==false&&!!PHOTO[k];}
-function photoFail(k){delete PHOTO[k];if(demoKey===k)renderDemoStage(k);}
-function stagePhoto(key){
-  const p=PHOTO[key],one=(f,l)=>`<figure class="ph"><img src="${PHOTO_BASE}${f}" alt="${l}" loading="lazy" onerror="photoFail('${key}')"><figcaption>${l}</figcaption></figure>`;
-  return`<div class="ph-row">${one(p.s,'DÉPART')}${p.e?one(p.e,'ARRIVÉE'):''}</div>`;
-}
-function renderDemoStage(key){
-  const st=document.getElementById('demo-stage'),bt=document.getElementById('demo-viewbtn');
-  const ph=hasPhoto(key),useRich=ph&&demoView!=='2d';
-  if(bt){bt.style.display=ph?'block':'none';bt.innerHTML=useRich?'📐 SCHÉMA':'📷 PHOTO';}
-  if(!useRich){st.innerHTML=animSVG(DEMO[key].a);return;}
-  st.innerHTML=stagePhoto(key);
-}
-function togDemoView(){demoView=(demoView==='2d')?'auto':'2d';renderDemoStage(demoKey);}
-function togPhoto(){S.usePhoto=S.usePhoto===false;save();document.getElementById('dph-tsw').classList.toggle('on',S.usePhoto!==false);if(demoKey)renderDemoStage(demoKey);}
+/* ════════ FICHES MOUVEMENT ════════
+   Chaque exercice est démontré par le même mannequin vectoriel — un seul
+   style visuel, cohérent et disponible hors-ligne pour tous les exercices. */
+function renderDemoStage(key){document.getElementById('demo-stage').innerHTML=animSVG(DEMO[key].a);}
 
 let demoQ=[],demoI=0,demoKey=null;
 function exKeyOf(ex){if(!ex)return null;if(ex.k&&DEMO[ex.k])return ex.k;const n=(ex.n||'').toLowerCase();return Object.keys(DEMO).find(k=>(EX[k]?.n||'').toLowerCase()===n)||null;}
@@ -717,7 +701,6 @@ function openBoardGuide(){
   document.getElementById('demo-name').innerText='Planche Push-Up';
   document.getElementById('demo-mus').innerText='Code couleur des repères';
   document.getElementById('demo-name').dataset.k='';
-  const vb=document.getElementById('demo-viewbtn');if(vb)vb.style.display='none';
   document.getElementById('demo-stage').innerHTML=boardSVG(null);
   document.getElementById('demo-board').innerHTML=`<div class="demo-sec"><div class="board-legend">${legend}</div></div>`;
   document.getElementById('demo-cues').innerHTML=[

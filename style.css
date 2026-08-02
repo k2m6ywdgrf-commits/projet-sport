@@ -132,7 +132,6 @@ body.light{background:var(--bg);}
 .amrap-cd{font-size:58px;font-weight:800;color:var(--co);font-variant-numeric:tabular-nums;line-height:1;text-align:center;}
 .amrap-reps{font-size:21px;font-weight:800;color:var(--cy);text-align:center;letter-spacing:.5px;margin-top:4px;}
 .amrap-exnum{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--tmut);text-transform:uppercase;text-align:center;margin-bottom:6px;}
-.amrap-thumb{display:block;margin:8px auto 0;max-height:84px;max-width:70%;border-radius:12px;opacity:.92;}
 .amrap-rc{font-size:44px;font-weight:800;color:var(--cb);text-align:center;}
 .amrap-rl{font-size:11px;font-weight:700;color:var(--tmut);text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:2px;}
 .amrap-btn{width:142px;height:142px;border-radius:50%;background:rgba(255,176,32,.1);border:3px solid var(--co);color:var(--co);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 0 30px var(--go);transition:all .1s;margin:8px auto 0;}
@@ -347,11 +346,6 @@ input[id*="mac_"]:checked{background:var(--cp);border-color:var(--cp);}
 .blg.on{color:var(--tm);border-color:currentColor;}
 @keyframes bdRing{0%,100%{opacity:.35;stroke-width:3}50%{opacity:1;stroke-width:6}}
 .bd-hi{fill:none;animation:bdRing 1.5s ease-in-out infinite;}
-.ph-row{display:flex;gap:8px;}
-.ph{flex:1;min-width:0;margin:0;}
-.ph img{width:100%;height:auto;display:block;border-radius:14px;background:var(--bgc);}
-.ph figcaption{text-align:center;font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--tmut);padding-top:7px;}
-.demo-view{background:var(--bgi);border:1px solid var(--bd2);color:var(--tm);font-size:11px;font-weight:800;letter-spacing:.3px;padding:7px 10px;border-radius:9px;cursor:pointer;white-space:nowrap;min-height:36px;}
 .demo-mute{display:block;margin:12px auto 0;background:none;border:none;color:var(--tmut);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px 10px;opacity:.8;}
 .info-b{background:none;border:1px solid var(--bd2);color:var(--tmut);width:34px;height:34px;border-radius:50%;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .info-b:active{border-color:var(--cb);color:var(--cb);}

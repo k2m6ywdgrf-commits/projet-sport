@@ -202,47 +202,6 @@ const DEMO={
 /* Prérequis lisibles pour l'écran de déblocage (nom du mouvement de base) */
 function unlockLabel(k){const u=EX[k]&&EX[k].unlock;if(!u)return null;const base=EX[u.req];return{base:base?base.n:u.req,min:u.min};}
 
-/* ════════ PHOTOS ════════
-   Paire départ/arrivée par exercice, posée dans PHOTO_BASE. À défaut,
-   la fiche retombe automatiquement sur le schéma vectoriel (voir hasPhoto). */
-const PHOTO_BASE='photos/';
-const PHOTO={
-  board_standard:{s:'board_standard_s.webp',e:'board_standard_e.webp'},
-  mat_squat:     {s:'mat_squat_s.webp',     e:'mat_squat_e.webp'},
-  mat_plank:     {s:'mat_plank_s.webp'},
-  mat_crunch:    {s:'mat_crunch_s.webp',    e:'mat_crunch_e.webp'},
-  mat_glute:     {s:'mat_glute_s.webp',     e:'mat_glute_e.webp'},
-  mat_mountain:  {s:'mat_mountain_s.webp',  e:'mat_mountain_e.webp'},
-  jump_rope:     {s:'jump_rope_s.webp',     e:'jump_rope_e.webp'},
-  bands:         {s:'bands_s.webp',         e:'bands_e.webp'},
-  board_pecs:    {s:'board_pecs_s.webp',    e:'board_pecs_e.webp'},
-  board_triceps: {s:'board_triceps_s.webp', e:'board_triceps_e.webp'},
-  mat_lunge:     {s:'mat_lunge_s.webp',     e:'mat_lunge_e.webp'},
-  mat_legraise:  {s:'mat_legraise_s.webp',  e:'mat_legraise_e.webp'},
-  mat_russian:   {s:'mat_russian_s.webp',   e:'mat_russian_e.webp'},
-  mat_superman:  {s:'mat_superman_s.webp',  e:'mat_superman_e.webp'},
-  mat_wallsit:   {s:'mat_wallsit_s.webp'},
-  board_shoulders:{s:'board_shoulders_s.webp',e:'board_shoulders_e.webp'},
-  // ── En attente : le schéma vectoriel prend le relais tant que le fichier n'existe pas ──
-  archer:        {s:'archer_s.webp',        e:'archer_e.webp'},
-  pike:          {s:'pike_s.webp',          e:'pike_e.webp'},
-  pseudo:        {s:'pseudo_s.webp',        e:'pseudo_e.webp'},
-  diamond:       {s:'diamond_s.webp',       e:'diamond_e.webp'},
-  ab_wheel:      {s:'ab_wheel_s.webp',      e:'ab_wheel_e.webp'},
-  band_row:      {s:'band_row_s.webp',      e:'band_row_e.webp'},
-  band_facepull: {s:'band_facepull_s.webp', e:'band_facepull_e.webp'},
-  mat_splank:    {s:'mat_splank_s.webp'},
-  mat_burpee:    {s:'mat_burpee_s.webp',    e:'mat_burpee_e.webp'},
-  mat_bicycle:   {s:'mat_bicycle_s.webp',   e:'mat_bicycle_e.webp'},
-  mat_hollow:    {s:'mat_hollow_s.webp'},
-  mat_inchworm:  {s:'mat_inchworm_s.webp',  e:'mat_inchworm_e.webp'},
-  mat_calf:      {s:'mat_calf_s.webp',      e:'mat_calf_e.webp'},
-  mat_jumpsquat: {s:'mat_jumpsquat_s.webp', e:'mat_jumpsquat_e.webp'},
-  mac_bike:      {s:'mac_bike_s.webp',      e:'mac_bike_e.webp'},
-  mac_elliptical:{s:'mac_elliptical_s.webp',e:'mac_elliptical_e.webp'},
-  mac_treadmill: {s:'mac_treadmill_s.webp', e:'mac_treadmill_e.webp'}
-};
-
 /* ════════ MANNEQUIN DE DÉMONSTRATION (rig SVG à angles articulaires) ════════
    Squelette à longueurs d'os fixes ; chaque pose ne donne que des angles.
    Angles en degrés, repère écran (y vers le bas) : 0 = droite, 90 = bas,

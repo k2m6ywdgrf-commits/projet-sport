@@ -81,7 +81,6 @@
 <div class="amrap-ov" id="amrap-ov">
   <div id="a-trans-ov"><div class="atl" id="atl">PRÊT ?</div><div class="atn" id="atn"></div><div class="atcd" id="atcd">3</div></div>
   <div style="text-align:center"><div class="amrap-lbl">⏱ TEMPS RESTANT</div><div class="amrap-cd" id="a-cd">05:00</div></div>
-  <div id="a-thumb-w" style="display:none"><img id="a-thumb" class="amrap-thumb" alt=""></div>
   <div style="text-align:center;flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px 0">
     <div class="amrap-exnum" id="a-exnum">EXERCICE 1/4</div>
     <div class="amrap-exo" id="a-exo"></div>
@@ -121,10 +120,7 @@
         <div class="demo-name" id="demo-name"></div>
         <div class="demo-mus" id="demo-mus"></div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-        <button class="demo-x" onclick="closeDemo()">×</button>
-        <button class="demo-view" id="demo-viewbtn" style="display:none" onclick="togDemoView()">🩻 3D</button>
-      </div>
+      <button class="demo-x" onclick="closeDemo()">×</button>
     </div>
     <div class="demo-stage" id="demo-stage"></div>
     <div id="demo-board"></div>
@@ -312,7 +308,6 @@
     <div class="set-grp" style="border-color:var(--cb)"><span class="hud-name" style="color:var(--cb)">🎓 COACHING</span>
       <div class="theme-row"><span style="font-size:13px;font-weight:800">Fiches des nouveaux mouvements</span><div class="tsw on" id="demo-tsw" onclick="togDemoAuto()"></div></div>
       <p style="font-size:11px;color:var(--tmut);margin-top:7px;line-height:1.5">La fiche d'un exercice s'ouvre automatiquement la première fois que tu le rencontres. Le bouton (i) reste disponible à tout moment.</p>
-      <div class="theme-row"><span style="font-size:13px;font-weight:800">Photos du coach</span><div class="tsw on" id="dph-tsw" onclick="togPhoto()"></div></div>
       <button class="toggle-btn mt" style="width:100%;font-size:12px" onclick="openBoardGuide()">🏋️ GUIDE DE LA PLANCHE PUSH-UP</button>
       <button class="toggle-btn mt" style="width:100%;font-size:12px" onclick="resetDemos()">👁️ RÉAFFICHER TOUTES LES FICHES</button>
       <div class="theme-row"><span style="font-size:13px;font-weight:800">Sons</span><div class="tsw on" id="snd-tsw" onclick="togSound()"></div></div>
