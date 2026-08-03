@@ -239,13 +239,13 @@ function updWeightDelta(){
 /* ════════ CONFIG (Profil / Programme) ════════ */
 function setObj(m){S.ucfg.obj=m;['muscle','cardio','other'].forEach(x=>document.getElementById('ob-'+x).classList.toggle('active',x===m));save();}
 function setPosture(m){S.posture=m;document.getElementById('pb-knees').classList.toggle('active',m==='knees');document.getElementById('pb-feet').classList.toggle('active',m!=='knees');save();}
-function setDur(d){S.ucfg.sessionDur=d;document.querySelectorAll('#dur-row .fb').forEach(b=>b.classList.toggle('active',b.innerText.startsWith(d+' ')));save();}
-function setFreq(f){S.ucfg.freq=f;document.querySelectorAll('#freq-row .fb').forEach(b=>b.classList.toggle('active',parseInt(b.innerText)===f));save();}
+function setDur(d){S.ucfg.sessionDur=d;document.querySelectorAll('.dur-picker .fb').forEach(b=>b.classList.toggle('active',b.innerText.startsWith(d+' ')));save();}
+function setFreq(f){S.ucfg.freq=f;document.querySelectorAll('.freq-picker .fb').forEach(b=>b.classList.toggle('active',parseInt(b.innerText)===f));save();}
 function adjW(a){S.ucfg.wks=Math.max(1,Math.min(12,(S.ucfg.wks||4)+a));document.getElementById('disp-fw').innerText=S.ucfg.wks;save();}
 function togE(id){const cb=document.getElementById('e-'+id);cb.checked=!cb.checked;cb.closest('.acc-item').classList.toggle('on',cb.checked);const isMac=id.startsWith('mac_');if(isMac){if(cb.checked){if(!S.ucfg.machines.includes(id))S.ucfg.machines.push(id);}else S.ucfg.machines=S.ucfg.machines.filter(m=>m!==id);}else{if(cb.checked){if(!S.ucfg.acc.includes(id))S.ucfg.acc.push(id);}else S.ucfg.acc=S.ucfg.acc.filter(a=>a!==id);}document.getElementById('rj-box').style.display=S.ucfg.acc.includes('jump_rope')?'flex':'none';document.getElementById('posture-block').style.display=S.ucfg.acc.includes('board')?'block':'none';save();}
 function togGA(id){const el=document.getElementById('ga-'+id);const on=!el.classList.contains('on');el.classList.toggle('on',on);if(on){if(!S.gcfg.acc.includes(id))S.gcfg.acc.push(id);}else S.gcfg.acc=S.gcfg.acc.filter(a=>a!==id);save();genPreviewUpdate();}
 function togAmrapAcc(id){const el=document.getElementById('aa-'+id);const on=!el.classList.contains('on');el.classList.toggle('on',on);if(on){if(!S.gcfg.amrapAcc.includes(id))S.gcfg.amrapAcc.push(id);}else S.gcfg.amrapAcc=S.gcfg.amrapAcc.filter(a=>a!==id);save();updAmrapPreview();}
-function syncUI(){const o=S.ucfg.obj||'muscle';['muscle','cardio','other'].forEach(m=>document.getElementById('ob-'+m).classList.toggle('active',m===o));document.querySelectorAll('#freq-row .fb').forEach(b=>b.classList.toggle('active',parseInt(b.innerText)===S.ucfg.freq));document.querySelectorAll('#dur-row .fb').forEach(b=>b.classList.toggle('active',b.innerText.startsWith((S.ucfg.sessionDur||30)+' ')));['mat','board','ab_wheel','jump_rope','bands','legs'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=S.ucfg.acc.includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc)gc.classList.toggle('on',(S.gcfg.acc||[]).includes(id));const aa=document.getElementById('aa-'+id);if(aa)aa.classList.toggle('on',(S.gcfg.amrapAcc||[]).includes(id));});['mac_bike','mac_elliptical','mac_treadmill'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=(S.ucfg.machines||[]).includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc)gc.classList.toggle('on',(S.gcfg.acc||[]).includes(id));});document.getElementById('inp-rj').value=S.ucfg.rj||50;document.getElementById('disp-fw').innerText=S.ucfg.wks||4;document.getElementById('rj-box').style.display=S.ucfg.acc.includes('jump_rope')?'flex':'none';document.getElementById('posture-block').style.display=S.ucfg.acc.includes('board')?'block':'none';document.getElementById('pb-knees').classList.toggle('active',S.posture==='knees');document.getElementById('pb-feet').classList.toggle('active',S.posture!=='knees');}
+function syncUI(){const o=S.ucfg.obj||'muscle';['muscle','cardio','other'].forEach(m=>document.getElementById('ob-'+m).classList.toggle('active',m===o));document.querySelectorAll('.freq-picker .fb').forEach(b=>b.classList.toggle('active',parseInt(b.innerText)===S.ucfg.freq));document.querySelectorAll('.dur-picker .fb').forEach(b=>b.classList.toggle('active',b.innerText.startsWith((S.ucfg.sessionDur||30)+' ')));['mat','board','ab_wheel','jump_rope','bands','legs'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=S.ucfg.acc.includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc)gc.classList.toggle('on',(S.gcfg.acc||[]).includes(id));const aa=document.getElementById('aa-'+id);if(aa)aa.classList.toggle('on',(S.gcfg.amrapAcc||[]).includes(id));});['mac_bike','mac_elliptical','mac_treadmill'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=(S.ucfg.machines||[]).includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc)gc.classList.toggle('on',(S.gcfg.acc||[]).includes(id));});document.getElementById('inp-rj').value=S.ucfg.rj||50;document.getElementById('disp-fw').innerText=S.ucfg.wks||4;document.getElementById('rj-box').style.display=S.ucfg.acc.includes('jump_rope')?'flex':'none';document.getElementById('posture-block').style.display=S.ucfg.acc.includes('board')?'block':'none';document.getElementById('pb-knees').classList.toggle('active',S.posture==='knees');document.getElementById('pb-feet').classList.toggle('active',S.posture!=='knees');renderProgSummary();}
 
 /* ════════ ONBOARDING ════════ */
 function openOnboarding(){onbStep=0;renderOnbStep();document.getElementById('onb-ov').style.display='flex';}
@@ -253,11 +253,11 @@ function renderOnbStep(){
   document.querySelectorAll('.onb-panel').forEach((el,i)=>el.style.display=i===onbStep?'block':'none');
   document.querySelectorAll('.onb-dot').forEach((d,i)=>d.classList.toggle('on',i===onbStep));
   const back=document.getElementById('onb-back');if(back)back.style.display=onbStep===0?'none':'inline-block';
-  const next=document.getElementById('onb-next');if(next)next.innerText=onbStep===3?'C\'EST PARTI !':'SUIVANT →';
+  const next=document.getElementById('onb-next');if(next)next.innerText=onbStep===4?'C\'EST PARTI !':'SUIVANT →';
 }
 function onbBack(){if(onbStep>0){onbStep--;renderOnbStep();}}
 function onbNext(){
-  if(onbStep<3){onbStep++;renderOnbStep();return;}
+  if(onbStep<4){onbStep++;renderOnbStep();return;}
   finishOnboarding();
 }
 function onbSetLevel(l){
@@ -346,6 +346,7 @@ function genUnified(){
   const objLabel={muscle:'Muscle',cardio:'Cardio',other:'Forme'}[obj]||'Forme';
   S.uprog={title:`Programme ${objLabel}`,ac:obj==='muscle'?'var(--cb)':obj==='cardio'?'var(--cp)':'var(--cg)',tag:`PROGRAMME PULSE // ${wks} SEM. // ${freq}x/SEM.`,desc:`Séances ~${sessionDur}min. Exercices variés. Semaine de récupération auto toutes les 4 semaines.`,days};
   S.uDays={};save();
+  closeProgramModal();
   switchTab('plans');
   renderProg();
 }
@@ -357,10 +358,20 @@ function renderProg(){
   if(empty)empty.style.display='none';
   const prog=S.uprog,track=S.uDays;let done=0;const tot=Object.keys(prog.days).length;Object.keys(prog.days).forEach(d=>{if(track['u-d'+d])done++;});const pct=tot?Math.round(done/tot*100):0;const card=document.createElement('div');card.className='prog-card';card.style.setProperty('--ac',prog.ac);const nextId=Object.keys(prog.days).find(id=>!track['u-d'+id]);
   let dH='';Object.entries(prog.days).forEach(([id,day])=>{const key='u-d'+id,isDone=!!track[key],isDl=!!day.dl,isNext=id===nextId;let cls='day-btn'+(isDl?' dl':'')+(isNext?' nxt':'');let bg='';if(isDone){cls+=' done';bg=`<span class="day-badge bd">FAIT</span>`;}else if(isNext){bg=`<span class="day-badge bn">PROCHAINE</span>`;}else if(isDl){bg=`<span class="day-badge bdl">RÉCUP.</span>`;}else{bg=`<span class="day-badge bn" style="background:var(--tmut)">DISPO</span>`;}const nEx=day.exs?day.exs.length:0;dH+=`<div class="${cls}" onclick="openPW('${id}','u')">${bg}<div class="day-type">${day.icon||'⚡'}</div><div class="dtitle">${day.label||'Séance'}</div><div class="dsub">${day.sub} ~${day.planDur||'?'}min</div></div>`;});
-  card.innerHTML=`<div class="ptag">${prog.tag}</div><div class="ptitle">${prog.title}</div><div class="pdesc">${prog.desc}</div><div class="pprog"><div class="pprog-top"><span class="plabel">Progression</span><span class="pcount">${done}/${tot}</span></div><div class="pbar"><div class="pbar-fill" style="width:${pct}%"></div></div></div><div class="days-grid">${dH}</div><button class="toggle-btn mt" style="width:100%;font-size:12px" onclick="switchTab('settings')">⚙️ MODIFIER MON PROFIL</button><button class="toggle-btn mt" style="width:100%;font-size:12px;color:var(--cr);border-color:var(--cr)" onclick="resetProg()">🚫 ABANDONNER CE PROGRAMME</button>`;
+  card.innerHTML=`<div class="ptag">${prog.tag}</div><div class="ptitle">${prog.title}</div><div class="pdesc">${prog.desc}</div><div class="pprog"><div class="pprog-top"><span class="plabel">Progression</span><span class="pcount">${done}/${tot}</span></div><div class="pbar"><div class="pbar-fill" style="width:${pct}%"></div></div></div><div class="days-grid">${dH}</div><button class="toggle-btn mt" style="width:100%;font-size:12px" onclick="openProgramModal()">⚙️ MODIFIER MON PROGRAMME</button><button class="toggle-btn mt" style="width:100%;font-size:12px;color:var(--cr);border-color:var(--cr)" onclick="resetProg()">🚫 ABANDONNER CE PROGRAMME</button>`;
   c.appendChild(card);
 }
 function resetProg(){if(!confirm('Abandonner ce programme et en créer un nouveau ?'))return;S.uprog=null;S.uDays={};const p=document.getElementById('unified-prog');if(p)p.innerHTML='';save();renderProg();}
+
+function openProgramModal(){syncUI();document.getElementById('program-modal').classList.add('open');}
+function closeProgramModal(e){if(!e||e.target===document.getElementById('program-modal'))document.getElementById('program-modal').classList.remove('open');}
+function renderProgSummary(){
+  const el=document.getElementById('prog-summary');if(!el)return;
+  const objMap={muscle:{ic:'💪',l:'Muscle'},cardio:{ic:'🔥',l:'Cardio'},other:{ic:'🎯',l:'Forme'}};
+  const o=objMap[S.ucfg.obj]||objMap.muscle;
+  const nEq=(S.ucfg.acc||[]).length+(S.ucfg.machines||[]).length;
+  el.innerHTML=`${o.ic} Objectif : <b style="color:var(--tm)">${o.l}</b> · ⏱ <b style="color:var(--tm)">${S.ucfg.sessionDur||30} min</b>/séance<br>📅 <b style="color:var(--tm)">${S.ucfg.freq||3}×</b>/semaine sur <b style="color:var(--tm)">${S.ucfg.wks||4}</b> semaine(s) · 🛠 <b style="color:var(--tm)">${nEq}</b> équipement(s)`;
+}
 
 /* ════════ MODALE PRÉ-SÉANCE ════════ */
 function openPW(dayId,tp){

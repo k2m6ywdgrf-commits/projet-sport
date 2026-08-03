@@ -22,7 +22,7 @@
 <!-- ═══ ONBOARDING (premier lancement) ═══ -->
 <div class="wu-ov" id="onb-ov" style="display:none;z-index:5500;text-align:left;align-items:stretch;">
   <div style="max-width:420px;margin:0 auto;width:100%;text-align:center">
-    <div class="onb-dots"><span class="onb-dot on"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span></div>
+    <div class="onb-dots"><span class="onb-dot on"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span><span class="onb-dot"></span></div>
 
     <div class="onb-panel">
       <div class="onb-title">Bienvenue sur PULSE 👋</div>
@@ -54,6 +54,26 @@
         <div class="acc-item on" id="onb-e-jump_rope" onclick="onbTogE('jump_rope')"><div class="acc-name">🪢 Corde à sauter</div></div>
         <div class="acc-item on" id="onb-e-bands" onclick="onbTogE('bands')"><div class="acc-name">🔴 Élastiques (dos et épaules)</div></div>
         <div class="acc-item on" id="onb-e-ab_wheel" onclick="onbTogE('ab_wheel')"><div class="acc-name">⚙️ Roue abdominale</div></div>
+      </div>
+    </div>
+
+    <div class="onb-panel" style="display:none">
+      <div class="onb-title">Combien de temps as-tu ?</div>
+      <div class="onb-sub">On calibre la durée et le rythme de tes séances — modifiable à tout moment dans ton profil.</div>
+      <div class="hud-name" style="text-align:left;margin-bottom:8px">Durée par séance</div>
+      <div class="freq-row dur-picker">
+        <button class="fb" onclick="setDur(20)">20 MIN</button>
+        <button class="fb active" onclick="setDur(30)">30 MIN</button>
+        <button class="fb" onclick="setDur(45)">45 MIN</button>
+        <button class="fb" onclick="setDur(60)">60 MIN</button>
+      </div>
+      <div class="hud-name" style="text-align:left;margin:18px 0 8px">Jours / semaine</div>
+      <div class="freq-row freq-picker">
+        <button class="fb" onclick="setFreq(2)">2×</button>
+        <button class="fb active" onclick="setFreq(3)">3×</button>
+        <button class="fb" onclick="setFreq(4)">4×</button>
+        <button class="fb" onclick="setFreq(5)">5×</button>
+        <button class="fb" onclick="setFreq(6)">6×</button>
       </div>
     </div>
 
@@ -145,7 +165,7 @@
       <div style="font-size:40px;margin-bottom:8px">🏋️</div>
       <div class="ptitle">Aucun programme actif</div>
       <div class="pdesc" style="margin-bottom:16px">Configure ton profil pour recevoir un programme sur mesure, adapté à ton niveau et ton matériel.</div>
-      <button class="btn-launch" onclick="switchTab('settings')">⚙️ CONFIGURER MON PROFIL</button>
+      <button class="btn-launch" onclick="openProgramModal()">⚙️ CRÉER MON PROGRAMME</button>
     </div>
     <div id="unified-prog"></div>
   </div>
@@ -249,53 +269,8 @@
       <div id="weight-delta" style="font-size:13px;font-weight:800;color:var(--cb);margin-top:8px;text-align:center"></div>
     </div>
     <div class="set-grp" style="border-color:var(--cb)"><span class="hud-name" style="color:var(--cb)">MON PROGRAMME</span>
-      <div class="cfg-sec" style="margin-top:12px">
-        <div class="cfg-lbl">🎯 Objectif</div>
-        <div class="posture-grid" style="margin:0">
-          <div class="pb active" id="ob-muscle" onclick="setObj('muscle')"><div class="pi">💪</div><div class="pl">Muscle</div><div class="pd" style="color:var(--cy)">Force</div></div>
-          <div class="pb" id="ob-cardio" onclick="setObj('cardio')"><div class="pi">🔥</div><div class="pl">Cardio</div><div class="pd" style="color:var(--cp)">Perte de poids</div></div>
-          <div class="pb" id="ob-other" onclick="setObj('other')"><div class="pi">🎯</div><div class="pl">Forme</div><div class="pd" style="color:var(--tmut)">Équilibre</div></div>
-        </div>
-      </div>
-      <div class="cfg-sec">
-        <div class="cfg-lbl">⏱ Durée cible par séance</div>
-        <div class="freq-row" id="dur-row">
-          <button class="fb" onclick="setDur(20)">20 MIN</button>
-          <button class="fb active" onclick="setDur(30)">30 MIN</button>
-          <button class="fb" onclick="setDur(45)">45 MIN</button>
-          <button class="fb" onclick="setDur(60)">60 MIN</button>
-        </div>
-      </div>
-      <div class="cfg-sec">
-        <div class="cfg-lbl">🛠 Équipement disponible</div>
-        <div class="acc-list">
-          <div class="acc-item on" onclick="togE('mat')"><div><div class="acc-name">🧘 Tapis de sol</div><div class="acc-sub">Planche, Crunch, Mountain Climbers, Burpees...</div></div><input type="checkbox" id="e-mat" checked style="pointer-events:none"></div>
-          <div class="acc-item on" onclick="togE('board')"><div><div class="acc-name">🏋 Planche Push-Up</div><div class="acc-sub">Pompes, Archer, Pike, Diamond...</div></div><input type="checkbox" id="e-board" checked style="pointer-events:none"></div>
-          <div id="posture-block" class="posture-nested"><div class="hud-name" style="margin-bottom:7px">Position pompes :</div><div class="posture-grid" style="margin:0"><div class="pb" id="pb-knees" onclick="setPosture('knees')"><div class="pi">🧘</div><div class="pl">Genoux</div><div class="pd" style="color:var(--cg)">🟢 Accessible</div></div><div class="pb active" id="pb-feet" onclick="setPosture('feet')"><div class="pi">👟</div><div class="pl">Pieds</div><div class="pd" style="color:var(--cr)">🔴 Difficile</div></div></div></div>
-          <div class="acc-item on" onclick="togE('legs')"><div><div class="acc-name">🦵 Jambes (sans matériel)</div><div class="acc-sub">Squats, Fentes, Mollets, Chaise...</div></div><input type="checkbox" id="e-legs" checked style="pointer-events:none"></div>
-          <div class="acc-item on" onclick="togE('ab_wheel')"><div><div class="acc-name">⚙️ Roue abdominale</div><div class="acc-sub">Gainage profond, force du core</div></div><input type="checkbox" id="e-ab_wheel" checked style="pointer-events:none"></div>
-          <div class="acc-item on" onclick="togE('jump_rope')"><div><div class="acc-name">🪢 Corde à sauter</div><div class="acc-sub">Cardio, coordination, endurance</div></div><input type="checkbox" id="e-jump_rope" checked style="pointer-events:none"></div>
-          <div class="rj-box" id="rj-box"><label>Sauts/série :</label><input type="number" id="inp-rj" value="50" min="10" max="1000" step="10" onchange="S.ucfg.rj=parseInt(this.value)||50;save()"></div>
-          <div class="acc-item on" onclick="togE('bands')"><div><div class="acc-name">🔴 Élastiques</div><div class="acc-sub">Dos (rowing, tirage visage), épaules, résistance variable</div></div><input type="checkbox" id="e-bands" checked style="pointer-events:none"></div>
-          <div class="acc-divider">🚲 Machines cardio (optionnel)</div>
-          <div class="acc-item" onclick="togE('mac_bike')"><div><div class="acc-name">🚴 Vélo d'intérieur</div><div class="acc-sub">Cardio bas du corps</div></div><input type="checkbox" id="e-mac_bike" style="pointer-events:none"></div>
-          <div class="acc-item" onclick="togE('mac_elliptical')"><div><div class="acc-name">🌀 Elliptique</div><div class="acc-sub">Full body, faible impact</div></div><input type="checkbox" id="e-mac_elliptical" style="pointer-events:none"></div>
-          <div class="acc-item" onclick="togE('mac_treadmill')"><div><div class="acc-name">🏃 Tapis de course</div><div class="acc-sub">Course, marche inclinée</div></div><input type="checkbox" id="e-mac_treadmill" style="pointer-events:none"></div>
-        </div>
-      </div>
-      <div class="cfg-sec">
-        <div class="cfg-lbl">📅 Planning</div>
-        <div class="hud-name" style="margin-bottom:6px">Jours / semaine</div>
-        <div class="freq-row" id="freq-row"><button class="fb" onclick="setFreq(2)">2×</button><button class="fb active" onclick="setFreq(3)">3×</button><button class="fb" onclick="setFreq(4)">4×</button><button class="fb" onclick="setFreq(5)">5×</button><button class="fb" onclick="setFreq(6)">6×</button></div>
-        <div class="hud-name" style="margin:12px 0 6px">Durée du programme</div>
-        <div style="display:flex;align-items:center;background:var(--bgi);padding:9px 12px;border-radius:12px;border:1px solid var(--bd);gap:10px">
-          <button class="fb" style="padding:5px 13px;margin:0;font-weight:800" onclick="adjW(-1)">−</button>
-          <div id="disp-fw" style="font-size:16px;font-weight:800;color:var(--tm);width:34px;text-align:center">4</div>
-          <button class="fb" style="padding:5px 13px;margin:0;font-weight:800" onclick="adjW(1)">+</button>
-          <span style="font-size:12px;font-weight:800;color:var(--tmut);margin-left:4px">SEMAINE(S)</span>
-        </div>
-      </div>
-      <button class="btn-launch" style="margin-top:16px" onclick="genUnified()">⚡ GÉNÉRER MON PROGRAMME</button>
+      <div id="prog-summary" style="margin-top:12px;font-size:13px;color:var(--tmut);line-height:1.7"></div>
+      <button class="btn-launch" style="margin-top:14px" onclick="openProgramModal()">⚙️ CONFIGURER MON PROGRAMME</button>
     </div>
     <div class="set-grp" style="border-color:var(--cp)"><span class="hud-name" style="color:var(--cp)">🔓 PROCHAINS DÉBLOCAGES</span>
       <div id="unlocks-list" style="margin-top:8px"></div>
@@ -381,6 +356,59 @@
       </div>
     </div>
     <button class="btn-launch" onclick="confirmStart()">DÉMARRER</button>
+  </div>
+</div>
+<div class="overlay" id="program-modal" onclick="closeProgramModal(event)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div style="margin-bottom:14px"><div class="ptag" style="color:var(--cb)">CONFIGURATION</div><div class="wname">Mon programme</div></div>
+    <div class="cfg-sec" style="margin-top:0">
+      <div class="cfg-lbl">🎯 Objectif</div>
+      <div class="posture-grid" style="margin:0">
+        <div class="pb active" id="ob-muscle" onclick="setObj('muscle')"><div class="pi">💪</div><div class="pl">Muscle</div><div class="pd" style="color:var(--cy)">Force</div></div>
+        <div class="pb" id="ob-cardio" onclick="setObj('cardio')"><div class="pi">🔥</div><div class="pl">Cardio</div><div class="pd" style="color:var(--cp)">Perte de poids</div></div>
+        <div class="pb" id="ob-other" onclick="setObj('other')"><div class="pi">🎯</div><div class="pl">Forme</div><div class="pd" style="color:var(--tmut)">Équilibre</div></div>
+      </div>
+    </div>
+    <div class="cfg-sec">
+      <div class="cfg-lbl">⏱ Durée cible par séance</div>
+      <div class="freq-row dur-picker" id="dur-row">
+        <button class="fb" onclick="setDur(20)">20 MIN</button>
+        <button class="fb active" onclick="setDur(30)">30 MIN</button>
+        <button class="fb" onclick="setDur(45)">45 MIN</button>
+        <button class="fb" onclick="setDur(60)">60 MIN</button>
+      </div>
+    </div>
+    <div class="cfg-sec">
+      <div class="cfg-lbl">🛠 Équipement disponible</div>
+      <div class="acc-list">
+        <div class="acc-item on" onclick="togE('mat')"><div><div class="acc-name">🧘 Tapis de sol</div><div class="acc-sub">Planche, Crunch, Mountain Climbers, Burpees...</div></div><input type="checkbox" id="e-mat" checked style="pointer-events:none"></div>
+        <div class="acc-item on" onclick="togE('board')"><div><div class="acc-name">🏋 Planche Push-Up</div><div class="acc-sub">Pompes, Archer, Pike, Diamond...</div></div><input type="checkbox" id="e-board" checked style="pointer-events:none"></div>
+        <div id="posture-block" class="posture-nested"><div class="hud-name" style="margin-bottom:7px">Position pompes :</div><div class="posture-grid" style="margin:0"><div class="pb" id="pb-knees" onclick="setPosture('knees')"><div class="pi">🧘</div><div class="pl">Genoux</div><div class="pd" style="color:var(--cg)">🟢 Accessible</div></div><div class="pb active" id="pb-feet" onclick="setPosture('feet')"><div class="pi">👟</div><div class="pl">Pieds</div><div class="pd" style="color:var(--cr)">🔴 Difficile</div></div></div></div>
+        <div class="acc-item on" onclick="togE('legs')"><div><div class="acc-name">🦵 Jambes (sans matériel)</div><div class="acc-sub">Squats, Fentes, Mollets, Chaise...</div></div><input type="checkbox" id="e-legs" checked style="pointer-events:none"></div>
+        <div class="acc-item on" onclick="togE('ab_wheel')"><div><div class="acc-name">⚙️ Roue abdominale</div><div class="acc-sub">Gainage profond, force du core</div></div><input type="checkbox" id="e-ab_wheel" checked style="pointer-events:none"></div>
+        <div class="acc-item on" onclick="togE('jump_rope')"><div><div class="acc-name">🪢 Corde à sauter</div><div class="acc-sub">Cardio, coordination, endurance</div></div><input type="checkbox" id="e-jump_rope" checked style="pointer-events:none"></div>
+        <div class="rj-box" id="rj-box"><label>Sauts/série :</label><input type="number" id="inp-rj" value="50" min="10" max="1000" step="10" onchange="S.ucfg.rj=parseInt(this.value)||50;save()"></div>
+        <div class="acc-item on" onclick="togE('bands')"><div><div class="acc-name">🔴 Élastiques</div><div class="acc-sub">Dos (rowing, tirage visage), épaules, résistance variable</div></div><input type="checkbox" id="e-bands" checked style="pointer-events:none"></div>
+        <div class="acc-divider">🚲 Machines cardio (optionnel)</div>
+        <div class="acc-item" onclick="togE('mac_bike')"><div><div class="acc-name">🚴 Vélo d'intérieur</div><div class="acc-sub">Cardio bas du corps</div></div><input type="checkbox" id="e-mac_bike" style="pointer-events:none"></div>
+        <div class="acc-item" onclick="togE('mac_elliptical')"><div><div class="acc-name">🌀 Elliptique</div><div class="acc-sub">Full body, faible impact</div></div><input type="checkbox" id="e-mac_elliptical" style="pointer-events:none"></div>
+        <div class="acc-item" onclick="togE('mac_treadmill')"><div><div class="acc-name">🏃 Tapis de course</div><div class="acc-sub">Course, marche inclinée</div></div><input type="checkbox" id="e-mac_treadmill" style="pointer-events:none"></div>
+      </div>
+    </div>
+    <div class="cfg-sec">
+      <div class="cfg-lbl">📅 Planning</div>
+      <div class="hud-name" style="margin-bottom:6px">Jours / semaine</div>
+      <div class="freq-row freq-picker" id="freq-row"><button class="fb" onclick="setFreq(2)">2×</button><button class="fb active" onclick="setFreq(3)">3×</button><button class="fb" onclick="setFreq(4)">4×</button><button class="fb" onclick="setFreq(5)">5×</button><button class="fb" onclick="setFreq(6)">6×</button></div>
+      <div class="hud-name" style="margin:12px 0 6px">Durée du programme</div>
+      <div style="display:flex;align-items:center;background:var(--bgi);padding:9px 12px;border-radius:12px;border:1px solid var(--bd);gap:10px">
+        <button class="fb" style="padding:5px 13px;margin:0;font-weight:800" onclick="adjW(-1)">−</button>
+        <div id="disp-fw" style="font-size:16px;font-weight:800;color:var(--tm);width:34px;text-align:center">4</div>
+        <button class="fb" style="padding:5px 13px;margin:0;font-weight:800" onclick="adjW(1)">+</button>
+        <span style="font-size:12px;font-weight:800;color:var(--tmut);margin-left:4px">SEMAINE(S)</span>
+      </div>
+    </div>
+    <button class="btn-launch" style="margin-top:4px" onclick="genUnified()">⚡ GÉNÉRER MON PROGRAMME</button>
   </div>
 </div>
 <nav class="nav">
