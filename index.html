@@ -159,16 +159,16 @@
         <p style="font-size:13px;color:var(--tmut);margin-bottom:10px">Générée à la volée à partir de ton équipement. Régénère autant que tu veux.</p>
         <div class="gen-divider">🛠 Accessoires</div>
         <div class="acc-list">
-          <div class="acc-item on" onclick="togGA('mat')"><div class="acc-name">🧘 Tapis de sol</div></div>
-          <div class="acc-item on" onclick="togGA('board')"><div class="acc-name">🏋 Planche Push-Up</div></div>
-          <div class="acc-item on" onclick="togGA('legs')"><div class="acc-name">🦵 Jambes (sans matériel)</div></div>
-          <div class="acc-item on" onclick="togGA('ab_wheel')"><div class="acc-name">⚙️ Roue abdominale</div></div>
-          <div class="acc-item on" onclick="togGA('jump_rope')"><div class="acc-name">🪢 Corde à sauter</div></div>
-          <div class="acc-item on" onclick="togGA('bands')"><div class="acc-name">🔴 Élastiques</div></div>
+          <div class="acc-item" id="ga-mat" onclick="togGA('mat')"><div class="acc-name">🧘 Tapis de sol</div></div>
+          <div class="acc-item" id="ga-board" onclick="togGA('board')"><div class="acc-name">🏋 Planche Push-Up</div></div>
+          <div class="acc-item" id="ga-legs" onclick="togGA('legs')"><div class="acc-name">🦵 Jambes (sans matériel)</div></div>
+          <div class="acc-item" id="ga-ab_wheel" onclick="togGA('ab_wheel')"><div class="acc-name">⚙️ Roue abdominale</div></div>
+          <div class="acc-item" id="ga-jump_rope" onclick="togGA('jump_rope')"><div class="acc-name">🪢 Corde à sauter</div></div>
+          <div class="acc-item" id="ga-bands" onclick="togGA('bands')"><div class="acc-name">🔴 Élastiques</div></div>
           <div class="acc-divider">🚲 Machines</div>
-          <div class="acc-item" onclick="togGA('mac_bike')"><div class="acc-name">🚴 Vélo</div></div>
-          <div class="acc-item" onclick="togGA('mac_elliptical')"><div class="acc-name">🌀 Elliptique</div></div>
-          <div class="acc-item" onclick="togGA('mac_treadmill')"><div class="acc-name">🏃 Tapis</div></div>
+          <div class="acc-item" id="ga-mac_bike" onclick="togGA('mac_bike')"><div class="acc-name">🚴 Vélo</div></div>
+          <div class="acc-item" id="ga-mac_elliptical" onclick="togGA('mac_elliptical')"><div class="acc-name">🌀 Elliptique</div></div>
+          <div class="acc-item" id="ga-mac_treadmill" onclick="togGA('mac_treadmill')"><div class="acc-name">🏃 Tapis</div></div>
         </div>
         <div class="gen-divider">⏱ Durée cible</div>
         <div class="gen-row"><button class="gbt active" id="gt-10" onclick="setGT(10)">10 MIN</button><button class="gbt" id="gt-20" onclick="setGT(20)">20 MIN</button><button class="gbt" id="gt-30" onclick="setGT(30)">30 MIN</button><button class="gbt" id="gt-40" onclick="setGT(40)">40 MIN</button><button class="gbt" id="gt-50" onclick="setGT(50)">50 MIN</button><button class="gbt" id="gt-60" onclick="setGT(60)">60 MIN</button></div>
@@ -188,12 +188,12 @@
         <p style="font-size:13px;color:var(--tmut);margin-bottom:10px">« As Many Rounds As Possible » : enchaîne un circuit en boucle pendant le temps imparti, et compte le nombre de tours complets.</p>
         <div class="gen-divider">🛠 Accessoires</div>
         <div class="acc-list">
-          <div class="acc-item on" onclick="togAmrapAcc('mat')"><div class="acc-name">🧘 Tapis de sol</div></div>
-          <div class="acc-item on" onclick="togAmrapAcc('board')"><div class="acc-name">🏋 Planche Push-Up</div></div>
-          <div class="acc-item on" onclick="togAmrapAcc('legs')"><div class="acc-name">🦵 Jambes (sans matériel)</div></div>
-          <div class="acc-item on" onclick="togAmrapAcc('ab_wheel')"><div class="acc-name">⚙️ Roue abdominale</div></div>
-          <div class="acc-item on" onclick="togAmrapAcc('jump_rope')"><div class="acc-name">🪢 Corde à sauter</div></div>
-          <div class="acc-item on" onclick="togAmrapAcc('bands')"><div class="acc-name">🔴 Élastiques</div></div>
+          <div class="acc-item" id="aa-mat" onclick="togAmrapAcc('mat')"><div class="acc-name">🧘 Tapis de sol</div></div>
+          <div class="acc-item" id="aa-board" onclick="togAmrapAcc('board')"><div class="acc-name">🏋 Planche Push-Up</div></div>
+          <div class="acc-item" id="aa-legs" onclick="togAmrapAcc('legs')"><div class="acc-name">🦵 Jambes (sans matériel)</div></div>
+          <div class="acc-item" id="aa-ab_wheel" onclick="togAmrapAcc('ab_wheel')"><div class="acc-name">⚙️ Roue abdominale</div></div>
+          <div class="acc-item" id="aa-jump_rope" onclick="togAmrapAcc('jump_rope')"><div class="acc-name">🪢 Corde à sauter</div></div>
+          <div class="acc-item" id="aa-bands" onclick="togAmrapAcc('bands')"><div class="acc-name">🔴 Élastiques</div></div>
         </div>
         <div class="gen-preview" style="margin-top:10px"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--co);margin-bottom:8px">Circuit</div><div id="amrap-preview"></div></div>
         <div class="gen-divider">⭐ Difficulté</div>
