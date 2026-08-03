@@ -85,7 +85,7 @@ let S={
   posture:'knees',uDays:{},genMode:'norm',fitTime:0,matSessions:0,chDone:0,varModes:[],amrapSessions:0,
   ucfg:{freq:3,wks:4,obj:'muscle',sessionDur:30,sets:3,rj:50,acc:['mat','board','ab_wheel','jump_rope','bands','legs'],machines:[]},
   genTime:10,amrapTime:5,amrapDiff:3,diff:3,
-  gcfg:{acc:['mat','board','ab_wheel','jump_rope','bands','legs'],amrapAcc:['mat','board','ab_wheel','jump_rope','bands','legs']},
+  gcfg:{acc:[],amrapAcc:[]},
   uprog:null,badges:{},hist:[],wch:null,wstats:{wk:'',sess:0,reps:0,jumps:0,long:0,amrap:0},wxp:{},theme:'dark',amrapH:[],
   lastExport:null,timeHistory:[],hideDemo:{},exSeen:{},demoAuto:true,ratings:[],
   exCount:{},prAmrapRounds:0,prWeekReps:0,prWeekJumps:0,prLongestSession:0,
@@ -113,8 +113,8 @@ function migrateState(p){
   if(!p.ucfg)p.ucfg={freq:p.cfg?.freq||3,wks:p.cfg?.wks||4,obj:p.cfg?.obj||'muscle',sessionDur:30,sets:p.cfg?.sets||3,rj:p.cfg?.rj||50,acc:(p.cfg?.acc||['board','ab_wheel','jump_rope','bands']).concat(['mat']),machines:p.mcfg?.types||[]};
   if(p.ucfg.obj==='weight')p.ucfg.obj='cardio';
   if(!p.uDays)p.uDays={...p.cDays||{},...p.cMDays||{}};
-  if(!p.gcfg)p.gcfg={acc:['mat','board','ab_wheel','jump_rope','bands']};
-  if(!p.gcfg.amrapAcc)p.gcfg.amrapAcc=[...(p.gcfg.acc||['mat','board','ab_wheel','jump_rope','bands'])];
+  if(!p.gcfg)p.gcfg={acc:[]};
+  if(!p.gcfg.amrapAcc)p.gcfg.amrapAcc=[...(p.gcfg.acc||[])];
   if(!p.wstats)p.wstats={wk:'',sess:0,reps:0,jumps:0,long:0,amrap:0};
   if(!p.wxp)p.wxp={};if(!p.badges)p.badges={};if(!p.hist)p.hist=[];if(!p.amrapH)p.amrapH=[];
   if(!Array.isArray(p.varModes))p.varModes=[];
@@ -123,8 +123,6 @@ function migrateState(p){
   if(typeof p.demoAuto!=='boolean')p.demoAuto=true;
   if(!Array.isArray(p.ratings))p.ratings=[];
   if(!p.rLegs)p.rLegs=0;if(!p.rPull)p.rPull=0;
-  if(p.ucfg&&!p.ucfg.acc.includes('legs'))p.ucfg.acc.push('legs');
-  if(p.gcfg){if(!p.gcfg.acc.includes('legs'))p.gcfg.acc.push('legs');if(p.gcfg.amrapAcc&&!p.gcfg.amrapAcc.includes('legs'))p.gcfg.amrapAcc.push('legs');}
   if(!p.exCount)p.exCount={};
   if(!p.bestStreak)p.bestStreak=p.streak||0;
   if(!p.prAmrapRounds)p.prAmrapRounds=0;if(!p.prWeekReps)p.prWeekReps=0;if(!p.prWeekJumps)p.prWeekJumps=0;if(!p.prLongestSession)p.prLongestSession=0;
@@ -233,9 +231,9 @@ function setDur(d){S.ucfg.sessionDur=d;document.querySelectorAll('#dur-row .fb')
 function setFreq(f){S.ucfg.freq=f;document.querySelectorAll('#freq-row .fb').forEach(b=>b.classList.toggle('active',parseInt(b.innerText)===f));save();}
 function adjW(a){S.ucfg.wks=Math.max(1,Math.min(12,(S.ucfg.wks||4)+a));document.getElementById('disp-fw').innerText=S.ucfg.wks;save();}
 function togE(id){const cb=document.getElementById('e-'+id);cb.checked=!cb.checked;cb.closest('.acc-item').classList.toggle('on',cb.checked);const isMac=id.startsWith('mac_');if(isMac){if(cb.checked){if(!S.ucfg.machines.includes(id))S.ucfg.machines.push(id);}else S.ucfg.machines=S.ucfg.machines.filter(m=>m!==id);}else{if(cb.checked){if(!S.ucfg.acc.includes(id))S.ucfg.acc.push(id);}else S.ucfg.acc=S.ucfg.acc.filter(a=>a!==id);}document.getElementById('rj-box').style.display=S.ucfg.acc.includes('jump_rope')?'flex':'none';document.getElementById('posture-block').style.display=S.ucfg.acc.includes('board')?'block':'none';save();}
-function togGA(id){const cb=document.getElementById('ga-'+id);cb.checked=!cb.checked;cb.closest('.acc-item').classList.toggle('on',cb.checked);if(cb.checked){if(!S.gcfg.acc.includes(id))S.gcfg.acc.push(id);}else S.gcfg.acc=S.gcfg.acc.filter(a=>a!==id);save();genPreviewUpdate();}
-function togAmrapAcc(id){const cb=document.getElementById('aa-'+id);cb.checked=!cb.checked;cb.closest('.acc-item').classList.toggle('on',cb.checked);if(cb.checked){if(!S.gcfg.amrapAcc.includes(id))S.gcfg.amrapAcc.push(id);}else S.gcfg.amrapAcc=S.gcfg.amrapAcc.filter(a=>a!==id);save();updAmrapPreview();}
-function syncUI(){const o=S.ucfg.obj||'muscle';['muscle','cardio','other'].forEach(m=>document.getElementById('ob-'+m).classList.toggle('active',m===o));document.querySelectorAll('#freq-row .fb').forEach(b=>b.classList.toggle('active',parseInt(b.innerText)===S.ucfg.freq));document.querySelectorAll('#dur-row .fb').forEach(b=>b.classList.toggle('active',b.innerText.startsWith((S.ucfg.sessionDur||30)+' ')));['mat','board','ab_wheel','jump_rope','bands','legs'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=S.ucfg.acc.includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc){gc.checked=(S.gcfg.acc||[]).includes(id);gc.closest('.acc-item').classList.toggle('on',gc.checked);}const aa=document.getElementById('aa-'+id);if(aa){aa.checked=(S.gcfg.amrapAcc||[]).includes(id);aa.closest('.acc-item').classList.toggle('on',aa.checked);}});['mac_bike','mac_elliptical','mac_treadmill'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=(S.ucfg.machines||[]).includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc){gc.checked=(S.gcfg.acc||[]).includes(id);gc.closest('.acc-item').classList.toggle('on',gc.checked);}});document.getElementById('inp-rj').value=S.ucfg.rj||50;document.getElementById('disp-fw').innerText=S.ucfg.wks||4;document.getElementById('rj-box').style.display=S.ucfg.acc.includes('jump_rope')?'flex':'none';document.getElementById('posture-block').style.display=S.ucfg.acc.includes('board')?'block':'none';document.getElementById('pb-knees').classList.toggle('active',S.posture==='knees');document.getElementById('pb-feet').classList.toggle('active',S.posture!=='knees');}
+function togGA(id){const el=document.getElementById('ga-'+id);const on=!el.classList.contains('on');el.classList.toggle('on',on);if(on){if(!S.gcfg.acc.includes(id))S.gcfg.acc.push(id);}else S.gcfg.acc=S.gcfg.acc.filter(a=>a!==id);save();genPreviewUpdate();}
+function togAmrapAcc(id){const el=document.getElementById('aa-'+id);const on=!el.classList.contains('on');el.classList.toggle('on',on);if(on){if(!S.gcfg.amrapAcc.includes(id))S.gcfg.amrapAcc.push(id);}else S.gcfg.amrapAcc=S.gcfg.amrapAcc.filter(a=>a!==id);save();updAmrapPreview();}
+function syncUI(){const o=S.ucfg.obj||'muscle';['muscle','cardio','other'].forEach(m=>document.getElementById('ob-'+m).classList.toggle('active',m===o));document.querySelectorAll('#freq-row .fb').forEach(b=>b.classList.toggle('active',parseInt(b.innerText)===S.ucfg.freq));document.querySelectorAll('#dur-row .fb').forEach(b=>b.classList.toggle('active',b.innerText.startsWith((S.ucfg.sessionDur||30)+' ')));['mat','board','ab_wheel','jump_rope','bands','legs'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=S.ucfg.acc.includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc)gc.classList.toggle('on',(S.gcfg.acc||[]).includes(id));const aa=document.getElementById('aa-'+id);if(aa)aa.classList.toggle('on',(S.gcfg.amrapAcc||[]).includes(id));});['mac_bike','mac_elliptical','mac_treadmill'].forEach(id=>{const cb=document.getElementById('e-'+id);if(cb){cb.checked=(S.ucfg.machines||[]).includes(id);cb.closest('.acc-item').classList.toggle('on',cb.checked);}const gc=document.getElementById('ga-'+id);if(gc)gc.classList.toggle('on',(S.gcfg.acc||[]).includes(id));});document.getElementById('inp-rj').value=S.ucfg.rj||50;document.getElementById('disp-fw').innerText=S.ucfg.wks||4;document.getElementById('rj-box').style.display=S.ucfg.acc.includes('jump_rope')?'flex':'none';document.getElementById('posture-block').style.display=S.ucfg.acc.includes('board')?'block':'none';document.getElementById('pb-knees').classList.toggle('active',S.posture==='knees');document.getElementById('pb-feet').classList.toggle('active',S.posture!=='knees');}
 
 /* ════════ ONBOARDING ════════ */
 function openOnboarding(){onbStep=0;renderOnbStep();document.getElementById('onb-ov').style.display='flex';}
