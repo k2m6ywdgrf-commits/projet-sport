@@ -65,9 +65,15 @@ function fitToTime(srcExs,targetMin,rest,diffVal,minRounds){
   const totalSec=(exList,rounds)=>60+rounds*oneCircuitSec(exList)+(rounds-1)*Math.min(rest,90)+macTimeSec;
   let best=null,bestDiff=Infinity;
   const maxEx=Math.min(8,regExs.length),minEx=Math.min(4,regExs.length);
-  const roundsFloor=Math.max(2,Math.min(8,minRounds||2));
-  const maxCircuitSec=oneCircuitSec(regExs.slice(0,maxEx))||1;
-  const roundsCeil=Math.max(8,Math.min(15,Math.ceil((targetSec-60-macTimeSec)/(maxCircuitSec+Math.min(rest,90)))+1));
+  const roundsFloorPref=Math.max(2,Math.min(8,minRounds||2));
+  const minCircuitSec=oneCircuitSec(regExs.slice(0,minEx))||1;
+  // Le plancher de "séries de base" ne doit jamais, à lui seul, forcer une séance bien plus
+  // longue qu'une petite fenêtre de temps demandée (ex. 5 min) : on le relâche dans ce cas.
+  const floorSecBest=60+roundsFloorPref*minCircuitSec+Math.max(0,roundsFloorPref-1)*Math.min(rest,90)+macTimeSec;
+  const roundsFloor=floorSecBest>targetSec*1.3?1:roundsFloorPref;
+  // Avec peu d'exercices sélectionnés, un plafond bas empêchait de remplir une longue séance
+  // (ex. un seul exercice pour 60-90 min) : le plafond suit maintenant la durée demandée.
+  const roundsCeil=Math.max(roundsFloor+1,Math.min(200,Math.ceil((targetSec-60-macTimeSec)/(minCircuitSec+Math.min(rest,90)))+2));
   for(let n=maxEx;n>=minEx;n--){
     const exList=regExs.slice(0,n);
     for(let r=roundsCeil;r>=roundsFloor;r--){
