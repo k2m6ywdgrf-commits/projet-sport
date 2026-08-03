@@ -54,6 +54,12 @@ function fitToTime(srcExs,targetMin,rest,diffVal,minRounds){
   const allScaled=srcExs.map(scale);
   const macExs=allScaled.filter(e=>e.r?.includes('min'));
   const regExs=allScaled.filter(e=>!e.r?.includes('min'));
+  // Séance 100% machines (aucun exercice au poids du corps pour absorber l'écart) :
+  // sans ça, chaque machine gardait sa durée par défaut et la durée choisie n'avait aucun effet.
+  if(!regExs.length&&macExs.length){
+    const perSec=Math.max(300,(targetSec-60)/macExs.length);
+    macExs.forEach(e=>{const m=Math.max(5,Math.round(perSec/60));e.r=m+' min';e._sd=m*60;});
+  }
   const oneCircuitSec=(exList)=>exList.reduce((s,e)=>s+e._sd,0)+(exList.length>1?(exList.length-1)*8:0);
   const macTimeSec=macExs.reduce((s,e)=>s+e._sd,0);
   const totalSec=(exList,rounds)=>60+rounds*oneCircuitSec(exList)+(rounds-1)*Math.min(rest,90)+macTimeSec;
